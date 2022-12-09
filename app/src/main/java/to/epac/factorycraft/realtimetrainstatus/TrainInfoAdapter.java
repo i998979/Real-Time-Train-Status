@@ -101,6 +101,9 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                 } catch (Exception e) {
                 }
 
+                // Reorder if DN train
+                if (!isUp) carData = datas[datas.length - i].split(",");
+
                 boolean has1st = datas.length == 10;
 
 
