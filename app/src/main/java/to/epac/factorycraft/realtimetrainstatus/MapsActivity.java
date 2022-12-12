@@ -546,7 +546,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     String td0 = "";
                     if (isInService) td0 += "AA";
                     else td0 += "TT";
-                    if (Utils.covertStationOrder(currentStationCode) < Utils.covertStationOrder(destinationStationCode))
+                    if (Utils.covertStationOrder(currentStationCode) > Utils.covertStationOrder(destinationStationCode))
                         td0 += "0001";
                     else td0 += "0002";
 
@@ -654,7 +654,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 + (trip.destinationStationCode > 0 ? "(" + Utils.mapStation(trip.destinationStationCode, "TML") + ")" : "")
                                 + " " + trip.trainSpeed + "km/h;";
                         for (Car car : trip.listCars) {
-                            snippet += car.carName + "," + car.passengerCount + ";";
+                            snippet += car.carName + "," + car.passengerCount + "," + trip.td + ";";
                         }
 
                         train.setSnippet(snippet);
