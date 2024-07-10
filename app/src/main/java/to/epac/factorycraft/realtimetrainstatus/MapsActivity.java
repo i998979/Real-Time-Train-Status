@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -246,11 +247,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         stationPicker.setSaveEnabled(false);
         stationPicker.setWrapSelectorWheel(false);
         stationPicker.setDisplayedValues(new String[]{"0000000000000000000000000000000000000000"});
+        stationPicker.setTextColor(Color.GRAY);
+
         trainPicker = findViewById(R.id.trainPicker);
         trainPicker.setSaveFromParentEnabled(false);
         trainPicker.setSaveEnabled(false);
         trainPicker.setWrapSelectorWheel(false);
         trainPicker.setDisplayedValues(new String[]{"0000000000000000000000000000000000000000"});
+        trainPicker.setTextColor(Color.GRAY);
 
         stationPicker.setDisplayedValues(null);
         stationPicker.setMinValue(0);
