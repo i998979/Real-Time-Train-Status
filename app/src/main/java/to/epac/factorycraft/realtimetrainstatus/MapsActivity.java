@@ -96,8 +96,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(binding.getRoot());
 
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
 
@@ -315,14 +314,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 trainPicker.setDisplayedValues(null);
                 trainPicker.setMinValue(0);
                 trainPicker.setMaxValue(Math.max(eal_trains.size() - 1, 0));
-                if (eal_trains.size() > 0)
+                if (!eal_trains.isEmpty())
                     trainPicker.setDisplayedValues(eal_trains.toArray(new String[]{}));
             }
             if (line.equals("TML")) {
                 trainPicker.setDisplayedValues(null);
                 trainPicker.setMinValue(0);
                 trainPicker.setMaxValue(Math.max(tml_trains.size() - 1, 0));
-                if (tml_trains.size() > 0)
+                if (!tml_trains.isEmpty())
                     trainPicker.setDisplayedValues(tml_trains.toArray(new String[]{}));
             }
 
@@ -696,13 +695,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (line.equals("EAL")) {
             trainPicker.setMinValue(0);
             trainPicker.setMaxValue(Math.max(eal_trains.size() - 1, 0));
-            if (eal_trains.size() > 0)
+            if (!eal_trains.isEmpty())
                 trainPicker.setDisplayedValues(eal_trains.toArray(new String[]{}));
         }
         if (line.equals("TML")) {
             trainPicker.setMinValue(0);
             trainPicker.setMaxValue(Math.max(tml_trains.size() - 1, 0));
-            if (tml_trains.size() > 0)
+            if (!tml_trains.isEmpty())
                 trainPicker.setDisplayedValues(tml_trains.toArray(new String[]{}));
         }
     }
