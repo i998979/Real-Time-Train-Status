@@ -12,12 +12,8 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.NumberPicker;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -33,11 +29,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -49,6 +41,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import to.epac.factorycraft.realtimetrainstatus.databinding.ActivityMapsBinding;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -57,7 +51,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public List<Trip> ealTrips;
     public Map<String, Marker> ealTrainMap;
     public Map<String, Marker> ealStationMap;
-    public WebView ealWebView;
     public Map<String, List<Train>> ealTrains;
     public NumberPicker stationPicker;
     public NumberPicker trainPicker;
@@ -66,7 +59,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public List<Trip> tmlTrips;
     public Map<String, Marker> tmlTrainMap;
     public Map<String, Marker> tmlStationMap;
-    public WebView tmlWebView;
     public Map<String, List<Train>> tmlTrains;
 
     private GoogleMap mMap;
@@ -74,20 +66,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     MapUtils mapUtils;
 
     SharedPreferences pref;
+
     // https://stackoverflow.com/questions/69886446/aes-encryption-and-decryption-java
     // The comparison code is embedded into class
-    private final String cipher_eal = "7hZOAWENNiAjv2M31HzdClndtJ6Aj9Z7LVyrMAdqy9tp+15Z859kS0PCjtVmGGdl";
-    private final String cipher_tml = "RoXQs1jcAUiiHtLN35D9oV+kKWtyR0pyto5PTYW31Cjdzqf8iRV9C5PM+VjBAdZLE2LBnVl0a2sBvd1hjJ5EvnO1wBvpepansIYDKHCiPODboqQKelCXVn+WWAK1Q41+";
+
     private String code = "";
     private String link_eal = "";
     private String link_tml = "";
+    private String link_roctec = "";
+    // link + code = cipher
+    private final String cipher_eal = "7hZOAWENNiAjv2M31HzdClndtJ6Aj9Z7LVyrMAdqy9tp+15Z859kS0PCjtVmGGdl";
+    private final String cipher_tml = "RoXQs1jcAUiiHtLN35D9oV+kKWtyR0pyto5PTYW31Cjdzqf8iRV9C5PM+VjBAdZLE2LBnVl0a2sBvd1hjJ5EvnO1wBvpepansIYDKHCiPODboqQKelCXVn+WWAK1Q41+";
+    private final String cipher_roctec = "cs+fuB90xVnOJAyJgOgq/JrRGaJDEN+MTd0o8a0zBpE6Az690j4ZJngdcNtAUTEK";
+    // link + secret = encrypted
     private final String encrypted_eal = "wt2wS84uiY8qZrmJUO4Vl8FCiVoYnrfqmLuYCSfzQ6gYcM246hUutb6ZqSjn1x1O";
     private final String encrypted_tml = "e7gg+sJ4PRy3zatp8dI8ys1VRSj/UxdA4vWoXjah6tiS5XSGc1SSwiHPtnN5x6rlX7SCNNPSxEDWCATWOPKEwbY4pSENdveBLOXTT0EOwwFVbJmcV5C7BvbWrslWM0N2";
+    private final String encrypted_roctec = "ET9b/RcMDGTXDGHGTNiE9lbaNmYJDVvk7XcR5xzxXR0RpoX2Q572hN98vuKqm201";
 
     public static String line = "EAL";
 
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +114,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         pref = getSharedPreferences("RealTimeTrainStatus", MODE_PRIVATE);
         code = pref.getString("code", "default");
         link_eal = AES.decrypt(cipher_eal, code);
+        link_tml = AES.decrypt(cipher_tml, code);
 
         // Station names
         String[] eal_stations = getResources().getString(R.string.erl_stations).split(" ");
@@ -136,13 +135,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                ealWebView.loadUrl(AES.decrypt(cipher_eal, code));
-                tmlWebView.loadUrl(AES.decrypt(cipher_tml, code), headers);
                 handler.postDelayed(this, 5000);
 
-                CompletableFuture.runAsync(() -> {
+                Runnable r1 = () -> {
                     for (String station : eal_stations) {
                         try {
                             String eal_data = "";
@@ -150,9 +145,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?" +
                                     "line=EAL&sta=" + station.toUpperCase() + "&lang=en");
                             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            InputStream is = conn.getInputStream();
-                            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                            conn.connect();
 
+                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                             String line;
                             while ((line = br.readLine()) != null) {
                                 eal_data += line;
@@ -162,7 +157,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         } catch (Exception e) {
                         }
                     }
+                };
 
+                Runnable r2 = () -> {
                     for (String station : tml_stations) {
                         try {
                             String tml_data = "";
@@ -170,9 +167,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?" +
                                     "line=TML&sta=" + station.toUpperCase() + "&lang=en");
                             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            InputStream is = conn.getInputStream();
-                            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                            conn.connect();
 
+                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                             String line;
                             while ((line = br.readLine()) != null) {
                                 tml_data += line;
@@ -182,10 +179,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         } catch (Exception e) {
                         }
                     }
-                });
+                };
+
+                Runnable r3 = () -> {
+                    ealTrips.clear();
+                    try {
+                        String eal_data = "";
+
+                        URL url = new URL(link_eal);
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                        conn.connect();
+
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String line = "";
+                        while ((line = in.readLine()) != null) {
+                            eal_data += line;
+                        }
+                        in.close();
+
+                        ealTrips.addAll(ServerUtils.getEALTrainData(eal_data));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                };
+
+                Runnable r4 = () -> {
+                    tmlTrips.clear();
+                    try {
+                        String tml_data = "";
+
+                        URL url = new URL(link_tml);
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                        conn.connect();
+
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String line = "";
+                        while ((line = in.readLine()) != null) {
+                            tml_data += line;
+                        }
+                        in.close();
+
+                        tmlTrips.addAll(ServerUtils.getTMLTrainData(tml_data, mapUtils));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                };
+
+                CompletableFuture.runAsync(r1);
+                CompletableFuture.runAsync(r2);
+
+                CompletableFuture
+                        .allOf(CompletableFuture.runAsync(r3), CompletableFuture.runAsync(r4))
+                        .thenRun(() -> {
+                            load();
+                        });
             }
         };
-        handler.post(runnable);
 
 
         // Check user's code input
@@ -195,49 +246,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             View view = inflater.inflate(R.layout.layout_code, null);
 
             EditText editText = view.findViewById(R.id.code);
-            builder.setTitle("Code:")
-                    .setView(view)
+            builder.setView(view)
+                    .setTitle("Code:")
                     .setPositiveButton("OK", (dialog, which) -> {
                         code = editText.getText().toString();
                         pref.edit().putString("code", code).apply();
+
                         link_eal = AES.decrypt(cipher_eal, code);
                         link_tml = AES.decrypt(cipher_tml, code);
+
                         handler.post(runnable);
-                    });
-            builder.show();
+                    }).show();
+        } else {
+            handler.post(runnable);
         }
-
-
-        // WebView
-        ealWebView = new WebView(MapsActivity.this);
-        ealWebView.setVisibility(View.GONE);
-        ealWebView.getSettings().setJavaScriptEnabled(true);
-        ealWebView.addJavascriptInterface(new JavaScriptInterface(), "HTMLOUT");
-        ealWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                ealWebView.loadUrl("javascript:window.HTMLOUT.processEAL('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
-            }
-        });
-        ealWebView.loadUrl(AES.decrypt(cipher_eal, code));
-
-        tmlWebView = new WebView(MapsActivity.this);
-        tmlWebView.setVisibility(View.GONE);
-        tmlWebView.getSettings().setJavaScriptEnabled(true);
-        tmlWebView.addJavascriptInterface(new JavaScriptInterface(), "HTMLOUT");
-        tmlWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                tmlWebView.loadUrl("javascript:window.HTMLOUT.processTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
-            }
-        });
-        Map<String, String> headers = new HashMap<>();
-        headers.put("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-        tmlWebView.loadUrl(AES.decrypt(cipher_tml, code), headers);
-
-        RelativeLayout relativeLayout = findViewById(R.id.relativeLayout);
-        relativeLayout.addView(ealWebView);
-        relativeLayout.addView(tmlWebView);
 
 
         // StationPicker and TrainPicker
@@ -422,150 +444,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-
-    private class JavaScriptInterface {
-        @JavascriptInterface
-        public void processEAL(String html) {
-            ealTrips.clear();
-
-            try {
-                html = html.substring(html.indexOf("["), html.lastIndexOf("]") + 1);
-
-                JSONArray array = new JSONArray(html);
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject object0 = array.getJSONObject(i);
-
-                    String trainId = object0.getString("trainId");
-                    double trainSpeed = Double.parseDouble(object0.getString("trainSpeed"));
-                    int currentStationCode = Integer.parseInt(object0.getString("currentStationCode"));
-                    int nextStationCode = Integer.parseInt(object0.getString("nextStationCode"));
-                    int destinationStationCode = Integer.parseInt(object0.getString("destinationStationCode"));
-
-                    JSONArray listCars = object0.getJSONArray("listCars");
-                    List<Car> cars = new ArrayList<>();
-                    for (int j = 0; j < listCars.length(); j++) {
-                        try {
-                            JSONObject object1 = listCars.getJSONObject(j);
-                            int carLoad = object1.getInt("carLoad");
-                            int passengerCount = object1.getInt("passengerCount");
-                            String carName = object1.getString("carName");
-                            int passengerLoad = object1.getInt("passengerLoad");
-
-                            Car car = new Car(carLoad, passengerCount, carName, passengerLoad);
-                            cars.add(car);
-                        } catch (Exception e) {
-                        }
-                    }
-
-                    long receivedTime = object0.getLong("receivedTime");
-                    long ttl = object0.getLong("ttl");
-                    int doorStatus = Integer.parseInt(object0.getString("doorStatus"));
-                    String td = object0.getString("td");
-                    int targetDistance = Integer.parseInt(object0.getString("targetDistance"));
-                    int startDistance = Integer.parseInt(object0.getString("startDistance"));
-
-                    Trip trip = new Trip(trainId, "", trainSpeed, currentStationCode, nextStationCode, destinationStationCode,
-                            cars, receivedTime, ttl, doorStatus, td, targetDistance, startDistance);
-
-                    ealTrips.add(trip);
-                }
-
-                load();
-            } catch (Exception e) {
-            }
-        }
-
-        @JavascriptInterface
-        public void processTML(String html) {
-            tmlTrips.clear();
-
-            try {
-                html = html.substring(html.indexOf("["), html.lastIndexOf("]") + 1);
-
-                // Handle TML data
-                JSONArray array = new JSONArray(html);
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject object0 = array.getJSONObject(i);
-
-                    int trainSpeed = object0.getInt("trainSpeed");
-                    // int carNo = object0.getInt("carNo");
-                    int nextStationCode = object0.getInt("nextStationCode");
-                    // String headSpares = object0.getString("headSpares");
-                    long ttl = object0.getLong("ttl");
-                    // boolean isTimeDateValid = object0.getBoolean("isTimeDateValid");
-                    // boolean isCarNoValid = object0.getBoolean("isCarNoValid");
-                    // boolean isCarTypeValid = object0.getBoolean("isCarTypeValid");
-                    // int carType = object0.getInt("carType");
-                    int distanceFromCurrentStation = object0.getInt("distanceFromCurrentStation");
-                    // int second = object0.getInt("second");
-                    boolean isDoorOpen = object0.getBoolean("isDoorOpen");
-                    // int hour = object0.getInt("hour");
-                    boolean isInService = object0.getBoolean("isInService");
-                    // int trainLength = object0.getInt("trainLength");
-                    int currentStationCode = object0.getInt("currentStationCode");
-                    String trainType = object0.getString("train_type");
-                    // boolean comPortConnection = object0.getBoolean("comPortConnection");
-                    //  String ipAddr = object0.getString("ipAddr");
-                    String trainId = object0.getString("trainId");
-                    int destinationStationCode = object0.getInt("destinationStationCode");
-
-                    JSONArray listCars = object0.getJSONArray("listCars");
-                    List<Car> cars = new ArrayList<>();
-                    for (int j = 0; j < listCars.length(); j++) {
-                        try {
-                            JSONObject object1 = listCars.getJSONObject(j);
-
-                            boolean isCarLoadValid = object1.getBoolean("isCarLoadValid");
-                            int carLoad = object1.getInt("carLoad");
-                            int passengerLoad = object1.getInt("passengerLoad");
-                            boolean isPaxLoadValid = object1.getBoolean("isPaxLoadValid");
-                            String carName = object1.getString("carName");
-                            int passengerCount = object1.getInt("passengerCount");
-                            boolean isPanAvailable = object1.getBoolean("isPanAvailable");
-                            int panBit = object1.getInt("panBit");
-                            int offsetCarLoad = object1.getInt("offsetCarLoad");
-                            int initialLoad = object1.getInt("initialLoad");
-                            boolean panStatus = object1.getBoolean("panStatus");
-
-                            Car car = new Car(carLoad, passengerCount, carName, passengerLoad);
-                            cars.add(car);
-                        } catch (Exception e) {
-                        }
-                    }
-
-                    // String commandReceived = object0.getString("commandReceived");
-                    // boolean isCarNumberValid = object0.getBoolean("isCarNumberValid");
-                    // int headByte = object0.getInt("headByte");
-                    long receivedTime = object0.getLong("receivedTime");
-                    // int minute = object0.getInt("minute");
-                    // boolean isTimeDataAdjustment = object0.getBoolean("isTimeDataAdjustment");
-                    // int month = object0.getInt("month");
-                    // int year = object0.getInt("year");
-                    // boolean panStatusPM1 = object0.getBoolean("panStatusPM1");
-                    // boolean panStatusPM2 = object0.getBoolean("panStatusPM2");
-                    // int day = object0.getInt("day");
-                    // String tailSpares = object0.getString("tailSpares");
-
-                    String td0 = "";
-                    if (isInService) td0 += "AA";
-                    else td0 += "TT";
-                    if (Utils.covertStationOrder(currentStationCode) > Utils.covertStationOrder(destinationStationCode))
-                        td0 += "0001";
-                    else td0 += "0002";
-
-                    Trip trip = new Trip(trainId, trainType, trainSpeed, currentStationCode, nextStationCode, destinationStationCode,
-                            cars, receivedTime, ttl, (isDoorOpen ? 0 : 1), td0,
-                            mapUtils.getDistance(currentStationCode, nextStationCode, distanceFromCurrentStation),
-                            distanceFromCurrentStation);
-                    tmlTrips.add(trip);
-                }
-
-                load();
-            } catch (Exception e) {
-            }
-        }
-    }
-
     public void load() {
         for (Trip trip : ealTrips) {
             CompletableFuture.supplyAsync(() -> {
@@ -716,31 +594,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true);
         }
 
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_main)), "#5eb7e8");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_rac)), "#5eb7e8");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_lmc)), "#5eb7e8");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.tml_main)), "#9c2e00");
-
-        for (String station : getResources().getString(R.string.erl_stations).split(" ")) {
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station");
-            ealStationMap.put(station, marker);
-        }
-
-        for (String station : getResources().getString(R.string.tml_stations).split(" ")) {
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station");
-            tmlStationMap.put(station, marker);
-        }
-
+        drawLines();
+        addStations();
 
         getWindowManager().getDefaultDisplay().getMetrics(new DisplayMetrics());
 
@@ -814,16 +669,124 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == 1001) {
-            boolean grantedAll = true;
-            for (int grantResult : grantResults) {
-                if (grantResult != PackageManager.PERMISSION_GRANTED) {
-                    grantedAll = false;
-                    break;
-                }
-            }
+        if (requestCode != 1001) return;
 
-            if (grantedAll) mMap.setMyLocationEnabled(true);
+        for (int grantResult : grantResults) {
+            if (grantResult != PackageManager.PERMISSION_GRANTED) return;
         }
+
+
+        mMap.setMyLocationEnabled(true);
+    }
+
+
+    public void drawLines() {
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_main)), "#5eb7e8");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_rac)), "#5eb7e8");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_lmc)), "#5eb7e8");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.tml_main)), "#9c2e00");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.ktl_main)), "#00a040");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.ael_main)), "#00888e");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.drl_main)), "#eb6ea5");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.isl_main)), "#0075c2");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.tcl_main)), "#f3982d");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.tkl_main)), "#7e3c93");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.twl_main)), "#e60012");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.sil_main)), "#cbd300");
+    }
+
+    public void addStations() {
+        for (String station : getResources().getString(R.string.erl_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+            ealStationMap.put(station, marker);
+        }
+
+        for (String station : getResources().getString(R.string.tml_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+            tmlStationMap.put(station, marker);
+        }
+
+        for (String station : getResources().getString(R.string.ktl_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
+        for (String station : getResources().getString(R.string.ael_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
+        for (String station : getResources().getString(R.string.drl_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
+        for (String station : getResources().getString(R.string.isl_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
+        for (String station : getResources().getString(R.string.tcl_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
+        for (String station : getResources().getString(R.string.tkl_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
+        for (String station : getResources().getString(R.string.twl_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
+        for (String station : getResources().getString(R.string.sil_stations).split(" ")) {
+            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(100)
+                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
+            marker.setTag("station");
+        }
+
     }
 }

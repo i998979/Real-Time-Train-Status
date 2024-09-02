@@ -9,11 +9,11 @@ import java.util.List;
 
 public class NextTrainUtils {
 
-    public static List<Train> getTrainData(String receivedData, String line, String station) {
+    public static List<Train> getTrainData(String data, String line, String station) {
         List<Train> trains = new ArrayList<>();
 
         try {
-            JSONObject jsonObject = new JSONObject(receivedData);
+            JSONObject jsonObject = new JSONObject(data);
             String status = jsonObject.getString("status");
             String message = jsonObject.getString("message");
             String url0 = "";
