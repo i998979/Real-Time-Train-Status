@@ -31,11 +31,15 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
 
         if (marker.getSnippet() == null) return null;
 
+        String tag = marker.getTag().toString();
         String[] datas = marker.getSnippet().split(";");
 
         // Station layout
-        if (marker.getTag().equals("station")) {
-            view = context.getLayoutInflater().inflate(R.layout.layout_info, null);
+        if (tag.startsWith("station")) {
+            if (tag.split(":")[1].equals("eal") || tag.split(":")[1].equals("tml"))
+                view = context.getLayoutInflater().inflate(R.layout.layout_info, null);
+            else
+                view = context.getLayoutInflater().inflate(R.layout.layout_roctec, null);
 
             TableLayout infoLayout = view.findViewById(R.id.infoLayout);
 
@@ -47,28 +51,52 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                 TableRow tableRow = new TableRow(context);
                 tableRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
-                TextView dest = new TextView(context);
-                dest.setTextColor(Color.GRAY);
-                dest.setText(data[0]);
+                if (tag.split(":")[1].equals("eal") || tag.split(":")[1].equals("tml")) {
+                    TextView dest = new TextView(context);
+                    dest.setTextColor(Color.GRAY);
+                    dest.setText(data[0]);
 
-                TextView plat = new TextView(context);
-                plat.setTextColor(Color.GRAY);
-                plat.setText(data[1]);
+                    TextView plat = new TextView(context);
+                    plat.setTextColor(Color.GRAY);
+                    plat.setText(data[1]);
 
-                TextView ttnt = new TextView(context);
-                ttnt.setTextColor(Color.GRAY);
-                ttnt.setText(data[2]);
+                    TextView ttnt = new TextView(context);
+                    ttnt.setTextColor(Color.GRAY);
+                    ttnt.setText(data[2]);
 
-                tableRow.addView(dest);
-                tableRow.addView(plat);
-                tableRow.addView(ttnt);
+                    tableRow.addView(dest);
+                    tableRow.addView(plat);
+                    tableRow.addView(ttnt);
+                }
+                else {
+                    TextView dest = new TextView(context);
+                    dest.setTextColor(Color.GRAY);
+                    dest.setText(data[0]);
+
+                    TextView td = new TextView(context);
+                    td.setTextColor(Color.GRAY);
+                    td.setText(data[1]);
+
+                    TextView plat = new TextView(context);
+                    plat.setTextColor(Color.GRAY);
+                    plat.setText(data[2]);
+
+                    TextView ttnt = new TextView(context);
+                    ttnt.setTextColor(Color.GRAY);
+                    ttnt.setText(data[3]);
+
+                    tableRow.addView(dest);
+                    tableRow.addView(td);
+                    tableRow.addView(plat);
+                    tableRow.addView(ttnt);
+                }
 
                 infoLayout.addView(tableRow);
             }
         }
 
         // Train layout
-        else if (marker.getTag().equals("train")) {
+        else if (tag.startsWith("train")) {
             view = context.getLayoutInflater().inflate(R.layout.layout_train, null);
 
             LinearLayout trainLayout = view.findViewById(R.id.trainLayout);

@@ -193,7 +193,7 @@ public class MapUtils {
         if (startDistance > 10000)
             return currLatLng;
 
-        if (trip.currentStationCode == 0 && trip.nextStationCode == 701)
+        if ((trip.currentStationCode == 0 || trip.currentStationCode == 701) && (trip.nextStationCode == 0 || trip.nextStationCode == 701))
             return Utils.getLatLng(ctx.getResources().getString(R.string.htd));
 
 

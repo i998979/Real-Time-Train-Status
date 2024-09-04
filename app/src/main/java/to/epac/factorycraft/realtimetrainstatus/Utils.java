@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class Utils {
 
@@ -219,20 +220,35 @@ public class Utils {
     }
 
     public static String getStationName(Activity context, String name) {
-        String[] eal_stations = context.getResources().getString(R.string.erl_stations).split(" ");
-        String[] eal_stations_long = context.getResources().getString(R.string.erl_stations_long).split(";");
-        String[] tml_stations = context.getResources().getString(R.string.tml_stations).split(" ");
-        String[] tml_stations_long = context.getResources().getString(R.string.tml_stations_long).split(";");
+        String[] stations = Arrays.stream((context.getResources().getString(R.string.erl_stations) + " "
+                        + context.getResources().getString(R.string.tml_stations) + " "
+                        + context.getResources().getString(R.string.ktl_stations) + " "
+                        + context.getResources().getString(R.string.ael_stations) + " "
+                        + context.getResources().getString(R.string.drl_stations) + " "
+                        + context.getResources().getString(R.string.isl_stations) + " "
+                        + context.getResources().getString(R.string.tcl_stations) + " "
+                        + context.getResources().getString(R.string.tkl_stations) + " "
+                        + context.getResources().getString(R.string.twl_stations) + " "
+                        + context.getResources().getString(R.string.sil_stations)).split(" "))
+                .distinct().toArray(String[]::new);
 
-        for (int i = 0; i < eal_stations.length; i++) {
-            if (eal_stations[i].equals(name.toLowerCase())) return eal_stations_long[i];
-        }
+        String[] stations_long = Arrays.stream((context.getResources().getString(R.string.erl_stations_long) + ";"
+                        + context.getResources().getString(R.string.tml_stations_long) + ";"
+                        + context.getResources().getString(R.string.ktl_stations_long) + ";"
+                        + context.getResources().getString(R.string.ael_stations_long) + ";"
+                        + context.getResources().getString(R.string.drl_stations_long) + ";"
+                        + context.getResources().getString(R.string.isl_stations_long) + ";"
+                        + context.getResources().getString(R.string.tcl_stations_long) + ";"
+                        + context.getResources().getString(R.string.tkl_stations_long) + ";"
+                        + context.getResources().getString(R.string.twl_stations_long) + ";"
+                        + context.getResources().getString(R.string.sil_stations_long)).split(";"))
+                .distinct().toArray(String[]::new);
 
-        for (int i = 0; i < tml_stations.length; i++) {
-            if (tml_stations[i].equals(name.toLowerCase())) return tml_stations_long[i];
-        }
+        int index = IntStream.range(0, stations.length)
+                .filter(i -> stations[i].equalsIgnoreCase(name))
+                .findFirst().orElse(Integer.MAX_VALUE);
 
-        return "";
+        return Arrays.stream(stations_long).skip(index).findFirst().orElse(name);
     }
 
     public static List<LatLng> getLatLngs(String s) {
