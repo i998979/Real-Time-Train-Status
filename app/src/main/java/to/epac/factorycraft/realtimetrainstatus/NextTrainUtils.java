@@ -88,6 +88,8 @@ public class NextTrainUtils {
             for (Iterator<String> it = jsonObject2.keys(); it.hasNext(); ) {
                 String line0 = it.next();
 
+                if (!line0.endsWith("L")) continue;
+
                 JSONObject jsonObject3 = jsonObject2.getJSONObject(line0);
 
                 for (Iterator<String> it0 = jsonObject3.keys(); it0.hasNext(); ) {
@@ -105,7 +107,7 @@ public class NextTrainUtils {
                         String seq = jsonObject4.getString("seq");
                         String curr_time = jsonObject4.getString("curr_time");
 
-                        Train train = new Train("UP", station, seq, "", destination, plat, ttnt, "", td);
+                        Train train = new Train("UP", station, seq, curr_time, destination, plat, ttnt, "", td);
                         trains.add(train);
                     }
                 }
