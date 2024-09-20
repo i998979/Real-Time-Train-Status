@@ -257,42 +257,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         });
             }
         };
-        Runnable runnable1 = new Runnable() {
-            @Override
-            public void run() {
-                handler.postDelayed(this, /*60000*/ 5000);
-
-                Runnable roctec = () -> {
-                    for (String station : stations) {
-                        try {
-                            String data = "";
-                            URL url = new URL("https://408tq84duh.execute-api.ap-east-1.amazonaws.com/api/service/GetNextTrainData");
-                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            conn.setRequestMethod("POST");
-                            conn.setRequestProperty("content-type", "application/json");
-                            conn.setRequestProperty("data", "{\"stationcode\":\"" + station.toUpperCase() + "\"}");
-                            conn.setDoOutput(true);
-                            conn.setDoInput(true);
-                            try (OutputStream os = conn.getOutputStream()) {
-                                os.write(("{\"stationcode\":\"" + station.toUpperCase() + "\"}").getBytes());
-                            }
-                            conn.setConnectTimeout(5000);
-                            conn.connect();
-
-                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                            String line;
-                            while ((line = br.readLine()) != null) {
-                                data += line;
-                            }
-                            trains.put(station, NextTrainUtils.getRoctecTrainData(data, station));
-                        } catch (Exception e) {
-                        }
-                    }
-                };
-
-                CompletableFuture.runAsync(roctec);
-            }
-        };
 
 
         // Check user's code input
@@ -312,11 +276,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         link_tml = AES.decrypt(cipher_tml, code);
 
                         handler.post(runnable);
-                        handler.post(runnable1);
+                        for (String station : stations) {
+                            fetchRoctec(station);
+                        }
                     }).show();
         } else {
             handler.post(runnable);
-            handler.post(runnable1);
+            for (String station : stations) {
+                fetchRoctec(station);
+            }
         }
 
 
@@ -498,9 +466,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    public CompletableFuture<Void> fetchRoctec(String station) {
+        Runnable roctecRunnable = () -> {
+            try {
+                String data = "";
+                URL url = new URL("https://408tq84duh.execute-api.ap-east-1.amazonaws.com/api/service/GetNextTrainData");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("content-type", "application/json");
+                conn.setRequestProperty("data", "{\"stationcode\":\"" + station.toUpperCase() + "\"}");
+                conn.setDoOutput(true);
+                conn.setDoInput(true);
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(("{\"stationcode\":\"" + station.toUpperCase() + "\"}").getBytes());
+                }
+                conn.setConnectTimeout(5000);
+                conn.connect();
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    data += line;
+                }
+                //trains.get(station).clear();
+                trains.put(station, NextTrainUtils.getRoctecTrainData(data, station));
+            } catch (Exception e) {
+            }
+        };
+        return CompletableFuture.runAsync(roctecRunnable);
+    }
+
     public void load() {
         runOnUiThread(() -> {
-            updateStation();
+            updateStations();
         });
 
         for (Trip trip : ealTrips) {
@@ -669,7 +667,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setOnMarkerClickListener(marker -> {
             // Apply NextTrain data
-            updateStation();
+            updateStation(marker);
 
             marker.showInfoWindow();
 
@@ -808,10 +806,81 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             marker.setTag("station:sil");
             stationMap.put(station, marker);
         }
-
     }
 
-    public void updateStation() {
+    public void updateStation(Marker marker) {
+        if (!ealStationMap.containsValue(marker) && !tmlStationMap.containsValue(marker) && !stationMap.containsValue(marker))
+            return;
+
+        Marker mar;
+        // EAL
+        if (ealStationMap.containsValue(marker)) {
+            Map.Entry<String, Marker> entry = ealStationMap.entrySet().stream()
+                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
+            String station = entry.getKey();
+            mar = entry.getValue();
+
+            if (!ealTrains.containsKey(station)) return;
+
+
+            String snippet = "";
+
+            for (Train train : ealTrains.get(station)) {
+                snippet += Utils.getStationName(this, train.dest) + (train.route.equals("RAC") ? " via Racecourse " : " ")
+                        + "," + train.plat + "," + train.ttnt + ";";
+            }
+
+            if (snippet.endsWith(";"))
+                snippet = snippet.substring(0, snippet.length() - 1);
+
+            mar.setSnippet(snippet);
+        }
+        // TML
+        else if (tmlStationMap.containsValue(marker)) {
+            Map.Entry<String, Marker> entry = tmlStationMap.entrySet().stream()
+                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
+            String station = entry.getKey();
+            mar = entry.getValue();
+
+            if (!tmlTrains.containsKey(station)) return;
+
+            String snippet = "";
+
+            for (Train train : tmlTrains.get(station)) {
+                snippet += Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + ";";
+            }
+
+            if (snippet.endsWith(";"))
+                snippet = snippet.substring(0, snippet.length() - 1);
+
+            mar.setSnippet(snippet);
+        }
+        // DUAT
+        else {
+            Map.Entry<String, Marker> entry = stationMap.entrySet().stream()
+                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
+            String station = entry.getKey();
+            mar = entry.getValue();
+
+            if (!trains.containsKey(station)) return;
+
+            fetchRoctec(station).thenRun(() -> {
+                String snippet = "";
+
+                for (Train train : trains.get(station)) {
+                    snippet += Utils.getStationName(this, train.dest) + "," + train.route
+                            + "," + train.plat + "," + train.ttnt + ";";
+                }
+
+                if (snippet.endsWith(";"))
+                    snippet = snippet.substring(0, snippet.length() - 1);
+
+                mar.setSnippet(snippet);
+            });
+        }
+    }
+
+    public void updateStations() {
         for (Map.Entry<String, Marker> entry : ealStationMap.entrySet()) {
             String station = entry.getKey();
             Marker mar = entry.getValue();

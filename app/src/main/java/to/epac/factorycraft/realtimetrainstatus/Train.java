@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 public class Train {
+    public String line;
     public String dir;
     public String station;
     public String seq;
@@ -11,7 +12,8 @@ public class Train {
     public String timetype;
     public String route;
 
-    public Train(String dir, String station, String seq, String time, String dest, String plat, String ttnt, String timetype, String route) {
+    public Train(String line, String dir, String station, String seq, String time, String dest, String plat, String ttnt, String timetype, String route) {
+        this.line = line;
         this.dir = dir;
         this.station = station;
         this.seq = seq;

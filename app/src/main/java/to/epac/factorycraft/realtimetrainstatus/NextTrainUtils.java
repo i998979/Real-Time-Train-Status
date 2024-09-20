@@ -61,7 +61,7 @@ public class NextTrainUtils {
                         } catch (Exception e) {
                         }
 
-                        Train train = new Train(k == 0 ? "UP" : "DN", station, seq, time, dest, plat, ttnt, timetype, route);
+                        Train train = new Train(line, k == 0 ? "UP" : "DN", station, seq, time, dest, plat, ttnt, timetype, route);
                         trains.add(train);
                     }
                 } catch (JSONException e) {
@@ -107,7 +107,7 @@ public class NextTrainUtils {
                         String seq = jsonObject4.getString("seq");
                         String curr_time = jsonObject4.getString("curr_time");
 
-                        Train train = new Train("UP", station, seq, curr_time, destination, plat, ttnt, "", td);
+                        Train train = new Train(line0, "UP", station, seq, curr_time, destination, plat, ttnt, "", td);
                         trains.add(train);
                     }
                 }
