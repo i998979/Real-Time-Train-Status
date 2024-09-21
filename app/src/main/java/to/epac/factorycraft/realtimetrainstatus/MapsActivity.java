@@ -694,7 +694,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             // Set info window close listener to stop runnable
             mMap.setOnInfoWindowCloseListener(marker0 -> {
-                Toast.makeText(this, "Closed", Toast.LENGTH_SHORT).show();
                 handler0.removeCallbacks(runnable);
             });
 
