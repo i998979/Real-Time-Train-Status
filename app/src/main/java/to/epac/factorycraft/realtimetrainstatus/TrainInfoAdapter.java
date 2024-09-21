@@ -30,59 +30,66 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
         View view = null;
 
         if (marker.getSnippet() == null) return null;
+        if (marker.getTag() == null) return null;
 
         String tag = marker.getTag().toString();
         String[] datas = marker.getSnippet().split(";");
 
         // Station layout
         if (tag.startsWith("station")) {
-            if (tag.split(":")[1].equals("eal") || tag.split(":")[1].equals("tml"))
-                view = context.getLayoutInflater().inflate(R.layout.layout_info, null);
-            else
-                view = context.getLayoutInflater().inflate(R.layout.layout_roctec, null);
+            String line = tag.split(":")[1];
+            String station = tag.split(":")[2];
 
+            view = context.getLayoutInflater().inflate((line.equals("eal") || line.equals("tml")) ? R.layout.layout_info : R.layout.layout_roctec, null);
             TableLayout infoLayout = view.findViewById(R.id.infoLayout);
+            TableRow stationRow = view.findViewById(R.id.stationRow);
+            TextView stationTv = view.findViewById(R.id.station);
 
-            for (String train : datas) {
-                String[] data = train.split(",");
+            stationRow.setBackgroundColor(Color.parseColor(Utils.getColor(context, line)));
+            stationTv.setText(Utils.getStationName(context, station));
+
+
+            for (int i = 0; i < datas.length; i++) {
+                String snippet = datas[i];
+                String[] data = snippet.split(",");
 
                 if (data.length <= 1) continue;
 
                 TableRow tableRow = new TableRow(context);
                 tableRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                if (i % 2 != 0) tableRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
-                if (tag.split(":")[1].equals("eal") || tag.split(":")[1].equals("tml")) {
+                if (line.equals("eal") || line.equals("tml")) {
                     TextView dest = new TextView(context);
-                    dest.setTextColor(Color.GRAY);
+                    dest.setTextColor(Color.BLACK);
                     dest.setText(data[0]);
 
                     TextView plat = new TextView(context);
-                    plat.setTextColor(Color.GRAY);
+                    plat.setTextColor(Color.BLACK);
                     plat.setText(data[1]);
 
                     TextView ttnt = new TextView(context);
-                    ttnt.setTextColor(Color.GRAY);
+                    ttnt.setTextColor(Color.BLACK);
                     ttnt.setText(data[2]);
 
                     tableRow.addView(dest);
                     tableRow.addView(plat);
                     tableRow.addView(ttnt);
-                }
-                else {
+                } else {
                     TextView dest = new TextView(context);
-                    dest.setTextColor(Color.GRAY);
+                    dest.setTextColor(Color.BLACK);
                     dest.setText(data[0]);
 
                     TextView td = new TextView(context);
-                    td.setTextColor(Color.GRAY);
+                    td.setTextColor(Color.BLACK);
                     td.setText(data[1]);
 
                     TextView plat = new TextView(context);
-                    plat.setTextColor(Color.GRAY);
+                    plat.setTextColor(Color.BLACK);
                     plat.setText(data[2]);
 
                     TextView ttnt = new TextView(context);
-                    ttnt.setTextColor(Color.GRAY);
+                    ttnt.setTextColor(Color.BLACK);
                     ttnt.setText(data[3]);
 
                     tableRow.addView(dest);

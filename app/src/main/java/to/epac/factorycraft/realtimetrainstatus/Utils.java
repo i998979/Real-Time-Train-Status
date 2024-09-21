@@ -2,6 +2,8 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.app.Activity;
 
+import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -219,8 +221,8 @@ public class Utils {
         }
     }
 
-    public static String getStationName(Activity context, String name) {
-        String[] stations = Arrays.stream((context.getResources().getString(R.string.erl_stations) + " "
+    public static String getStationName(Activity context, String code) {
+        String[] stations = Arrays.stream((context.getResources().getString(R.string.eal_stations) + " "
                         + context.getResources().getString(R.string.tml_stations) + " "
                         + context.getResources().getString(R.string.ktl_stations) + " "
                         + context.getResources().getString(R.string.ael_stations) + " "
@@ -232,7 +234,7 @@ public class Utils {
                         + context.getResources().getString(R.string.sil_stations)).split(" "))
                 .distinct().toArray(String[]::new);
 
-        String[] stations_long = Arrays.stream((context.getResources().getString(R.string.erl_stations_long) + ";"
+        String[] stations_long = Arrays.stream((context.getResources().getString(R.string.eal_stations_long) + ";"
                         + context.getResources().getString(R.string.tml_stations_long) + ";"
                         + context.getResources().getString(R.string.ktl_stations_long) + ";"
                         + context.getResources().getString(R.string.ael_stations_long) + ";"
@@ -245,10 +247,15 @@ public class Utils {
                 .distinct().toArray(String[]::new);
 
         int index = IntStream.range(0, stations.length)
-                .filter(i -> stations[i].equalsIgnoreCase(name))
+                .filter(i -> stations[i].equalsIgnoreCase(code))
                 .findFirst().orElse(Integer.MAX_VALUE);
 
-        return Arrays.stream(stations_long).skip(index).findFirst().orElse(name);
+        return Arrays.stream(stations_long).skip(index).findFirst().orElse(code);
+    }
+
+    public static String getColor(Activity context, String line) {
+        int code = context.getResources().getIdentifier(line, "color", context.getPackageName());
+        return "#" + Integer.toHexString(ContextCompat.getColor(context, code));
     }
 
     public static List<LatLng> getLatLngs(String s) {

@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.NumberPicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -50,19 +51,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // EAL
     public List<Trip> ealTrips;
-    public Map<String, Marker> ealTrainMap;
-    public Map<String, Marker> ealStationMap;
+    public Map<String, Marker> ealTrainMarkers;
+    public Map<String, Marker> ealStationMarkers;
     public Map<String, List<Train>> ealTrains;
     public NumberPicker stationPicker;
     public NumberPicker trainPicker;
 
     // TML
     public List<Trip> tmlTrips;
-    public Map<String, Marker> tmlTrainMap;
-    public Map<String, Marker> tmlStationMap;
+    public Map<String, Marker> tmlTrainMarkers;
+    public Map<String, Marker> tmlStationMarkers;
     public Map<String, List<Train>> tmlTrains;
 
-    public Map<String, Marker> stationMap;
+    public Map<String, Marker> stationMarkers;
     public Map<String, List<Train>> trains;
 
     private GoogleMap mMap;
@@ -104,16 +105,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Initialize variables
         ealTrips = new ArrayList<>();
-        ealTrainMap = new HashMap<>();
-        ealStationMap = new HashMap<>();
+        ealTrainMarkers = new HashMap<>();
+        ealStationMarkers = new HashMap<>();
         ealTrains = new HashMap<>();
 
         tmlTrips = new ArrayList<>();
-        tmlTrainMap = new HashMap<>();
-        tmlStationMap = new HashMap<>();
+        tmlTrainMarkers = new HashMap<>();
+        tmlStationMarkers = new HashMap<>();
         tmlTrains = new HashMap<>();
 
-        stationMap = new HashMap<>();
+        stationMarkers = new HashMap<>();
         trains = new HashMap<>();
 
         mapUtils = new MapUtils(getApplicationContext());
@@ -125,8 +126,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         link_roctec = AES.decrypt(cipher_roctec, code);
 
         // Station names
-        String[] eal_stations = getResources().getString(R.string.erl_stations).split(" ");
-        String[] eal_stations_long = getResources().getString(R.string.erl_stations_long).split(";");
+        String[] eal_stations = getResources().getString(R.string.eal_stations).split(" ");
+        String[] eal_stations_long = getResources().getString(R.string.eal_stations_long).split(";");
         String[] tml_stations = getResources().getString(R.string.tml_stations).split(" ");
         String[] tml_stations_long = getResources().getString(R.string.tml_stations_long).split(";");
         String[] stations = Arrays.stream((getResources().getString(R.string.ktl_stations) + " "
@@ -252,7 +253,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 CompletableFuture.runAsync(tmlNt);
 
                 CompletableFuture.allOf(CompletableFuture.runAsync(ealOv), CompletableFuture.runAsync(tmlOv))
-                        .thenRun(() -> {
+                        .thenRunAsync(() -> {
                             load();
                         });
             }
@@ -280,7 +281,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             fetchRoctec(station);
                         }
                     }).show();
-        } else {
+        }
+        // Already checked
+        else {
             handler.post(runnable);
             for (String station : stations) {
                 fetchRoctec(station);
@@ -330,8 +333,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (stationPicker.getVisibility() == View.VISIBLE) {
                 stationPicker.setValue(0);
                 Marker marker = null;
-                if (line.equals("EAL")) marker = ealStationMap.get(eal_stations[0]);
-                if (line.equals("TML")) marker = tmlStationMap.get(tml_stations[0]);
+                if (line.equals("EAL")) marker = ealStationMarkers.get(eal_stations[0]);
+                if (line.equals("TML")) marker = tmlStationMarkers.get(tml_stations[0]);
 
                 if (marker != null) {
                     CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15f);
@@ -389,11 +392,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Marker marker = null;
                 if (line.equals("EAL"))
                     if (!ealIdList.isEmpty())
-                        marker = ealTrainMap.get(ealIdList.get(0));
+                        marker = ealTrainMarkers.get(ealIdList.get(0));
 
                 if (line.equals("TML"))
                     if (!tmlIdList.isEmpty())
-                        marker = tmlTrainMap.get(tmlIdList.get(0));
+                        marker = tmlTrainMarkers.get(tmlIdList.get(0));
 
 
                 if (marker != null) {
@@ -430,8 +433,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         stationPicker.setOnValueChangedListener((picker, oldVal, newVal) -> {
             Marker marker = null;
-            if (line.equals("EAL")) marker = ealStationMap.get(eal_stations[newVal]);
-            if (line.equals("TML")) marker = tmlStationMap.get(tml_stations[newVal]);
+            if (line.equals("EAL")) marker = ealStationMarkers.get(eal_stations[newVal]);
+            if (line.equals("TML")) marker = tmlStationMarkers.get(tml_stations[newVal]);
 
             if (marker != null) {
                 CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15f);
@@ -452,11 +455,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Marker marker = null;
             if (line.equals("EAL"))
                 if (newVal < ealIdList.size())
-                    marker = ealTrainMap.get(ealIdList.get(newVal));
+                    marker = ealTrainMarkers.get(ealIdList.get(newVal));
 
             if (line.equals("TML"))
                 if (newVal < tmlIdList.size())
-                    marker = tmlTrainMap.get(tmlIdList.get(newVal));
+                    marker = tmlTrainMarkers.get(tmlIdList.get(newVal));
 
 
             if (marker != null) {
@@ -467,7 +470,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public CompletableFuture<Void> fetchRoctec(String station) {
-        Runnable roctecRunnable = () -> {
+        Runnable runnable = () -> {
             try {
                 String data = "";
                 URL url = new URL("https://408tq84duh.execute-api.ap-east-1.amazonaws.com/api/service/GetNextTrainData");
@@ -488,19 +491,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 while ((line = br.readLine()) != null) {
                     data += line;
                 }
-                //trains.get(station).clear();
                 trains.put(station, NextTrainUtils.getRoctecTrainData(data, station));
             } catch (Exception e) {
             }
         };
-        return CompletableFuture.runAsync(roctecRunnable);
+        return CompletableFuture.runAsync(runnable);
     }
 
     public void load() {
-        runOnUiThread(() -> {
-            updateStations();
-        });
+        updateStations();
 
+        // EAL
         for (Trip trip : ealTrips) {
             CompletableFuture.supplyAsync(() -> {
                 return mapUtils.getTrainAt(trip, "EAL");
@@ -508,7 +509,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 runOnUiThread(() -> {
                     if (latLng != null) {
                         // Create a new marker if not exist, or reuse old one if exist
-                        Marker train = ealTrainMap.get(trip.trainId);
+                        Marker train = ealTrainMarkers.get(trip.trainId);
                         if (train == null) {
                             // Default position is required to add a new marker
                             train = mMap.addMarker(new MarkerOptions().position(latLng).zIndex(50).anchor(0.5f, 0.5f));
@@ -547,7 +548,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         // Position
                         train.setPosition(latLng);
 
-                        ealTrainMap.put(trip.trainId, train);
+                        ealTrainMarkers.put(trip.trainId, train);
                     }
                 });
             });
@@ -561,7 +562,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 runOnUiThread(() -> {
                     if (latLng != null) {
                         // Create a new marker if not exist, or reuse old one if exist
-                        Marker train = tmlTrainMap.get(trip.trainId);
+                        Marker train = tmlTrainMarkers.get(trip.trainId);
                         if (train == null) {
                             // Default position is required to add a new marker
                             train = mMap.addMarker(new MarkerOptions().position(latLng).zIndex(50).anchor(0.5f, 0.5f));
@@ -600,7 +601,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         // Position
                         train.setPosition(latLng);
 
-                        tmlTrainMap.put(trip.trainId, train);
+                        tmlTrainMarkers.put(trip.trainId, train);
                     }
                 });
             });
@@ -643,36 +644,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true);
         }
 
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+
         drawLines();
         addStations();
 
         getWindowManager().getDefaultDisplay().getMetrics(new DisplayMetrics());
 
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(new LatLngBounds.Builder()
-                        .include(Utils.getLatLng(getResources().getString(R.string.adm)))
-                        .include(Utils.getLatLng(getResources().getString(R.string.uni)))
-                        .include(Utils.getLatLng(getResources().getString(R.string.low)))
-                        .include(Utils.getLatLng(getResources().getString(R.string.lmc)))
-                        .include(Utils.getLatLng(getResources().getString(R.string.lop)))
-                        .include(Utils.getLatLng(getResources().getString(R.string.tum)))
-                        .include(Utils.getLatLng(getResources().getString(R.string.wks)))
-                        .build(),
-                Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels,
-                250);
+                .include(Utils.getLatLng(getResources().getString(R.string.adm)))
+                .include(Utils.getLatLng(getResources().getString(R.string.uni)))
+                .include(Utils.getLatLng(getResources().getString(R.string.low)))
+                .include(Utils.getLatLng(getResources().getString(R.string.lmc)))
+                .include(Utils.getLatLng(getResources().getString(R.string.lop)))
+                .include(Utils.getLatLng(getResources().getString(R.string.tum)))
+                .include(Utils.getLatLng(getResources().getString(R.string.wks)))
+                .build(), Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels, 250);
         mMap.moveCamera(cu);
 
 
         TrainInfoAdapter trainInfoAdapter = new TrainInfoAdapter(this);
         mMap.setInfoWindowAdapter(trainInfoAdapter);
 
+        Handler handler0 = new Handler();
         mMap.setOnMarkerClickListener(marker -> {
             // Apply NextTrain data
             updateStation(marker);
 
+            // Update roctec data every 5 seconds
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    Map.Entry<String, Marker> entry = stationMarkers.entrySet().stream()
+                            .filter(ent -> ent.getValue().equals(marker)).findFirst().orElse(null);
+                    if (entry == null) return;
+
+                    String station = entry.getKey();
+                    Marker mar = entry.getValue();
+
+                    handler0.postDelayed(this, 5000);
+                    fetchRoctec(station);
+                }
+            };
+            handler0.post(runnable);
+
+            // Show info window
             marker.showInfoWindow();
+
+
+            // Set info window close listener to stop runnable
+            mMap.setOnInfoWindowCloseListener(marker0 -> {
+                Toast.makeText(this, "Closed", Toast.LENGTH_SHORT).show();
+                handler0.removeCallbacks(runnable);
+            });
+
 
             return false;
         });
+
     }
 
     @SuppressLint("MissingPermission")
@@ -692,29 +721,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     public void drawLines() {
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_main)), "#5eb7e8");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_rac)), "#5eb7e8");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.erl_lmc)), "#5eb7e8");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.tml_main)), "#9c2e00");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.ktl_main)), "#00a040");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.ael_main)), "#00888e");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.drl_main)), "#eb6ea5");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.isl_main)), "#0075c2");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.tcl_main)), "#f3982d");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.tkl_main)), "#7e3c93");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.twl_main)), "#e60012");
-        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getResources().getString(R.string.sil_main)), "#cbd300");
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_main)), Utils.getColor(this, "eal"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_rac)), Utils.getColor(this, "eal"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_lmc)), Utils.getColor(this, "eal"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.tml_main)), Utils.getColor(this, "tml"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.ktl_main)), Utils.getColor(this, "ktl"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.ael_main)), Utils.getColor(this, "ael"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.drl_main)), Utils.getColor(this, "drl"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.isl_main)), Utils.getColor(this, "isl"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.tcl_main)), Utils.getColor(this, "tcl"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.tkl_main)), Utils.getColor(this, "tkl"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.twl_main)), Utils.getColor(this, "twl"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.sil_main)), Utils.getColor(this, "sil"));
     }
 
     public void addStations() {
-        for (String station : getResources().getString(R.string.erl_stations).split(" ")) {
+        for (String station : getResources().getString(R.string.eal_stations).split(" ")) {
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:eal");
-            ealStationMap.put(station, marker);
+            marker.setTag("station:eal:" + station);
+            ealStationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.tml_stations).split(" ")) {
@@ -723,18 +752,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tml");
-            tmlStationMap.put(station, marker);
+            marker.setTag("station:tml:" + station);
+            tmlStationMarkers.putIfAbsent(station, marker);
         }
 
+        // TODO: Fix empty marker info window due to multiple station marker is created
         for (String station : getResources().getString(R.string.ktl_stations).split(" ")) {
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ktl");
-            stationMap.put(station, marker);
+            marker.setTag("station:ktl:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.ael_stations).split(" ")) {
@@ -743,8 +773,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ael");
-            stationMap.put(station, marker);
+            marker.setTag("station:ael:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.drl_stations).split(" ")) {
@@ -753,8 +783,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:drl");
-            stationMap.put(station, marker);
+            marker.setTag("station:drl:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.isl_stations).split(" ")) {
@@ -763,8 +793,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:isl");
-            stationMap.put(station, marker);
+            marker.setTag("station:isl:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.tcl_stations).split(" ")) {
@@ -773,8 +803,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tcl");
-            stationMap.put(station, marker);
+            marker.setTag("station:tcl:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.tkl_stations).split(" ")) {
@@ -783,8 +813,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tkl");
-            stationMap.put(station, marker);
+            marker.setTag("station:tkl:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.twl_stations).split(" ")) {
@@ -793,8 +823,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:twl");
-            stationMap.put(station, marker);
+            marker.setTag("station:twl:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
 
         for (String station : getResources().getString(R.string.sil_stations).split(" ")) {
@@ -803,19 +833,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:sil");
-            stationMap.put(station, marker);
+            marker.setTag("station:sil:" + station);
+            stationMarkers.putIfAbsent(station, marker);
         }
     }
 
     public void updateStation(Marker marker) {
-        if (!ealStationMap.containsValue(marker) && !tmlStationMap.containsValue(marker) && !stationMap.containsValue(marker))
+        if (!ealStationMarkers.containsValue(marker) && !tmlStationMarkers.containsValue(marker) && !stationMarkers.containsValue(marker))
             return;
 
         Marker mar;
         // EAL
-        if (ealStationMap.containsValue(marker)) {
-            Map.Entry<String, Marker> entry = ealStationMap.entrySet().stream()
+        if (ealStationMarkers.containsValue(marker)) {
+            Map.Entry<String, Marker> entry = ealStationMarkers.entrySet().stream()
                     .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
             String station = entry.getKey();
             mar = entry.getValue();
@@ -830,14 +860,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         + "," + train.plat + "," + train.ttnt + ";";
             }
 
-            if (snippet.endsWith(";"))
-                snippet = snippet.substring(0, snippet.length() - 1);
-
             mar.setSnippet(snippet);
         }
         // TML
-        else if (tmlStationMap.containsValue(marker)) {
-            Map.Entry<String, Marker> entry = tmlStationMap.entrySet().stream()
+        else if (tmlStationMarkers.containsValue(marker)) {
+            Map.Entry<String, Marker> entry = tmlStationMarkers.entrySet().stream()
                     .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
             String station = entry.getKey();
             mar = entry.getValue();
@@ -850,14 +877,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 snippet += Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + ";";
             }
 
-            if (snippet.endsWith(";"))
-                snippet = snippet.substring(0, snippet.length() - 1);
-
             mar.setSnippet(snippet);
         }
         // DUAT
         else {
-            Map.Entry<String, Marker> entry = stationMap.entrySet().stream()
+            Map.Entry<String, Marker> entry = stationMarkers.entrySet().stream()
                     .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
             String station = entry.getKey();
             mar = entry.getValue();
@@ -868,12 +892,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String snippet = "";
 
                 for (Train train : trains.get(station)) {
-                    snippet += Utils.getStationName(this, train.dest) + "," + train.route
-                            + "," + train.plat + "," + train.ttnt + ";";
+                    snippet += Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + ";";
                 }
-
-                if (snippet.endsWith(";"))
-                    snippet = snippet.substring(0, snippet.length() - 1);
 
                 mar.setSnippet(snippet);
             });
@@ -881,7 +901,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void updateStations() {
-        for (Map.Entry<String, Marker> entry : ealStationMap.entrySet()) {
+        for (Map.Entry<String, Marker> entry : ealStationMarkers.entrySet()) {
             String station = entry.getKey();
             Marker mar = entry.getValue();
 
@@ -894,13 +914,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         + "," + train.plat + "," + train.ttnt + ";";
             }
 
-            if (snippet.endsWith(";"))
-                snippet = snippet.substring(0, snippet.length() - 1);
-
-            mar.setSnippet(snippet);
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
         }
 
-        for (Map.Entry<String, Marker> entry : tmlStationMap.entrySet()) {
+        for (Map.Entry<String, Marker> entry : tmlStationMarkers.entrySet()) {
             String station = entry.getKey();
             Marker mar = entry.getValue();
 
@@ -912,13 +932,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 snippet += Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + ";";
             }
 
-            if (snippet.endsWith(";"))
-                snippet = snippet.substring(0, snippet.length() - 1);
-
-            mar.setSnippet(snippet);
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
         }
 
-        for (Map.Entry<String, Marker> entry : stationMap.entrySet()) {
+        for (Map.Entry<String, Marker> entry : stationMarkers.entrySet()) {
             String station = entry.getKey();
             Marker mar = entry.getValue();
 
@@ -927,14 +947,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String snippet = "";
 
             for (Train train : trains.get(station)) {
-                snippet += Utils.getStationName(this, train.dest) + "," + train.route
-                        + "," + train.plat + "," + train.ttnt + ";";
+                snippet += Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + ";";
             }
 
-            if (snippet.endsWith(";"))
-                snippet = snippet.substring(0, snippet.length() - 1);
-
-            mar.setSnippet(snippet);
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
         }
     }
 }

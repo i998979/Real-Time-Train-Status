@@ -37,7 +37,7 @@ public class MapUtils {
      */
     public LatLng[] getClosestSector(LatLng latLng, String line) {
         // Retrieve all sector points
-        List<LatLng> sectorPoints = Utils.getLatLngs(ctx.getResources().getString(line.equals("EAL") ? R.string.erl_main : R.string.tml_main));
+        List<LatLng> sectorPoints = Utils.getLatLngs(ctx.getResources().getString(line.equals("EAL") ? R.string.eal_main : R.string.tml_main));
 
         // Closes sector
         LatLng[] closestSector = new LatLng[2];
@@ -76,7 +76,7 @@ public class MapUtils {
     public List<LatLng> getAllSectorPointsBetween(LatLng from, LatLng to, String line) {
         List<LatLng> latLngs = new ArrayList<>();
 
-        List<LatLng> sectors = Utils.getLatLngs(ctx.getResources().getString(line.equals("EAL") ? R.string.erl_main : R.string.tml_main));
+        List<LatLng> sectors = Utils.getLatLngs(ctx.getResources().getString(line.equals("EAL") ? R.string.eal_main : R.string.tml_main));
 
         LatLng[] fromSector = getClosestSector(from, line);
         LatLng[] toSector = getClosestSector(to, line);
