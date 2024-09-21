@@ -742,7 +742,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:eal:" + station);
-            ealStationMarkers.putIfAbsent(station, marker);
+            ealStationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.tml_stations).split(" ")) {
@@ -752,7 +752,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:tml:" + station);
-            tmlStationMarkers.putIfAbsent(station, marker);
+            tmlStationMarkers.put(station, marker);
         }
 
         // TODO: Fix empty marker info window due to multiple station marker is created
@@ -763,7 +763,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:ktl:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.ael_stations).split(" ")) {
@@ -773,7 +773,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:ael:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.drl_stations).split(" ")) {
@@ -783,7 +783,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:drl:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.isl_stations).split(" ")) {
@@ -793,7 +793,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:isl:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.tcl_stations).split(" ")) {
@@ -803,7 +803,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:tcl:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.tkl_stations).split(" ")) {
@@ -813,7 +813,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:tkl:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.twl_stations).split(" ")) {
@@ -823,7 +823,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:twl:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
 
         for (String station : getResources().getString(R.string.sil_stations).split(" ")) {
@@ -833,7 +833,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:sil:" + station);
-            stationMarkers.putIfAbsent(station, marker);
+            stationMarkers.put(station, marker);
         }
     }
 
