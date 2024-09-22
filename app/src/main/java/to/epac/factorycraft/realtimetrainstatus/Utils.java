@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.app.Activity;
+import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
@@ -253,8 +254,41 @@ public class Utils {
         return Arrays.stream(stations_long).skip(index).findFirst().orElse(code);
     }
 
+    public static String getLineName(String code) {
+        switch (code.toLowerCase()) {
+            case "eal":
+            case "nsl":
+            case "erl":
+                return "East Rail Line";
+            case "tml":
+            case "ewl":
+                return "Tuen Ma Line";
+            case "ktl":
+                return "Kwun Tong Line";
+            case "ael":
+                return "Airport Express Line";
+            case "drl":
+                return "Disneyland Resort Line";
+            case "isl":
+                return "Island Line";
+            case "tcl":
+                return "Tung Chung Line";
+            case "tkl":
+                return "Tseung Kwan O Line";
+            case "twl":
+                return "Tsuen Wan Line";
+            case "sil":
+                return "South Island Line";
+            default:
+                return code;
+        }
+    }
+
     public static String getColor(Activity context, String line) {
-        int code = context.getResources().getIdentifier(line, "color", context.getPackageName());
+        if (line.equalsIgnoreCase("nsl") || line.equalsIgnoreCase("erl")) line = "eal";
+        if (line.equalsIgnoreCase("ewl")) line = "tml";
+
+        int code = context.getResources().getIdentifier(line.toLowerCase(), "color", context.getPackageName());
         return "#" + Integer.toHexString(ContextCompat.getColor(context, code));
     }
 

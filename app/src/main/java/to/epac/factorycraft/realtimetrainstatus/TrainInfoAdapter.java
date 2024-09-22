@@ -2,8 +2,10 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -41,48 +43,34 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
             String station = tag.split(":")[2];
 
             view = context.getLayoutInflater().inflate((line.equals("eal") || line.equals("tml")) ? R.layout.layout_info : R.layout.layout_roctec, null);
-            TableLayout infoLayout = view.findViewById(R.id.infoLayout);
-            TableRow stationRow = view.findViewById(R.id.stationRow);
-            TextView stationTv = view.findViewById(R.id.station);
 
-            stationRow.setBackgroundColor(Color.parseColor(Utils.getColor(context, line)));
+            TableLayout infoLayout = view.findViewById(R.id.infoLayout);
+            TextView lastUpdateTv = infoLayout.findViewById(R.id.lastUpdate);
+
+
+            // Set station name and background color
+            TableRow stationRow = view.findViewById(R.id.stationRow);
+            stationRow.setBackgroundColor(Color.GRAY);
+            TextView stationTv = view.findViewById(R.id.station);
             stationTv.setText(Utils.getStationName(context, station));
 
 
+            String roctecLine = "";
             for (int i = 0; i < datas.length; i++) {
                 String snippet = datas[i];
                 String[] data = snippet.split(",");
 
                 if (data.length <= 1) continue;
 
-                TableRow tableRow = new TableRow(context);
-                tableRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                if (i % 2 != 0) tableRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
+                TableRow trainRow = new TableRow(context);
+                trainRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
+                if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
+                // NextTrain
                 if (line.equals("eal") || line.equals("tml")) {
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
-                    dest.setText(data[0]);
-
-                    TextView plat = new TextView(context);
-                    plat.setTextColor(Color.BLACK);
-                    plat.setText(data[1]);
-
-                    TextView ttnt = new TextView(context);
-                    ttnt.setTextColor(Color.BLACK);
-                    ttnt.setText(data[2]);
-
-                    tableRow.addView(dest);
-                    tableRow.addView(plat);
-                    tableRow.addView(ttnt);
-                } else {
-                    TextView dest = new TextView(context);
-                    dest.setTextColor(Color.BLACK);
-                    dest.setText(data[0]);
-
-                    TextView td = new TextView(context);
-                    td.setTextColor(Color.BLACK);
-                    td.setText(data[1]);
+                    dest.setText(data[1]);
 
                     TextView plat = new TextView(context);
                     plat.setTextColor(Color.BLACK);
@@ -92,13 +80,60 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     ttnt.setTextColor(Color.BLACK);
                     ttnt.setText(data[3]);
 
-                    tableRow.addView(dest);
-                    tableRow.addView(td);
-                    tableRow.addView(plat);
-                    tableRow.addView(ttnt);
+                    lastUpdateTv.setText(data[4]);
+
+                    trainRow.addView(dest);
+                    trainRow.addView(plat);
+                    trainRow.addView(ttnt);
+                }
+                // Roctec
+                else {
+                    if (roctecLine.isEmpty() || !roctecLine.equals(data[0])) {
+                        roctecLine = data[0];
+
+                        TableRow lineRow = new TableRow(context);
+
+                        TextView lineTv = new TextView(context);
+                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(context, data[0])));
+                        lineTv.setTextColor(Color.WHITE);
+                        lineTv.setTypeface(null, Typeface.BOLD);
+                        lineTv.setText(Utils.getLineName(data[0]));
+
+                        lineRow.addView(lineTv);
+                        infoLayout.addView(lineRow);
+
+                        TableRow.LayoutParams params = (TableRow.LayoutParams) lineTv.getLayoutParams();
+                        params.span = 4;
+                        lineTv.setLayoutParams(params);
+                    }
+
+
+                    TextView dest = new TextView(context);
+                    dest.setTextColor(Color.BLACK);
+                    dest.setText(data[1]);
+
+                    TextView td = new TextView(context);
+                    td.setTextColor(Color.BLACK);
+                    td.setText(data[2]);
+
+                    TextView plat = new TextView(context);
+                    plat.setTextColor(Color.BLACK);
+                    plat.setText(data[3]);
+
+                    TextView ttnt = new TextView(context);
+                    ttnt.setTextColor(Color.BLACK);
+                    ttnt.setText(data[4]);
+
+                    lastUpdateTv.setText(data[5]);
+
+
+                    trainRow.addView(dest);
+                    trainRow.addView(td);
+                    trainRow.addView(plat);
+                    trainRow.addView(ttnt);
                 }
 
-                infoLayout.addView(tableRow);
+                infoLayout.addView(trainRow);
             }
         }
 

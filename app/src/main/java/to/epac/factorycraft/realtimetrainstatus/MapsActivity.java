@@ -10,11 +10,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.NumberPicker;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -637,7 +637,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @SuppressLint({"MissingPermission", "PotentialBehaviorOverride"})
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         if (checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -668,10 +668,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Handler handler0 = new Handler();
         mMap.setOnMarkerClickListener(marker -> {
-            // Apply NextTrain data
+            // Apply marker with existing data
             updateStation(marker);
 
-            // Update roctec data every 5 seconds
+            // Update Roctec data every 5 seconds
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
@@ -682,15 +682,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     String station = entry.getKey();
                     Marker mar = entry.getValue();
 
-                    handler0.postDelayed(this, 5000);
-                    fetchRoctec(station);
+                    fetchRoctec(station).thenRun(() -> {
+                        // Update marker with updated data
+                        updateStation(marker);
+                        handler0.postDelayed(this, 5000);
+                    });
                 }
             };
             handler0.post(runnable);
 
             // Show info window
             marker.showInfoWindow();
-
 
             // Set info window close listener to stop runnable
             mMap.setOnInfoWindowCloseListener(marker0 -> {
@@ -718,6 +720,134 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true);
     }
 
+
+    /**
+     * Update specified station marker with existing data
+     *
+     * @param marker Marker to update
+     */
+    public void updateStation(Marker marker) {
+        if (!ealStationMarkers.containsValue(marker) && !tmlStationMarkers.containsValue(marker) && !stationMarkers.containsValue(marker))
+            return;
+
+        Marker mar;
+        // EAL
+        if (ealStationMarkers.containsValue(marker)) {
+            Map.Entry<String, Marker> entry = ealStationMarkers.entrySet().stream()
+                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
+            String station = entry.getKey();
+            mar = entry.getValue();
+
+            if (!ealTrains.containsKey(station)) return;
+
+
+            String snippet = "";
+            for (Train train : ealTrains.get(station)) {
+                snippet += train.line + "," + Utils.getStationName(this, train.dest) + (train.route.equals("RAC") ? " via Racecourse " : " ")
+                        + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            }
+
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
+        }
+        // TML
+        else if (tmlStationMarkers.containsValue(marker)) {
+            Map.Entry<String, Marker> entry = tmlStationMarkers.entrySet().stream()
+                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
+            String station = entry.getKey();
+            mar = entry.getValue();
+
+            if (!tmlTrains.containsKey(station)) return;
+
+            String snippet = "";
+            for (Train train : tmlTrains.get(station)) {
+                snippet += train.line + "," + Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            }
+
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
+        }
+        // DUAT
+        else {
+            Map.Entry<String, Marker> entry = stationMarkers.entrySet().stream()
+                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
+            String station = entry.getKey();
+            mar = entry.getValue();
+
+            if (!trains.containsKey(station)) return;
+
+            String snippet = "";
+            for (Train train : trains.get(station)) {
+                snippet += train.line + "," + Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            }
+
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
+        }
+    }
+
+    /**
+     * Update all station markers with existing data
+     */
+    public void updateStations() {
+        for (Map.Entry<String, Marker> entry : ealStationMarkers.entrySet()) {
+            String station = entry.getKey();
+            Marker mar = entry.getValue();
+
+            if (!ealTrains.containsKey(station)) continue;
+
+            String snippet = "";
+            for (Train train : ealTrains.get(station)) {
+                snippet += train.line + "," + Utils.getStationName(this, train.dest) + (train.route.equals("RAC") ? " via Racecourse " : " ")
+                        + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            }
+
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
+        }
+
+        for (Map.Entry<String, Marker> entry : tmlStationMarkers.entrySet()) {
+            String station = entry.getKey();
+            Marker mar = entry.getValue();
+
+            if (!tmlTrains.containsKey(station)) continue;
+
+            String snippet = "";
+            for (Train train : tmlTrains.get(station)) {
+                snippet += train.line + "," + Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            }
+
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
+        }
+
+        for (Map.Entry<String, Marker> entry : stationMarkers.entrySet()) {
+            String station = entry.getKey();
+            Marker mar = entry.getValue();
+
+            if (!trains.containsKey(station)) continue;
+
+            String snippet = "";
+            for (Train train : trains.get(station)) {
+                snippet += train.line + "," + Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            }
+
+            String snippet0 = snippet;
+            runOnUiThread(() -> {
+                mar.setSnippet(snippet0);
+            });
+        }
+    }
 
     public void drawLines() {
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_main)), Utils.getColor(this, "eal"));
@@ -834,125 +964,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:sil:" + station);
             stationMarkers.put(station, marker);
-        }
-    }
-
-    public void updateStation(Marker marker) {
-        if (!ealStationMarkers.containsValue(marker) && !tmlStationMarkers.containsValue(marker) && !stationMarkers.containsValue(marker))
-            return;
-
-        Marker mar;
-        // EAL
-        if (ealStationMarkers.containsValue(marker)) {
-            Map.Entry<String, Marker> entry = ealStationMarkers.entrySet().stream()
-                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
-            String station = entry.getKey();
-            mar = entry.getValue();
-
-            if (!ealTrains.containsKey(station)) return;
-
-
-            String snippet = "";
-
-            for (Train train : ealTrains.get(station)) {
-                snippet += Utils.getStationName(this, train.dest) + (train.route.equals("RAC") ? " via Racecourse " : " ")
-                        + "," + train.plat + "," + train.ttnt + ";";
-            }
-
-            mar.setSnippet(snippet);
-        }
-        // TML
-        else if (tmlStationMarkers.containsValue(marker)) {
-            Map.Entry<String, Marker> entry = tmlStationMarkers.entrySet().stream()
-                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
-            String station = entry.getKey();
-            mar = entry.getValue();
-
-            if (!tmlTrains.containsKey(station)) return;
-
-            String snippet = "";
-
-            for (Train train : tmlTrains.get(station)) {
-                snippet += Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + ";";
-            }
-
-            mar.setSnippet(snippet);
-        }
-        // DUAT
-        else {
-            Map.Entry<String, Marker> entry = stationMarkers.entrySet().stream()
-                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
-            String station = entry.getKey();
-            mar = entry.getValue();
-
-            if (!trains.containsKey(station)) return;
-
-            fetchRoctec(station).thenRun(() -> {
-                String snippet = "";
-
-                for (Train train : trains.get(station)) {
-                    snippet += Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + ";";
-                }
-
-                mar.setSnippet(snippet);
-            });
-        }
-    }
-
-    public void updateStations() {
-        for (Map.Entry<String, Marker> entry : ealStationMarkers.entrySet()) {
-            String station = entry.getKey();
-            Marker mar = entry.getValue();
-
-            if (!ealTrains.containsKey(station)) continue;
-
-            String snippet = "";
-
-            for (Train train : ealTrains.get(station)) {
-                snippet += Utils.getStationName(this, train.dest) + (train.route.equals("RAC") ? " via Racecourse " : " ")
-                        + "," + train.plat + "," + train.ttnt + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
-            });
-        }
-
-        for (Map.Entry<String, Marker> entry : tmlStationMarkers.entrySet()) {
-            String station = entry.getKey();
-            Marker mar = entry.getValue();
-
-            if (!tmlTrains.containsKey(station)) continue;
-
-            String snippet = "";
-
-            for (Train train : tmlTrains.get(station)) {
-                snippet += Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
-            });
-        }
-
-        for (Map.Entry<String, Marker> entry : stationMarkers.entrySet()) {
-            String station = entry.getKey();
-            Marker mar = entry.getValue();
-
-            if (!trains.containsKey(station)) continue;
-
-            String snippet = "";
-
-            for (Train train : trains.get(station)) {
-                snippet += Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
-            });
         }
     }
 }

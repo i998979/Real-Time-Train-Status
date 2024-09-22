@@ -8,7 +8,7 @@
     <TableRow
         android:id="@+id/stationRow"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="#FFFFFF"
         android:gravity="center">
 
@@ -23,8 +23,27 @@
     </TableRow>
 
     <TableRow
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right"
+            android:text="Last Update: " />
+
+        <TextView
+            android:id="@+id/lastUpdate"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="right" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#02254D">
 
         <TextView
             android:id="@+id/dest"
@@ -32,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Destination "
-            android:textColor="#000000"
+            android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -42,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Trip No. "
-            android:textColor="#000000"
+            android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -52,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Platform "
-            android:textColor="#000000"
+            android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -62,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="TTNT"
-            android:textColor="#000000"
+            android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />
 
