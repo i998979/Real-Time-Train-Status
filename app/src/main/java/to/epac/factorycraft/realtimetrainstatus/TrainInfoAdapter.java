@@ -44,15 +44,15 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
 
             view = context.getLayoutInflater().inflate((line.equals("eal") || line.equals("tml")) ? R.layout.layout_info : R.layout.layout_roctec, null);
 
-            TableLayout infoLayout = view.findViewById(R.id.infoLayout);
+            LinearLayout infoLayout = view.findViewById(R.id.infoLayout);
+            TableLayout stationLayout = view.findViewById(R.id.stationLayout);
             TextView lastUpdateTv = infoLayout.findViewById(R.id.lastUpdate);
 
 
             // Set station name and background color
-            TableRow stationRow = view.findViewById(R.id.stationRow);
-            stationRow.setBackgroundColor(Color.GRAY);
             TextView stationTv = view.findViewById(R.id.station);
             stationTv.setText(Utils.getStationName(context, station));
+            stationTv.setBackgroundColor(Color.GRAY);
 
 
             String roctecLine = "";
@@ -102,7 +102,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                         lineTv.setText(Utils.getLineName(data[0]));
 
                         lineRow.addView(lineTv);
-                        infoLayout.addView(lineRow);
+                        stationLayout.addView(lineRow);
 
                         TableRow.LayoutParams params = (TableRow.LayoutParams) lineTv.getLayoutParams();
                         params.span = 4;
@@ -138,7 +138,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     trainRow.addView(ttnt);
                 }
 
-                infoLayout.addView(trainRow);
+                   stationLayout.addView(trainRow);
                 i++;
             }
         }
