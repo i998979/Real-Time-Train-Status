@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -57,7 +56,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
 
             String roctecLine = "";
             int i = 0;
-               for (String snippet : datas) {
+            for (String snippet : datas) {
                 String[] data = snippet.split(",");
 
                 if (data.length <= 1) continue;
@@ -87,6 +86,8 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     trainRow.addView(dest);
                     trainRow.addView(plat);
                     trainRow.addView(ttnt);
+
+                    infoLayout.addView(trainRow);
                 }
                 // Roctec
                 else {
@@ -136,9 +137,10 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     trainRow.addView(td);
                     trainRow.addView(plat);
                     trainRow.addView(ttnt);
+
+                    stationLayout.addView(trainRow);
                 }
 
-                   stationLayout.addView(trainRow);
                 i++;
             }
         }
