@@ -56,18 +56,20 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
 
 
             String roctecLine = "";
-            for (int i = 0; i < datas.length; i++) {
-                String snippet = datas[i];
+            int i = 0;
+               for (String snippet : datas) {
                 String[] data = snippet.split(",");
 
                 if (data.length <= 1) continue;
 
                 TableRow trainRow = new TableRow(context);
                 trainRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
-                if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
                 // NextTrain
                 if (line.equals("eal") || line.equals("tml")) {
+                    if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
+
+
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
                     dest.setText(data[1]);
@@ -105,8 +107,11 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                         TableRow.LayoutParams params = (TableRow.LayoutParams) lineTv.getLayoutParams();
                         params.span = 4;
                         lineTv.setLayoutParams(params);
+
+                        i = 0;
                     }
 
+                    if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
@@ -134,6 +139,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                 }
 
                 infoLayout.addView(trainRow);
+                i++;
             }
         }
 
