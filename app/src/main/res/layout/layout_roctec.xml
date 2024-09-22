@@ -31,13 +31,15 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="right"
-            android:text="Last Update: " />
+            android:text="Last Update: "
+            android:textColor="@android:color/darker_gray" />
 
         <TextView
             android:id="@+id/lastUpdate"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:gravity="right" />
+            android:gravity="right"
+            android:textColor="@android:color/darker_gray" />
     </TableRow>
 
     <TableRow
