@@ -68,7 +68,6 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                 if (line.equals("eal") || line.equals("tml")) {
                     if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
-
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
                     dest.setText(data[1]);
