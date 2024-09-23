@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -885,8 +884,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             tmlStationMarkers.put(station, marker);
         }
 
-        // TODO: Fix empty marker info window due to multiple station marker is created
         for (String station : getResources().getString(R.string.ktl_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
@@ -897,6 +897,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         for (String station : getResources().getString(R.string.ael_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
@@ -907,6 +909,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         for (String station : getResources().getString(R.string.drl_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
@@ -917,6 +921,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         for (String station : getResources().getString(R.string.isl_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
@@ -927,6 +933,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         for (String station : getResources().getString(R.string.tcl_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
@@ -937,6 +945,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         for (String station : getResources().getString(R.string.tkl_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
@@ -947,6 +957,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         for (String station : getResources().getString(R.string.twl_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
@@ -957,6 +969,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         for (String station : getResources().getString(R.string.sil_stations).split(" ")) {
+            if (stationMarkers.containsKey(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)

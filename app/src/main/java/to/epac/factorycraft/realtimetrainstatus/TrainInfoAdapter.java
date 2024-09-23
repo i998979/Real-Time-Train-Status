@@ -86,7 +86,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     trainRow.addView(plat);
                     trainRow.addView(ttnt);
 
-                    infoLayout.addView(trainRow);
+                    stationLayout.addView(trainRow);
                 }
                 // Roctec
                 else {
