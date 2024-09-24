@@ -54,6 +54,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
             stationTv.setBackgroundColor(Color.GRAY);
 
 
+            String serverLine = "";
             String roctecLine = "";
             int i = 0;
             for (String snippet : datas) {
@@ -66,6 +67,27 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
 
                 // NextTrain
                 if (line.equals("eal") || line.equals("tml")) {
+                    if (serverLine.isEmpty() || !serverLine.equals(data[0])) {
+                        serverLine = line;
+
+                        TableRow lineRow = new TableRow(context);
+
+                        TextView lineTv = new TextView(context);
+                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(context, line)));
+                        lineTv.setTextColor(Color.WHITE);
+
+                        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1);
+                        params.span = 3;
+                        lineTv.setLayoutParams(params);
+                        lineTv.setTypeface(null, Typeface.BOLD);
+                        lineTv.setText(Utils.getLineName(line));
+
+                        lineRow.addView(lineTv);
+                        stationLayout.addView(lineRow);
+
+                        i = 0;
+                    }
+
                     if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
                     TextView dest = new TextView(context);
@@ -99,17 +121,17 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                         TableRow lineRow = new TableRow(context);
 
                         TextView lineTv = new TextView(context);
-                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(context, data[0])));
+                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(context, roctecLine)));
                         lineTv.setTextColor(Color.WHITE);
+
+                        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1);
+                        params.span = 4;
+                        lineTv.setLayoutParams(params);
                         lineTv.setTypeface(null, Typeface.BOLD);
-                        lineTv.setText(Utils.getLineName(data[0]));
+                        lineTv.setText(Utils.getLineName(roctecLine));
 
                         lineRow.addView(lineTv);
                         stationLayout.addView(lineRow);
-
-                        TableRow.LayoutParams params = (TableRow.LayoutParams) lineTv.getLayoutParams();
-                        params.span = 4;
-                        lineTv.setLayoutParams(params);
 
                         i = 0;
                     }
