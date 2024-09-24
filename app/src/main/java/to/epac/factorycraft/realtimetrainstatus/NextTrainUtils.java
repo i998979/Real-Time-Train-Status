@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class NextTrainUtils {
-
     public static List<Train> getTrainData(String data, String line, String station) {
         List<Train> trains = new ArrayList<>();
 

@@ -46,7 +46,6 @@
             android:background="#02254D">
 
             <TextView
-                android:id="@+id/dest0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -56,7 +55,6 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/plat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -66,7 +64,6 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/ttnt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
