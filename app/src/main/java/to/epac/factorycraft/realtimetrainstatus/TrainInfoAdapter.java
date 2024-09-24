@@ -70,14 +70,17 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
 
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
+                    dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     dest.setText(data[1]);
 
                     TextView plat = new TextView(context);
                     plat.setTextColor(Color.BLACK);
+                    plat.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     plat.setText(data[2]);
 
                     TextView ttnt = new TextView(context);
                     ttnt.setTextColor(Color.BLACK);
+                    ttnt.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     ttnt.setText(data[3]);
 
                     lastUpdateTv.setText(data[4]);
@@ -115,18 +118,22 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
 
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
+                    dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     dest.setText(data[1]);
 
                     TextView td = new TextView(context);
                     td.setTextColor(Color.BLACK);
+                    td.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     td.setText(data[2]);
 
                     TextView plat = new TextView(context);
                     plat.setTextColor(Color.BLACK);
+                    plat.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     plat.setText(data[3]);
 
                     TextView ttnt = new TextView(context);
                     ttnt.setTextColor(Color.BLACK);
+                    ttnt.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     ttnt.setText(data[4]);
 
                     lastUpdateTv.setText(data[5]);
