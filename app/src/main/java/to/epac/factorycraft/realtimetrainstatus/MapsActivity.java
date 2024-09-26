@@ -79,10 +79,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String link_tml = "";
     private String link_roctec = "";
     // link + code = cipher
-    private final String cipher_eal = "7hZOAWENNiAjv2M31HzdClndtJ6Aj9Z7LVyrMAdqy9tp+15Z859kS0PCjtVmGGdl";
-    private final String cipher_tml = "RoXQs1jcAUiiHtLN35D9oV+kKWtyR0pyto5PTYW31Cjdzqf8iRV9C5PM+VjBAdZLE2LBnVl0a2sBvd1hjJ5EvnO1wBvpepansIYDKHCiPODboqQKelCXVn+WWAK1Q41+";
-    private final String cipher_roctec = "cs+fuB90xVnOJAyJgOgq/JrRGaJDEN+MTd0o8a0zBpE6Az690j4ZJngdcNtAUTEK";
+    private String cipher_eal = "7hZOAWENNiAjv2M31HzdClndtJ6Aj9Z7LVyrMAdqy9tp+15Z859kS0PCjtVmGGdl";
+    private String cipher_tml = "RoXQs1jcAUiiHtLN35D9oV+kKWtyR0pyto5PTYW31Cjdzqf8iRV9C5PM+VjBAdZLE2LBnVl0a2sBvd1hjJ5EvnO1wBvpepansIYDKHCiPODboqQKelCXVn+WWAK1Q41+";
+    private String cipher_roctec = "cs+fuB90xVnOJAyJgOgq/JrRGaJDEN+MTd0o8a0zBpE6Az690j4ZJngdcNtAUTEK";
+
     // link + secret = encrypted
+    // encrypted is used to compare whether the entered code is correct
+    private final String encrypted_line = "VHY8MfHd/JiXCL0glJlYfrEVypcL9cV2Uo7ybUvYfH01hoig6iEkyMJZu4SnhliJ4EkrR+rCIFBoPSnDmtWM9ec5nGHboU5zL4ZwMT4jDhLpoAXlElJy7AcFRuPYKFhmE6Cqm3q7gXMsjIcUzIKAKw==";
     private final String encrypted_eal = "wt2wS84uiY8qZrmJUO4Vl8FCiVoYnrfqmLuYCSfzQ6gYcM246hUutb6ZqSjn1x1O";
     private final String encrypted_tml = "e7gg+sJ4PRy3zatp8dI8ys1VRSj/UxdA4vWoXjah6tiS5XSGc1SSwiHPtnN5x6rlX7SCNNPSxEDWCATWOPKEwbY4pSENdveBLOXTT0EOwwFVbJmcV5C7BvbWrslWM0N2";
     private final String encrypted_roctec = "ET9b/RcMDGTXDGHGTNiE9lbaNmYJDVvk7XcR5xzxXR0RpoX2Q572hN98vuKqm201";
