@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -22,6 +23,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
@@ -45,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -720,6 +723,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mMap.setOnMarkerClickListener(marker -> {
+            Projection projection = mMap.getProjection();
+            LatLng markerPosition = marker.getPosition();
+            Point markerPoint = projection.toScreenLocation(markerPosition);
+            Point targetPoint = new Point(markerPoint.x, (int) (markerPoint.y - findViewById(android.R.id.content).getHeight() / 3));
+            LatLng targetPosition = projection.fromScreenLocation(targetPoint);
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(targetPosition), 500, null);
+
+            infoHandler.removeCallbacks(infoRunnable);
+
             updateStation(marker);
             marker.showInfoWindow();
 
@@ -727,35 +739,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void run() {
                     String station = stationMarkers.get(marker);
+                    List<CompletableFuture<?>> futures = new ArrayList<>();
 
-                    if (type == ServerType.NEXT_TRAIN) {
-                        List<CompletableFuture<?>> futures = new ArrayList<>();
-
-                        for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
-                            if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
-                                futures.add(CompletableFuture.runAsync(fetchNextTrain(entry1.getKey(), station)));
-                            }
+                    for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
+                        if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
+                            futures.add(CompletableFuture
+                                    .runAsync(fetchNextTrain(entry1.getKey(), station))
+                                    .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
                         }
-                        CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
-                                .thenRunAsync(() -> {
-                                    updateStation(marker);
-                                    MapsActivity.this.runOnUiThread(() -> {
-                                        marker.showInfoWindow();
-                                    });
-
-                                    infoHandler.postDelayed(this, 5000);
-                                });
-                    } else {
-                        CompletableFuture.runAsync(fetchRoctec(station))
-                                .thenRunAsync(() -> {
-                                    updateStation(marker);
-                                    MapsActivity.this.runOnUiThread(() -> {
-                                        marker.showInfoWindow();
-                                    });
-
-                                    infoHandler.postDelayed(this, 5000);
-                                });
                     }
+                    futures.add(CompletableFuture
+                            .runAsync(fetchRoctec(station))
+                            .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
+
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                            .thenRunAsync(() -> {
+                                updateStation(marker);
+                                MapsActivity.this.runOnUiThread(() -> {
+                                    marker.showInfoWindow();
+                                });
+
+                                infoHandler.postDelayed(this, 5000);
+                            });
                 }
             };
             infoHandler.post(infoRunnable);
@@ -767,7 +772,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
 
 
-            return false;
+            return true;
         });
 
         mMap.setOnInfoWindowClickListener(marker -> {
