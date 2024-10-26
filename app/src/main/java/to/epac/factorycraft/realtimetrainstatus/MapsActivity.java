@@ -9,7 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -24,10 +24,15 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.common.collect.HashBasedTable;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -48,11 +53,12 @@ import to.epac.factorycraft.realtimetrainstatus.databinding.ActivityMapsBinding;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    // EAL
+    /* EAL */
     public List<Trip> ealTrips;
+    // Train ID : Marker
     public Map<String, Marker> ealTrainMarkers;
+    // EAL station markers, used by menu to navigate positions
     public Map<String, Marker> ealStationMarkers;
-    public Map<String, List<Train>> ealTrains;
     public NumberPicker stationPicker;
     public NumberPicker trainPicker;
 
@@ -60,10 +66,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public List<Trip> tmlTrips;
     public Map<String, Marker> tmlTrainMarkers;
     public Map<String, Marker> tmlStationMarkers;
-    public Map<String, List<Train>> tmlTrains;
 
-    public Map<String, Marker> stationMarkers;
-    public Map<String, List<Train>> trains;
+    // Line : Stations
+    public Map<String, String[]> stations;
+    // Station : Marker
+    public Map<Marker, String> stationMarkers;
+    public Map<String, List<Train>> roctecTrains;
+    public HashBasedTable<String, String, List<Train>> trains;
+
+    private Handler infoHandler;
+    private Runnable infoRunnable;
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
@@ -78,16 +90,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String link_eal = "";
     private String link_tml = "";
     private String link_roctec = "";
+
     // link + code = cipher
-    private final String cipher_eal = "7hZOAWENNiAjv2M31HzdClndtJ6Aj9Z7LVyrMAdqy9tp+15Z859kS0PCjtVmGGdl";
-    private final String cipher_tml = "RoXQs1jcAUiiHtLN35D9oV+kKWtyR0pyto5PTYW31Cjdzqf8iRV9C5PM+VjBAdZLE2LBnVl0a2sBvd1hjJ5EvnO1wBvpepansIYDKHCiPODboqQKelCXVn+WWAK1Q41+";
-    private final String cipher_roctec = "cs+fuB90xVnOJAyJgOgq/JrRGaJDEN+MTd0o8a0zBpE6Az690j4ZJngdcNtAUTEK";
+    private String cipher_eal = "";
+    private String cipher_tml = "";
+    private String cipher_roctec = "";
+
     // link + secret = encrypted
-    private final String encrypted_eal = "wt2wS84uiY8qZrmJUO4Vl8FCiVoYnrfqmLuYCSfzQ6gYcM246hUutb6ZqSjn1x1O";
-    private final String encrypted_tml = "e7gg+sJ4PRy3zatp8dI8ys1VRSj/UxdA4vWoXjah6tiS5XSGc1SSwiHPtnN5x6rlX7SCNNPSxEDWCATWOPKEwbY4pSENdveBLOXTT0EOwwFVbJmcV5C7BvbWrslWM0N2";
-    private final String encrypted_roctec = "ET9b/RcMDGTXDGHGTNiE9lbaNmYJDVvk7XcR5xzxXR0RpoX2Q572hN98vuKqm201";
+    private String encrypted_eal = "";
+    private String encrypted_tml = "";
+    private String encrypted_roctec = "";
 
     public static String line = "EAL";
+
+    public enum ServerType {
+        ROCTEC,
+        NEXT_TRAIN
+    }
+
+    public static ServerType type = ServerType.NEXT_TRAIN;
 
 
     @Override
@@ -106,38 +127,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ealTrips = new ArrayList<>();
         ealTrainMarkers = new HashMap<>();
         ealStationMarkers = new HashMap<>();
-        ealTrains = new HashMap<>();
 
         tmlTrips = new ArrayList<>();
         tmlTrainMarkers = new HashMap<>();
         tmlStationMarkers = new HashMap<>();
-        tmlTrains = new HashMap<>();
 
+        stations = new HashMap<>();
         stationMarkers = new HashMap<>();
-        trains = new HashMap<>();
+        trains = HashBasedTable.create();
+        roctecTrains = new HashMap<>();
+
+        infoHandler = new Handler();
 
         mapUtils = new MapUtils(getApplicationContext());
         // Code related
         pref = getSharedPreferences("RealTimeTrainStatus", MODE_PRIVATE);
         code = pref.getString("code", "default");
-        link_eal = AES.decrypt(cipher_eal, code);
-        link_tml = AES.decrypt(cipher_tml, code);
-        link_roctec = AES.decrypt(cipher_roctec, code);
 
         // Station names
         String[] eal_stations = getResources().getString(R.string.eal_stations).split(" ");
         String[] eal_stations_long = getResources().getString(R.string.eal_stations_long).split(";");
         String[] tml_stations = getResources().getString(R.string.tml_stations).split(" ");
         String[] tml_stations_long = getResources().getString(R.string.tml_stations_long).split(";");
-        String[] stations = Arrays.stream((getResources().getString(R.string.ktl_stations) + " "
-                        + getResources().getString(R.string.ael_stations) + " "
-                        + getResources().getString(R.string.drl_stations) + " "
-                        + getResources().getString(R.string.isl_stations) + " "
-                        + getResources().getString(R.string.tcl_stations) + " "
-                        + getResources().getString(R.string.tkl_stations) + " "
-                        + getResources().getString(R.string.twl_stations) + " "
-                        + getResources().getString(R.string.sil_stations)).split(" "))
-                .distinct().toArray(String[]::new);
+
+        stations.put("EAL", getResources().getString(R.string.eal_stations).split(" "));
+        stations.put("TML", getResources().getString(R.string.tml_stations).split(" "));
+        stations.put("KTL", getResources().getString(R.string.ktl_stations).split(" "));
+        stations.put("AEL", getResources().getString(R.string.ael_stations).split(" "));
+        stations.put("DRL", getResources().getString(R.string.drl_stations).split(" "));
+        stations.put("ISL", getResources().getString(R.string.isl_stations).split(" "));
+        stations.put("TCL", getResources().getString(R.string.tcl_stations).split(" "));
+        stations.put("TKL", getResources().getString(R.string.tkl_stations).split(" "));
+        stations.put("TWL", getResources().getString(R.string.twl_stations).split(" "));
+        stations.put("SIL", getResources().getString(R.string.sil_stations).split(" "));
 
 
         // Request permissions
@@ -149,145 +171,131 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Declare handlers and runnables
         Handler handler = new Handler();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                handler.postDelayed(this, 5000);
+        Runnable overview = () -> {
+            Runnable ealOv = () -> {
+                ealTrips.clear();
+                try {
+                    String eal_data = "";
 
-                Runnable ealNt = () -> {
-                    for (String station : eal_stations) {
-                        try {
-                            String eal_data = "";
+                    URL url = new URL(link_eal);
+                    HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                    conn.setConnectTimeout(5000);
+                    conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                    conn.connect();
 
-                            URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?" +
-                                    "line=EAL&sta=" + station.toUpperCase() + "&lang=en");
-                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            conn.setConnectTimeout(5000);
-                            conn.connect();
-
-                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                            String line;
-                            while ((line = br.readLine()) != null) {
-                                eal_data += line;
-                            }
-
-                            ealTrains.put(station, NextTrainUtils.getTrainData(eal_data, "eal", station));
-                        } catch (Exception e) {
-                        }
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String line = "";
+                    while ((line = in.readLine()) != null) {
+                        eal_data += line;
                     }
-                };
+                    in.close();
 
-                Runnable tmlNt = () -> {
-                    for (String station : tml_stations) {
-                        try {
-                            String tml_data = "";
+                    ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            };
 
-                            URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?" +
-                                    "line=TML&sta=" + station.toUpperCase() + "&lang=en");
-                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            conn.setConnectTimeout(5000);
-                            conn.connect();
+            Runnable tmlOv = () -> {
+                tmlTrips.clear();
+                try {
+                    String tml_data = "";
 
-                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                            String line;
-                            while ((line = br.readLine()) != null) {
-                                tml_data += line;
-                            }
+                    URL url = new URL(link_tml);
+                    HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                    conn.setConnectTimeout(5000);
+                    conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                    conn.connect();
 
-                            tmlTrains.put(station, NextTrainUtils.getTrainData(tml_data, "tml", station));
-                        } catch (Exception e) {
-                        }
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String line = "";
+                    while ((line = in.readLine()) != null) {
+                        tml_data += line;
                     }
-                };
+                    in.close();
 
-                Runnable ealOv = () -> {
-                    ealTrips.clear();
-                    try {
-                        String eal_data = "";
+                    tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            };
 
-                        URL url = new URL(link_eal);
-                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                        conn.setConnectTimeout(5000);
-                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                        conn.connect();
-
-                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        String line = "";
-                        while ((line = in.readLine()) != null) {
-                            eal_data += line;
-                        }
-                        in.close();
-
-                        ealTrips.addAll(ServerUtils.getEALTrainData(eal_data));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                };
-
-                Runnable tmlOv = () -> {
-                    tmlTrips.clear();
-                    try {
-                        String tml_data = "";
-
-                        URL url = new URL(link_tml);
-                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                        conn.setConnectTimeout(5000);
-                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                        conn.connect();
-
-                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        String line = "";
-                        while ((line = in.readLine()) != null) {
-                            tml_data += line;
-                        }
-                        in.close();
-
-                        tmlTrips.addAll(ServerUtils.getTMLTrainData(tml_data, mapUtils));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                };
-
-                CompletableFuture.runAsync(ealNt);
-                CompletableFuture.runAsync(tmlNt);
-
-                CompletableFuture.allOf(CompletableFuture.runAsync(ealOv), CompletableFuture.runAsync(tmlOv))
-                        .thenRunAsync(() -> {
-                            load();
-                        });
-            }
+            CompletableFuture.allOf(CompletableFuture.runAsync(ealOv), CompletableFuture.runAsync(tmlOv))
+                    .thenRunAsync(() -> {
+                        updateTrainTrips();
+                    });
         };
 
 
-        // Check user's code input
-        if (AES.encrypt(link_eal) == null || !AES.encrypt(link_eal).equals(encrypted_eal)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            LayoutInflater inflater = LayoutInflater.from(this);
-            View view = inflater.inflate(R.layout.layout_code, null);
+        // Fetch cipher from GitHub
+        CompletableFuture.supplyAsync(() -> {
+                    String json = "";
+                    try {
+                        URL url = new URL("https://raw.githubusercontent.com/i998979/Real-Time-Train-Status-Private/refs/heads/main/Real-Time-Train-Status.json");
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                        conn.setConnectTimeout(5000);
+                        conn.connect();
 
-            EditText editText = view.findViewById(R.id.code);
-            builder.setView(view)
-                    .setTitle("Code:")
-                    .setPositiveButton("OK", (dialog, which) -> {
-                        code = editText.getText().toString();
-                        pref.edit().putString("code", code).apply();
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String line = "";
+                        while ((line = in.readLine()) != null) {
+                            json += line;
+                        }
+                        in.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    return json;
+                })
+                .thenAccept(json -> {
+                    try {
+                        JSONObject jsonObject = new JSONObject(json);
+                        JSONObject cipher = jsonObject.getJSONObject("cipher");
+                        cipher_eal = cipher.getString("eal");
+                        cipher_tml = cipher.getString("tml");
+                        cipher_roctec = cipher.getString("roctec");
+                        JSONObject encrypted = jsonObject.getJSONObject("encrypted");
+                        encrypted_eal = encrypted.getString("eal");
+                        encrypted_tml = encrypted.getString("tml");
+                        encrypted_roctec = encrypted.getString("roctec");
 
                         link_eal = AES.decrypt(cipher_eal, code);
                         link_tml = AES.decrypt(cipher_tml, code);
+                        link_roctec = AES.decrypt(cipher_roctec, code);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                })
+                .thenRun(() -> {
+                    // Check user's code input
+                    if (link_eal == null || AES.encrypt(link_eal) == null || !AES.encrypt(link_eal).equals(encrypted_eal)) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        LayoutInflater inflater = LayoutInflater.from(this);
+                        View view = inflater.inflate(R.layout.layout_code, null);
 
-                        handler.post(runnable);
-                        for (String station : stations) {
-                            fetchRoctec(station);
-                        }
-                    }).show();
-        }
-        // Already checked
-        else {
-            handler.post(runnable);
-            for (String station : stations) {
-                fetchRoctec(station);
-            }
-        }
+                        EditText editText = view.findViewById(R.id.code);
+                        builder.setView(view)
+                                .setTitle("Code:")
+                                .setPositiveButton("OK", (dialog, which) -> {
+                                    code = editText.getText().toString();
+                                    pref.edit().putString("code", code).apply();
+
+                                    link_eal = AES.decrypt(cipher_eal, code);
+                                    link_tml = AES.decrypt(cipher_tml, code);
+                                    link_roctec = AES.decrypt(cipher_roctec, code);
+
+                                    handler.post(overview);
+                                });
+                        runOnUiThread(() -> {
+                            builder.show();
+                        });
+                    }
+                    // Already checked
+                    else {
+                        handler.post(overview);
+                    }
+                });
 
 
         // StationPicker and TrainPicker
@@ -468,38 +476,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    public CompletableFuture<Void> fetchRoctec(String station) {
-        Runnable runnable = () -> {
-            try {
-                String data = "";
-                URL url = new URL("https://408tq84duh.execute-api.ap-east-1.amazonaws.com/api/service/GetNextTrainData");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("content-type", "application/json");
-                conn.setRequestProperty("data", "{\"stationcode\":\"" + station.toUpperCase() + "\"}");
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(("{\"stationcode\":\"" + station.toUpperCase() + "\"}").getBytes());
-                }
-                conn.setConnectTimeout(5000);
-                conn.connect();
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    data += line;
-                }
-                trains.put(station, NextTrainUtils.getRoctecTrainData(data, station));
-            } catch (Exception e) {
-            }
-        };
-        return CompletableFuture.runAsync(runnable);
+        if (infoHandler != null) infoHandler.post(infoRunnable);
     }
 
-    public void load() {
-        updateStations();
 
+    public void updateTrainTrips() {
         // EAL
         for (Trip trip : ealTrips) {
             CompletableFuture.supplyAsync(() -> {
@@ -633,8 +618,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public Runnable fetchRoctec(String station) {
+        Runnable runnable = () -> {
+            try {
+                String data = "";
+                URL url = new URL(link_roctec);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("content-type", "application/json");
+                conn.setRequestProperty("data", "{\"stationcode\":\"" + station.toUpperCase() + "\"}");
+                conn.setDoOutput(true);
+                conn.setDoInput(true);
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(("{\"stationcode\":\"" + station.toUpperCase() + "\"}").getBytes());
+                }
+                conn.setConnectTimeout(5000);
+                conn.connect();
 
-    @SuppressLint({"MissingPermission", "PotentialBehaviorOverride"})
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    data += line;
+                }
+
+                Log.d("tagg", "Roctec complete");
+                roctecTrains.put(station, NextTrainUtils.getRoctecTrainData(data, station));
+            } catch (Exception e) {
+            }
+        };
+        return runnable;
+    }
+
+    public Runnable fetchNextTrain(String line0, String station) {
+        Runnable runnable = () -> {
+            try {
+                String data = "";
+
+                URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?" +
+                        "line=" + line0 + "&sta=" + station.toUpperCase() + "&lang=en");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(5000);
+                conn.connect();
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    data += line;
+                }
+
+                Log.d("tagg", "NextTrain complete");
+                trains.put(line0, station, NextTrainUtils.getTrainData(data, line0, station));
+            } catch (Exception e) {
+            }
+        };
+        return runnable;
+    }
+
+
+    @SuppressLint("PotentialBehaviorOverride")
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -642,66 +683,111 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 || checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
-
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
         drawLines();
         addStations();
 
-        getWindowManager().getDefaultDisplay().getMetrics(new DisplayMetrics());
 
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(new LatLngBounds.Builder()
-                .include(Utils.getLatLng(getResources().getString(R.string.adm)))
-                .include(Utils.getLatLng(getResources().getString(R.string.uni)))
-                .include(Utils.getLatLng(getResources().getString(R.string.low)))
-                .include(Utils.getLatLng(getResources().getString(R.string.lmc)))
-                .include(Utils.getLatLng(getResources().getString(R.string.lop)))
-                .include(Utils.getLatLng(getResources().getString(R.string.tum)))
-                .include(Utils.getLatLng(getResources().getString(R.string.wks)))
-                .build(), Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels, 250);
+        CameraUpdate cu;
+        if (!pref.contains("zoom")) {
+            cu = CameraUpdateFactory.newLatLngBounds(new LatLngBounds.Builder()
+                    .include(Utils.getLatLng(getResources().getString(R.string.adm)))
+                    .include(Utils.getLatLng(getResources().getString(R.string.uni)))
+                    .include(Utils.getLatLng(getResources().getString(R.string.low)))
+                    .include(Utils.getLatLng(getResources().getString(R.string.lmc)))
+                    .include(Utils.getLatLng(getResources().getString(R.string.lop)))
+                    .include(Utils.getLatLng(getResources().getString(R.string.tum)))
+                    .include(Utils.getLatLng(getResources().getString(R.string.wks)))
+                    .build(), Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels, 250);
+        } else {
+            cu = CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(Double.parseDouble(pref.getString("lat", "0")), Double.parseDouble(pref.getString("lng", "0"))),
+                    pref.getFloat("zoom", 0));
+        }
         mMap.moveCamera(cu);
 
+        mMap.setOnCameraMoveListener(() -> {
+            CameraPosition position = mMap.getCameraPosition();
 
-        TrainInfoAdapter trainInfoAdapter = new TrainInfoAdapter(this);
-        mMap.setInfoWindowAdapter(trainInfoAdapter);
+            pref.edit().putString("lat", position.target.latitude + "")
+                    .putString("lng", position.target.longitude + "")
+                    .putFloat("zoom", position.zoom).apply();
+        });
 
-        Handler handler0 = new Handler();
+
+        mMap.setInfoWindowAdapter(new TrainInfoAdapter(this));
+
+
         mMap.setOnMarkerClickListener(marker -> {
-            // Apply marker with existing data
             updateStation(marker);
-
-            // Update Roctec data every 5 seconds
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    Map.Entry<String, Marker> entry = stationMarkers.entrySet().stream()
-                            .filter(ent -> ent.getValue().equals(marker)).findFirst().orElse(null);
-                    if (entry == null) return;
-
-                    String station = entry.getKey();
-                    Marker mar = entry.getValue();
-
-                    fetchRoctec(station).thenRun(() -> {
-                        // Update marker with updated data
-                        updateStation(marker);
-                        handler0.postDelayed(this, 5000);
-                    });
-                }
-            };
-            handler0.post(runnable);
-
-            // Show info window
             marker.showInfoWindow();
 
-            // Set info window close listener to stop runnable
-            mMap.setOnInfoWindowCloseListener(marker0 -> {
-                handler0.removeCallbacks(runnable);
+            infoRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    String station = stationMarkers.get(marker);
+
+                    if (type == ServerType.NEXT_TRAIN) {
+                        List<CompletableFuture<?>> futures = new ArrayList<>();
+
+                        for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
+                            if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
+                                futures.add(CompletableFuture.runAsync(fetchNextTrain(entry1.getKey(), station)));
+                            }
+                        }
+                        CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                                .thenRunAsync(() -> {
+                                    updateStation(marker);
+                                    MapsActivity.this.runOnUiThread(() -> {
+                                        marker.showInfoWindow();
+                                    });
+
+                                    infoHandler.postDelayed(this, 5000);
+                                });
+                    } else {
+                        CompletableFuture.runAsync(fetchRoctec(station))
+                                .thenRunAsync(() -> {
+                                    updateStation(marker);
+                                    MapsActivity.this.runOnUiThread(() -> {
+                                        marker.showInfoWindow();
+                                    });
+
+                                    infoHandler.postDelayed(this, 5000);
+                                });
+                    }
+                }
+            };
+            infoHandler.post(infoRunnable);
+
+
+            mMap.setOnInfoWindowCloseListener(mar -> {
+                if (!stationMarkers.containsKey(mar)) return;
+                infoHandler.removeCallbacks(infoRunnable);
             });
 
 
             return false;
         });
 
+        mMap.setOnInfoWindowClickListener(marker -> {
+            if (!stationMarkers.containsKey(marker)) return;
+
+            String tag = (String) marker.getTag();
+
+            if (tag.contains(ServerType.NEXT_TRAIN.name())) {
+                tag = tag.replaceFirst(ServerType.NEXT_TRAIN.name(), ServerType.ROCTEC.name());
+                type = ServerType.ROCTEC;
+            } else if (tag.contains(ServerType.ROCTEC.name())) {
+                tag = tag.replaceFirst(ServerType.ROCTEC.name(), ServerType.NEXT_TRAIN.name());
+                type = ServerType.NEXT_TRAIN;
+            }
+
+            marker.setTag(tag);
+
+            updateStation(marker);
+            marker.showInfoWindow();
+        });
     }
 
     @SuppressLint("MissingPermission")
@@ -726,124 +812,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * @param marker Marker to update
      */
     public void updateStation(Marker marker) {
-        if (!ealStationMarkers.containsValue(marker) && !tmlStationMarkers.containsValue(marker) && !stationMarkers.containsValue(marker))
+        Log.d("tagg", "updateStation");
+
+        if (!stationMarkers.containsKey(marker))
             return;
 
-        Marker mar;
-        // EAL
-        if (ealStationMarkers.containsValue(marker)) {
-            Map.Entry<String, Marker> entry = ealStationMarkers.entrySet().stream()
-                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
-            String station = entry.getKey();
-            mar = entry.getValue();
+        if (type == ServerType.NEXT_TRAIN) {
+            String station = stationMarkers.get(marker);
 
-            if (!ealTrains.containsKey(station)) return;
+            if (!trains.containsColumn(station)) return;
 
 
             String snippet = "";
-            for (Train train : ealTrains.get(station)) {
-                snippet += train.line + "," + Utils.getStationName(this, train.dest) + (train.route.equals("RAC") ? " via Racecourse " : " ")
-                        + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            for (Map.Entry<String, List<Train>> entry1 : trains.column(station).entrySet()) {
+                String line = entry1.getKey();
+
+                for (Train train : trains.get(line, station)) {
+                    snippet += train.line + "," + train.dest + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+                }
             }
 
             String snippet0 = snippet;
             runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
+                marker.setSnippet(snippet0);
             });
-        }
-        // TML
-        else if (tmlStationMarkers.containsValue(marker)) {
-            Map.Entry<String, Marker> entry = tmlStationMarkers.entrySet().stream()
-                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
-            String station = entry.getKey();
-            mar = entry.getValue();
+        } else {
+            String station = stationMarkers.get(marker);
 
-            if (!tmlTrains.containsKey(station)) return;
+            if (!roctecTrains.containsKey(station)) return;
+
 
             String snippet = "";
-            for (Train train : tmlTrains.get(station)) {
-                snippet += train.line + "," + Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+            for (Train train : roctecTrains.get(station)) {
+                snippet += train.line + "," + train.dest + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
             }
 
             String snippet0 = snippet;
             runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
-            });
-        }
-        // DUAT
-        else {
-            Map.Entry<String, Marker> entry = stationMarkers.entrySet().stream()
-                    .filter(ent -> ent.getValue().equals(marker)).findFirst().get();
-            String station = entry.getKey();
-            mar = entry.getValue();
-
-            if (!trains.containsKey(station)) return;
-
-            String snippet = "";
-            for (Train train : trains.get(station)) {
-                snippet += train.line + "," + Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
-            });
-        }
-    }
-
-    /**
-     * Update all station markers with existing data
-     */
-    public void updateStations() {
-        for (Map.Entry<String, Marker> entry : ealStationMarkers.entrySet()) {
-            String station = entry.getKey();
-            Marker mar = entry.getValue();
-
-            if (!ealTrains.containsKey(station)) continue;
-
-            String snippet = "";
-            for (Train train : ealTrains.get(station)) {
-                snippet += train.line + "," + Utils.getStationName(this, train.dest) + (train.route.equals("RAC") ? " via Racecourse " : " ")
-                        + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
-            });
-        }
-
-        for (Map.Entry<String, Marker> entry : tmlStationMarkers.entrySet()) {
-            String station = entry.getKey();
-            Marker mar = entry.getValue();
-
-            if (!tmlTrains.containsKey(station)) continue;
-
-            String snippet = "";
-            for (Train train : tmlTrains.get(station)) {
-                snippet += train.line + "," + Utils.getStationName(this, train.dest) + " ," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
-            });
-        }
-
-        for (Map.Entry<String, Marker> entry : stationMarkers.entrySet()) {
-            String station = entry.getKey();
-            Marker mar = entry.getValue();
-
-            if (!trains.containsKey(station)) continue;
-
-            String snippet = "";
-            for (Train train : trains.get(station)) {
-                snippet += train.line + "," + Utils.getStationName(this, train.dest) + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                mar.setSnippet(snippet0);
+                marker.setSnippet(snippet0);
             });
         }
     }
@@ -870,8 +876,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:eal:" + station);
+            marker.setTag("station:eal:" + station + ":" + type);
             ealStationMarkers.put(station, marker);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.tml_stations).split(" ")) {
@@ -880,104 +887,105 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tml:" + station);
+            marker.setTag("station:tml:" + station + ":" + type);
             tmlStationMarkers.put(station, marker);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.ktl_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ktl:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:ktl:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.ael_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ael:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:ael:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.drl_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:drl:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:drl:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.isl_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:isl:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:isl:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.tcl_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tcl:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:tcl:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.tkl_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tkl:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:tkl:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.twl_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:twl:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:twl:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.sil_stations).split(" ")) {
-            if (stationMarkers.containsKey(station)) continue;
+            if (stationMarkers.containsValue(station)) continue;
 
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:sil:" + station);
-            stationMarkers.put(station, marker);
+            marker.setTag("station:sil:" + station + ":" + type);
+            stationMarkers.put(marker, station);
         }
     }
 }

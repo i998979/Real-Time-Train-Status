@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'to.epac.factorycraft.realtimetrainstatus'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "to.epac.factorycraft.realtimetrainstatus"
         minSdk 29
-        targetSdk 34
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
@@ -39,6 +39,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.gms:play-services-maps:19.0.0'
     implementation 'com.google.maps.android:android-maps-utils:3.8.2'
+    implementation("com.google.guava:guava:33.3.1-android")
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'

@@ -3,6 +3,7 @@ package to.epac.factorycraft.realtimetrainstatus;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -30,18 +31,22 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
     public View getInfoContents(@NonNull Marker marker) {
         View view = null;
 
-        if (marker.getSnippet() == null) return null;
         if (marker.getTag() == null) return null;
 
         String tag = marker.getTag().toString();
-        String[] datas = marker.getSnippet().split(";");
+        String[] datas = new String[]{};
+        if (marker.getSnippet() != null)
+            datas = marker.getSnippet().split(";");
+
+        Log.d("tagg", "getInfoContents " + marker.getSnippet());
 
         // Station layout
         if (tag.startsWith("station")) {
             String line = tag.split(":")[1];
             String station = tag.split(":")[2];
+            MapsActivity.ServerType type = MapsActivity.ServerType.valueOf(tag.split(":")[3]);
 
-            view = context.getLayoutInflater().inflate((line.equals("eal") || line.equals("tml")) ? R.layout.layout_info : R.layout.layout_roctec, null);
+            view = context.getLayoutInflater().inflate(type == MapsActivity.ServerType.NEXT_TRAIN ? R.layout.layout_info : R.layout.layout_roctec, null);
 
             LinearLayout infoLayout = view.findViewById(R.id.infoLayout);
             TableLayout stationLayout = view.findViewById(R.id.stationLayout);
@@ -66,21 +71,21 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                 trainRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
 
                 // NextTrain
-                if (line.equals("eal") || line.equals("tml")) {
-                    if (serverLine.isEmpty() || !serverLine.equals(data[0])) {
-                        serverLine = line;
+                if (type == MapsActivity.ServerType.NEXT_TRAIN) {
+                    if (serverLine.isEmpty() || !serverLine.equalsIgnoreCase(data[0])) {
+                        serverLine = data[0];
 
                         TableRow lineRow = new TableRow(context);
 
                         TextView lineTv = new TextView(context);
-                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(context, line)));
+                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(context, serverLine)));
                         lineTv.setTextColor(Color.WHITE);
 
                         TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1);
                         params.span = 3;
                         lineTv.setLayoutParams(params);
                         lineTv.setTypeface(null, Typeface.BOLD);
-                        lineTv.setText(Utils.getLineName(line));
+                        lineTv.setText(Utils.getLineName(serverLine));
 
                         lineRow.addView(lineTv);
                         stationLayout.addView(lineRow);
@@ -93,19 +98,19 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
                     dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
-                    dest.setText(data[1]);
+                    dest.setText(Utils.getStationName(context, data[1].toLowerCase()) + (data[2].equals("RAC") ? " via Racecourse " : " "));
 
                     TextView plat = new TextView(context);
                     plat.setTextColor(Color.BLACK);
                     plat.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
-                    plat.setText(data[2]);
+                    plat.setText(data[3]);
 
                     TextView ttnt = new TextView(context);
                     ttnt.setTextColor(Color.BLACK);
                     ttnt.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
-                    ttnt.setText(data[3]);
+                    ttnt.setText(data[4]);
 
-                    lastUpdateTv.setText(data[4]);
+                    lastUpdateTv.setText(data.length >= 6 ? data[5] : "Never");
 
                     trainRow.addView(dest);
                     trainRow.addView(plat);
@@ -115,7 +120,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                 }
                 // Roctec
                 else {
-                    if (roctecLine.isEmpty() || !roctecLine.equals(data[0])) {
+                    if (roctecLine.isEmpty() || !roctecLine.equalsIgnoreCase(data[0])) {
                         roctecLine = data[0];
 
                         TableRow lineRow = new TableRow(context);
@@ -141,7 +146,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
                     dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
-                    dest.setText(data[1]);
+                    dest.setText(Utils.getStationName(context, data[1].toLowerCase()) + " ");
 
                     TextView td = new TextView(context);
                     td.setTextColor(Color.BLACK);
@@ -158,7 +163,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     ttnt.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     ttnt.setText(data[4]);
 
-                    lastUpdateTv.setText(data[5]);
+                    lastUpdateTv.setText(data.length >= 6 ? data[5] : "Never");
 
 
                     trainRow.addView(dest);

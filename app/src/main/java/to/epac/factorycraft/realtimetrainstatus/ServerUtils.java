@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ServerUtils {
 
-    public static List<Trip> getEALTrainData(String data) {
+    public static List<Trip> getEALTripData(String data) {
         List<Trip> trips = new ArrayList<>();
 
         try {
@@ -58,7 +58,7 @@ public class ServerUtils {
         return trips;
     }
 
-    public static List<Trip> getTMLTrainData(String data, MapUtils mapUtils) {
+    public static List<Trip> getTMLTripData(String data, MapUtils mapUtils) {
         List<Trip> trips = new ArrayList<>();
 
         try {
