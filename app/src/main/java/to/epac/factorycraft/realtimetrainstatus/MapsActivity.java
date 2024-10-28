@@ -816,7 +816,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (marker.getSnippet() != null)
             datas = marker.getSnippet().split(";");
 
-        Log.d("tagg", "getInfoContents " + marker.getSnippet());
+        Log.d("tagg", "createDialog " + marker.getSnippet());
 
         // Station layout
         if (tag.startsWith("station")) {
