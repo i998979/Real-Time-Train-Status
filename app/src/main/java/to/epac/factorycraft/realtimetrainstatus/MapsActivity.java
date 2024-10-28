@@ -694,6 +694,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         drawLines();
         addStations();
 
+        mMap.setInfoWindowAdapter(new TrainInfoAdapter(this));
+
 
         CameraUpdate cu;
         if (!pref.contains("zoom")) {
@@ -723,58 +725,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mMap.setOnMarkerClickListener(marker -> {
-            Projection projection = mMap.getProjection();
-            LatLng markerPosition = marker.getPosition();
-            Point markerPoint = projection.toScreenLocation(markerPosition);
-            Point targetPoint = new Point(markerPoint.x, markerPoint.y - findViewById(android.R.id.content).getHeight() / 3);
-            LatLng targetPosition = projection.fromScreenLocation(targetPoint);
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(targetPosition), 500, null);
+            if (!stationMarkers.containsKey(marker)) {
+                marker.showInfoWindow();
+                return false;
+            } else {
+                Projection projection = mMap.getProjection();
+                LatLng markerPosition = marker.getPosition();
+                Point markerPoint = projection.toScreenLocation(markerPosition);
+                Point targetPoint = new Point(markerPoint.x, markerPoint.y - findViewById(android.R.id.content).getHeight() / 3);
+                LatLng targetPosition = projection.fromScreenLocation(targetPoint);
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(targetPosition), 500, null);
 
-            infoHandler.removeCallbacks(infoRunnable);
-
-            updateStation(marker);
-            marker.showInfoWindow();
-            createDialog(marker, true);
-
-            infoRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    String station = stationMarkers.get(marker);
-                    List<CompletableFuture<?>> futures = new ArrayList<>();
-
-                    for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
-                        if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
-                            futures.add(CompletableFuture
-                                    .runAsync(fetchNextTrain(entry1.getKey(), station))
-                                    .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
-                        }
-                    }
-                    futures.add(CompletableFuture
-                            .runAsync(fetchRoctec(station))
-                            .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
-
-                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
-                            .thenRunAsync(() -> {
-                                updateStation(marker);
-                                MapsActivity.this.runOnUiThread(() -> {
-                                    createDialog(marker, false);
-                                    marker.showInfoWindow();
-                                });
-
-                                infoHandler.postDelayed(this, 5000);
-                            });
-                }
-            };
-            infoHandler.post(infoRunnable);
-
-
-            mMap.setOnInfoWindowCloseListener(mar -> {
-                if (!stationMarkers.containsKey(mar)) return;
                 infoHandler.removeCallbacks(infoRunnable);
-            });
+
+                updateStation(marker);
+                createDialog(marker, true);
+
+                infoRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        String station = stationMarkers.get(marker);
+                        List<CompletableFuture<?>> futures = new ArrayList<>();
+
+                        for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
+                            if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
+                                futures.add(CompletableFuture
+                                        .runAsync(fetchNextTrain(entry1.getKey(), station))
+                                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
+                            }
+                        }
+                        futures.add(CompletableFuture
+                                .runAsync(fetchRoctec(station))
+                                .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
+
+                        CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                                .thenRunAsync(() -> {
+                                    updateStation(marker);
+                                    runOnUiThread(() -> {
+                                        createDialog(marker, false);
+                                    });
+
+                                    infoHandler.postDelayed(this, 5000);
+                                });
+                    }
+                };
+                infoHandler.post(infoRunnable);
 
 
-            return true;
+                return true;
+            }
         });
 
         mMap.setOnInfoWindowClickListener(marker -> {
@@ -793,7 +792,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             marker.setTag(tag);
 
             updateStation(marker);
-            createDialog(marker, false);
             marker.showInfoWindow();
         });
     }
@@ -803,6 +801,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     AlertDialog dialog = null;
 
     public void createDialog(Marker marker, boolean create) {
+        Log.d("tagg", "createDialog " + marker.getSnippet());
+        Log.d("tagg", "createDialog1 " + marker.getTag());
+
         if (create) {
             if (dialog != null)
                 dialog.cancel();
@@ -815,8 +816,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String[] datas = new String[]{};
         if (marker.getSnippet() != null)
             datas = marker.getSnippet().split(";");
-
-        Log.d("tagg", "createDialog " + marker.getSnippet());
 
         // Station layout
         if (tag.startsWith("station")) {
@@ -831,7 +830,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             TableLayout stationLayout = view.findViewById(R.id.stationLayout);
             TextView lastUpdateTv = infoLayout.findViewById(R.id.lastUpdate);
 
-            if (!create) stationLayout.removeAllViews();
+            if (!create) {
+                if (stationLayout.getChildCount() > 1)
+                    stationLayout.removeViews(1, stationLayout.getChildCount() - 1);
+            }
 
 
             // Set station name and background color
