@@ -29,6 +29,9 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
     @Nullable
     @Override
     public View getInfoContents(@NonNull Marker marker) {
+        // TODO: Deprecation of InfoWindow
+        if (true) return null;
+
         View view = null;
 
         if (marker.getTag() == null) return null;
@@ -98,7 +101,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
                     dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
-                    dest.setText(Utils.getStationName(context, data[1].toLowerCase()) + (data[2].equals("RAC") ? " via Racecourse " : " "));
+                    dest.setText(Utils.getStationName(context, data[1]) + (data[2].equals("RAC") ? " via Racecourse " : " "));
 
                     TextView plat = new TextView(context);
                     plat.setTextColor(Color.BLACK);
@@ -146,7 +149,7 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                     TextView dest = new TextView(context);
                     dest.setTextColor(Color.BLACK);
                     dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
-                    dest.setText(Utils.getStationName(context, data[1].toLowerCase()) + " ");
+                    dest.setText(Utils.getStationName(context, data[1]) + " ");
 
                     TextView td = new TextView(context);
                     td.setTextColor(Color.BLACK);

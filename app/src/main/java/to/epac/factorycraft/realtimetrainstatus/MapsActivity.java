@@ -8,13 +8,18 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -110,8 +115,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ROCTEC,
         NEXT_TRAIN
     }
-
-    public static ServerType type = ServerType.NEXT_TRAIN;
 
 
     @Override
@@ -734,6 +737,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             updateStation(marker);
             marker.showInfoWindow();
+            createDialog(marker, true);
 
             infoRunnable = new Runnable() {
                 @Override
@@ -756,6 +760,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .thenRunAsync(() -> {
                                 updateStation(marker);
                                 MapsActivity.this.runOnUiThread(() -> {
+                                    createDialog(marker, false);
                                     marker.showInfoWindow();
                                 });
 
@@ -782,17 +787,210 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             if (tag.contains(ServerType.NEXT_TRAIN.name())) {
                 tag = tag.replaceFirst(ServerType.NEXT_TRAIN.name(), ServerType.ROCTEC.name());
-                type = ServerType.ROCTEC;
+                pref.edit().putString("type", ServerType.ROCTEC.name()).apply();
             } else if (tag.contains(ServerType.ROCTEC.name())) {
                 tag = tag.replaceFirst(ServerType.ROCTEC.name(), ServerType.NEXT_TRAIN.name());
-                type = ServerType.NEXT_TRAIN;
+                pref.edit().putString("type", ServerType.NEXT_TRAIN.name()).apply();
             }
 
             marker.setTag(tag);
 
             updateStation(marker);
+            createDialog(marker, false);
             marker.showInfoWindow();
         });
+    }
+
+
+    View view = null;
+    AlertDialog dialog = null;
+
+    public void createDialog(Marker marker, boolean create) {
+        if (create) {
+            if (dialog != null)
+                dialog.cancel();
+            view = null;
+        }
+
+        if (marker.getTag() == null) return;
+
+        String tag = marker.getTag().toString();
+        String[] datas = new String[]{};
+        if (marker.getSnippet() != null)
+            datas = marker.getSnippet().split(";");
+
+        Log.d("tagg", "getInfoContents " + marker.getSnippet());
+
+        // Station layout
+        if (tag.startsWith("station")) {
+            String line = tag.split(":")[1];
+            String station = tag.split(":")[2];
+            MapsActivity.ServerType type = MapsActivity.ServerType.valueOf(tag.split(":")[3]);
+
+            if (create)
+                view = getLayoutInflater().inflate(type == MapsActivity.ServerType.NEXT_TRAIN ? R.layout.layout_info : R.layout.layout_roctec, null);
+
+            LinearLayout infoLayout = view.findViewById(R.id.infoLayout);
+            TableLayout stationLayout = view.findViewById(R.id.stationLayout);
+            TextView lastUpdateTv = infoLayout.findViewById(R.id.lastUpdate);
+
+            if (!create) stationLayout.removeAllViews();
+
+
+            // Set station name and background color
+            TextView stationTv = view.findViewById(R.id.station);
+            stationTv.setText(Utils.getStationName(this, station));
+            stationTv.setBackgroundColor(Color.GRAY);
+
+
+            String serverLine = "";
+            String roctecLine = "";
+            int i = 0;
+            for (String snippet : datas) {
+                String[] data = snippet.split(",");
+
+                if (data.length <= 1) continue;
+
+                TableRow trainRow = new TableRow(this);
+                trainRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
+
+                // NextTrain
+                if (type == MapsActivity.ServerType.NEXT_TRAIN) {
+                    if (serverLine.isEmpty() || !serverLine.equalsIgnoreCase(data[0])) {
+                        serverLine = data[0];
+
+                        TableRow lineRow = new TableRow(this);
+
+                        TextView lineTv = new TextView(this);
+                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(this, serverLine)));
+                        lineTv.setTextColor(Color.WHITE);
+
+                        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1);
+                        params.span = 3;
+                        lineTv.setLayoutParams(params);
+                        lineTv.setTypeface(null, Typeface.BOLD);
+                        lineTv.setText(Utils.getLineName(serverLine));
+
+                        lineRow.addView(lineTv);
+                        stationLayout.addView(lineRow);
+
+                        i = 0;
+                    }
+
+                    if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
+
+                    TextView dest = new TextView(this);
+                    dest.setTextColor(Color.BLACK);
+                    dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    dest.setText(Utils.getStationName(this, data[1]) + (data[2].equals("RAC") ? " via Racecourse " : " "));
+
+                    TextView plat = new TextView(this);
+                    plat.setTextColor(Color.BLACK);
+                    plat.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    plat.setText(data[3]);
+
+                    TextView ttnt = new TextView(this);
+                    ttnt.setTextColor(Color.BLACK);
+                    ttnt.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    ttnt.setText(data[4]);
+
+                    lastUpdateTv.setText(data.length >= 6 ? data[5] : "Never");
+
+                    trainRow.addView(dest);
+                    trainRow.addView(plat);
+                    trainRow.addView(ttnt);
+
+                    stationLayout.addView(trainRow);
+                }
+                // Roctec
+                else {
+                    if (roctecLine.isEmpty() || !roctecLine.equalsIgnoreCase(data[0])) {
+                        roctecLine = data[0];
+
+                        TableRow lineRow = new TableRow(this);
+
+                        TextView lineTv = new TextView(this);
+                        lineTv.setBackgroundColor(Color.parseColor(Utils.getColor(this, roctecLine)));
+                        lineTv.setTextColor(Color.WHITE);
+
+                        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1);
+                        params.span = 4;
+                        lineTv.setLayoutParams(params);
+                        lineTv.setTypeface(null, Typeface.BOLD);
+                        lineTv.setText(Utils.getLineName(roctecLine));
+
+                        lineRow.addView(lineTv);
+                        stationLayout.addView(lineRow);
+
+                        i = 0;
+                    }
+
+                    if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
+
+                    TextView dest = new TextView(this);
+                    dest.setTextColor(Color.BLACK);
+                    dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    dest.setText(Utils.getStationName(this, data[1]) + " ");
+
+                    TextView td = new TextView(this);
+                    td.setTextColor(Color.BLACK);
+                    td.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    td.setText(data[2]);
+
+                    TextView plat = new TextView(this);
+                    plat.setTextColor(Color.BLACK);
+                    plat.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    plat.setText(data[3]);
+
+                    TextView ttnt = new TextView(this);
+                    ttnt.setTextColor(Color.BLACK);
+                    ttnt.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    ttnt.setText(data[4]);
+
+                    lastUpdateTv.setText(data.length >= 6 ? data[5] : "Never");
+
+
+                    trainRow.addView(dest);
+                    trainRow.addView(td);
+                    trainRow.addView(plat);
+                    trainRow.addView(ttnt);
+
+                    stationLayout.addView(trainRow);
+                }
+
+                i++;
+            }
+        }
+
+        if (create) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setView(view)
+                    .setNegativeButton("Cancel", (dialog1, which) -> {
+                        dialog1.cancel();
+                    })
+                    .setPositiveButton(pref.getString("type", ServerType.NEXT_TRAIN.name()).equals(ServerType.NEXT_TRAIN.name())
+                            ? "Roctec" : "Next Train", (dialog, which) -> {
+                        String tag0 = (String) marker.getTag();
+
+                        if (tag0.contains(ServerType.NEXT_TRAIN.name())) {
+                            tag0 = tag0.replaceFirst(ServerType.NEXT_TRAIN.name(), ServerType.ROCTEC.name());
+                            pref.edit().putString("type", ServerType.ROCTEC.name()).apply();
+                        } else if (tag0.contains(ServerType.ROCTEC.name())) {
+                            tag0 = tag0.replaceFirst(ServerType.ROCTEC.name(), ServerType.NEXT_TRAIN.name());
+                            pref.edit().putString("type", ServerType.NEXT_TRAIN.name()).apply();
+                        }
+
+                        marker.setTag(tag0);
+
+                        infoHandler.post(infoRunnable);
+                        createDialog(marker, true);
+                    })
+                    .setOnCancelListener(dialog1 -> {
+                        infoHandler.removeCallbacks(infoRunnable);
+                    });
+            dialog = builder.create();
+            dialog.show();
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -822,7 +1020,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (!stationMarkers.containsKey(marker))
             return;
 
-        if (type == ServerType.NEXT_TRAIN) {
+        if (pref.getString("type", ServerType.NEXT_TRAIN.name()).equals(ServerType.NEXT_TRAIN.name())) {
             String station = stationMarkers.get(marker);
 
             if (!trains.containsColumn(station)) return;
@@ -881,7 +1079,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:eal:" + station + ":" + type);
+            marker.setTag("station:eal:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             ealStationMarkers.put(station, marker);
             stationMarkers.put(marker, station);
         }
@@ -892,7 +1090,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tml:" + station + ":" + type);
+            marker.setTag("station:tml:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             tmlStationMarkers.put(station, marker);
             stationMarkers.put(marker, station);
         }
@@ -905,7 +1103,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ktl:" + station + ":" + type);
+            marker.setTag("station:ktl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
 
@@ -917,7 +1115,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ael:" + station + ":" + type);
+            marker.setTag("station:ael:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
 
@@ -929,7 +1127,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:drl:" + station + ":" + type);
+            marker.setTag("station:drl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
 
@@ -941,7 +1139,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:isl:" + station + ":" + type);
+            marker.setTag("station:isl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
 
@@ -953,7 +1151,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tcl:" + station + ":" + type);
+            marker.setTag("station:tcl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
 
@@ -965,7 +1163,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tkl:" + station + ":" + type);
+            marker.setTag("station:tkl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
 
@@ -977,7 +1175,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:twl:" + station + ":" + type);
+            marker.setTag("station:twl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
 
@@ -989,7 +1187,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:sil:" + station + ":" + type);
+            marker.setTag("station:sil:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
             stationMarkers.put(marker, station);
         }
     }
