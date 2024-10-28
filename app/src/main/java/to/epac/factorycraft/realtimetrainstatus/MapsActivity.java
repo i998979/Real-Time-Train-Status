@@ -726,7 +726,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Projection projection = mMap.getProjection();
             LatLng markerPosition = marker.getPosition();
             Point markerPoint = projection.toScreenLocation(markerPosition);
-            Point targetPoint = new Point(markerPoint.x, (int) (markerPoint.y - findViewById(android.R.id.content).getHeight() / 3));
+            Point targetPoint = new Point(markerPoint.x, markerPoint.y - findViewById(android.R.id.content).getHeight() / 3);
             LatLng targetPosition = projection.fromScreenLocation(targetPoint);
             mMap.animateCamera(CameraUpdateFactory.newLatLng(targetPosition), 500, null);
 
