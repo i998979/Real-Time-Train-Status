@@ -722,9 +722,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
 
-        mMap.setInfoWindowAdapter(new TrainInfoAdapter(this));
-
-
         mMap.setOnMarkerClickListener(marker -> {
             Projection projection = mMap.getProjection();
             LatLng markerPosition = marker.getPosition();
