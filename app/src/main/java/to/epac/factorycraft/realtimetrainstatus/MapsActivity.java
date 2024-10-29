@@ -631,6 +631,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public Runnable fetchRoctec(String station) {
+        Log.d("tagg", "Roctec start");
+
         Runnable runnable = () -> {
             try {
                 String data = "";
@@ -662,6 +664,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public Runnable fetchNextTrain(String line0, String station) {
+        Log.d("tagg", "NextTrain start");
+
         Runnable runnable = () -> {
             try {
                 String data = "";
@@ -756,13 +760,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
                             if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
                                 futures.add(CompletableFuture
-                                        .runAsync(fetchNextTrain(entry1.getKey(), station))
-                                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
+                                        .runAsync(fetchNextTrain(entry1.getKey(), station)));
                             }
                         }
                         futures.add(CompletableFuture
-                                .runAsync(fetchRoctec(station))
-                                .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
+                                .runAsync(fetchRoctec(station)));
 
                         CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
                                 .thenRunAsync(() -> {
@@ -780,25 +782,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 return true;
             }
-        });
-
-        mMap.setOnInfoWindowClickListener(marker -> {
-            if (!stationMarkers.containsKey(marker)) return;
-
-            String tag = (String) marker.getTag();
-
-            if (tag.contains(ServerType.NEXT_TRAIN.name())) {
-                tag = tag.replaceFirst(ServerType.NEXT_TRAIN.name(), ServerType.ROCTEC.name());
-                pref.edit().putString("type", ServerType.ROCTEC.name()).apply();
-            } else if (tag.contains(ServerType.ROCTEC.name())) {
-                tag = tag.replaceFirst(ServerType.ROCTEC.name(), ServerType.NEXT_TRAIN.name());
-                pref.edit().putString("type", ServerType.NEXT_TRAIN.name()).apply();
-            }
-
-            marker.setTag(tag);
-
-            updateStation(marker);
-            marker.showInfoWindow();
         });
     }
 
@@ -827,10 +810,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (tag.startsWith("station")) {
             String line = tag.split(":")[1];
             String station = tag.split(":")[2];
-            MapsActivity.ServerType type = MapsActivity.ServerType.valueOf(tag.split(":")[3]);
 
-            if (create)
-                view = getLayoutInflater().inflate(type == MapsActivity.ServerType.NEXT_TRAIN ? R.layout.layout_info : R.layout.layout_roctec, null);
+            if (create) {
+                if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN)
+                    view = getLayoutInflater().inflate(R.layout.layout_info, null);
+                else
+                    view = getLayoutInflater().inflate(R.layout.layout_roctec, null);
+            }
 
             LinearLayout infoLayout = view.findViewById(R.id.infoLayout);
             TableLayout stationLayout = view.findViewById(R.id.stationLayout);
@@ -860,7 +846,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 trainRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
 
                 // NextTrain
-                if (type == MapsActivity.ServerType.NEXT_TRAIN) {
+                if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN) {
                     if (serverLine.isEmpty() || !serverLine.equalsIgnoreCase(data[0])) {
                         serverLine = data[0];
 
@@ -973,21 +959,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .setNegativeButton("Cancel", (dialog1, which) -> {
                         dialog1.cancel();
                     })
-                    .setPositiveButton(pref.getString("type", ServerType.NEXT_TRAIN.name()).equals(ServerType.NEXT_TRAIN.name())
+                    .setPositiveButton(ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN
                             ? "Roctec" : "Next Train", (dialog, which) -> {
-                        String tag0 = (String) marker.getTag();
-
-                        if (tag0.contains(ServerType.NEXT_TRAIN.name())) {
-                            tag0 = tag0.replaceFirst(ServerType.NEXT_TRAIN.name(), ServerType.ROCTEC.name());
+                        if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN)
                             pref.edit().putString("type", ServerType.ROCTEC.name()).apply();
-                        } else if (tag0.contains(ServerType.ROCTEC.name())) {
-                            tag0 = tag0.replaceFirst(ServerType.ROCTEC.name(), ServerType.NEXT_TRAIN.name());
+                        else
                             pref.edit().putString("type", ServerType.NEXT_TRAIN.name()).apply();
-                        }
-
-                        marker.setTag(tag0);
 
                         infoHandler.post(infoRunnable);
+                        updateStation(marker);
                         createDialog(marker, true);
                     })
                     .setOnCancelListener(dialog1 -> {
@@ -1025,7 +1005,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (!stationMarkers.containsKey(marker))
             return;
 
-        if (pref.getString("type", ServerType.NEXT_TRAIN.name()).equals(ServerType.NEXT_TRAIN.name())) {
+        if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN) {
             String station = stationMarkers.get(marker);
 
             if (!trains.containsColumn(station)) return;
@@ -1084,7 +1064,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:eal:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:eal:" + station);
             ealStationMarkers.put(station, marker);
             stationMarkers.put(marker, station);
         }
@@ -1095,7 +1075,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tml:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:tml:" + station);
             tmlStationMarkers.put(station, marker);
             stationMarkers.put(marker, station);
         }
@@ -1108,7 +1088,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ktl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:ktl:" + station);
             stationMarkers.put(marker, station);
         }
 
@@ -1120,7 +1100,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ael:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:ael:" + station);
             stationMarkers.put(marker, station);
         }
 
@@ -1132,7 +1112,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:drl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:drl:" + station);
             stationMarkers.put(marker, station);
         }
 
@@ -1144,7 +1124,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:isl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:isl:" + station);
             stationMarkers.put(marker, station);
         }
 
@@ -1156,7 +1136,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tcl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:tcl:" + station);
             stationMarkers.put(marker, station);
         }
 
@@ -1168,7 +1148,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tkl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:tkl:" + station);
             stationMarkers.put(marker, station);
         }
 
@@ -1180,7 +1160,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:twl:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:twl:" + station);
             stationMarkers.put(marker, station);
         }
 
@@ -1192,7 +1172,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .anchor(0.5f, 0.5f)
                     .zIndex(100)
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:sil:" + station + ":" + pref.getString("type", ServerType.NEXT_TRAIN.name()));
+            marker.setTag("station:sil:" + station);
             stationMarkers.put(marker, station);
         }
     }
