@@ -48,7 +48,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -1018,20 +1017,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         String snippet = "";
 
-        List<Train> list = null;
+        List<Train> list = new ArrayList<>();
         if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN) {
             for (Map.Entry<String, List<Train>> entry : trains.column(station).entrySet()) {
                 String line = entry.getKey();
 
-                list = trains.get(line, station).stream()
-                        .sorted(Comparator.comparing(train -> train.line)).collect(Collectors.toCollection(ArrayList::new));
+                list.addAll(trains.get(line, station));
             }
         } else {
-            list = roctecTrains.get(station).stream()
-                    .sorted(Comparator.comparing(train -> train.line)).collect(Collectors.toCollection(ArrayList::new));
+            list.addAll(roctecTrains.get(station));
         }
 
-        for (Train train : list) {
+        for (Train train : list.stream().sorted(Comparator.comparing(train -> Utils.getLineName(train.line))).collect(Collectors.toList())) {
             snippet += train.line + "," + train.dest + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
         }
 
