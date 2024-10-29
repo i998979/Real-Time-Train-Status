@@ -83,6 +83,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public Map<String, List<Train>> roctecTrains;
     public HashBasedTable<String, String, List<Train>> trains;
 
+    private Handler tripHandler;
+    private Runnable tripRunnable;
     private Handler infoHandler;
     private Runnable infoRunnable;
 
@@ -177,8 +179,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         // Declare handlers and runnables
-        Handler handler = new Handler(getMainLooper());
-        Runnable overview = new Runnable() {
+        tripHandler = new Handler(getMainLooper());
+        tripRunnable = new Runnable() {
             @Override
             public void run() {
                 Runnable ealOv = () -> {
@@ -235,7 +237,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             updateTrainTrips();
                         });
 
-                handler.postDelayed(this, 5000);
+                tripHandler.postDelayed(this, 5000);
             }
         };
 
@@ -298,7 +300,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     link_tml = AES.decrypt(cipher_tml, code);
                                     link_roctec = AES.decrypt(cipher_roctec, code);
 
-                                    handler.post(overview);
+                                    tripHandler.post(tripRunnable);
                                 });
                         runOnUiThread(() -> {
                             builder.show();
@@ -306,7 +308,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     // Already checked
                     else {
-                        handler.post(overview);
+                        tripHandler.post(tripRunnable);
                     }
                 });
 
@@ -494,6 +496,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onResume();
 
         if (infoHandler != null) infoHandler.post(infoRunnable);
+        if (tripHandler != null) tripHandler.post(tripRunnable);
     }
 
 
