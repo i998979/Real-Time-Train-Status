@@ -48,6 +48,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1005,41 +1007,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (!stationMarkers.containsKey(marker))
             return;
 
+
+        String station = stationMarkers.get(marker);
+
         if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN) {
-            String station = stationMarkers.get(marker);
-
             if (!trains.containsColumn(station)) return;
-
-
-            String snippet = "";
-            for (Map.Entry<String, List<Train>> entry1 : trains.column(station).entrySet()) {
-                String line = entry1.getKey();
-
-                for (Train train : trains.get(line, station)) {
-                    snippet += train.line + "," + train.dest + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
-                }
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                marker.setSnippet(snippet0);
-            });
         } else {
-            String station = stationMarkers.get(marker);
-
             if (!roctecTrains.containsKey(station)) return;
-
-
-            String snippet = "";
-            for (Train train : roctecTrains.get(station)) {
-                snippet += train.line + "," + train.dest + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
-            }
-
-            String snippet0 = snippet;
-            runOnUiThread(() -> {
-                marker.setSnippet(snippet0);
-            });
         }
+
+        String snippet = "";
+
+        List<Train> list = null;
+        if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN) {
+            for (Map.Entry<String, List<Train>> entry : trains.column(station).entrySet()) {
+                String line = entry.getKey();
+
+                list = trains.get(line, station).stream()
+                        .sorted(Comparator.comparing(train -> train.line)).collect(Collectors.toCollection(ArrayList::new));
+            }
+        } else {
+            list = roctecTrains.get(station).stream()
+                    .sorted(Comparator.comparing(train -> train.line)).collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        for (Train train : list) {
+            snippet += train.line + "," + train.dest + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
+        }
+
+        String snippet0 = snippet;
+        runOnUiThread(() -> {
+            marker.setSnippet(snippet0);
+        });
     }
 
     public void drawLines() {
