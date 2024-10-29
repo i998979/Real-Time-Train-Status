@@ -143,7 +143,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         trains = HashBasedTable.create();
         roctecTrains = new HashMap<>();
 
-        infoHandler = new Handler();
+        infoHandler = new Handler(getMainLooper());
 
         mapUtils = new MapUtils(getApplicationContext());
         // Code related
@@ -176,60 +176,66 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         // Declare handlers and runnables
-        Handler handler = new Handler();
-        Runnable overview = () -> {
-            Runnable ealOv = () -> {
-                ealTrips.clear();
-                try {
-                    String eal_data = "";
+        Handler handler = new Handler(getMainLooper());
+        Runnable overview = new Runnable() {
+            @Override
+            public void run() {
+                Runnable ealOv = () -> {
+                    ealTrips.clear();
+                    try {
+                        String eal_data = "";
 
-                    URL url = new URL(link_eal);
-                    HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                    conn.setConnectTimeout(5000);
-                    conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                    conn.connect();
+                        URL url = new URL(link_eal);
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                        conn.setConnectTimeout(5000);
+                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                        conn.connect();
 
-                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    String line = "";
-                    while ((line = in.readLine()) != null) {
-                        eal_data += line;
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String line = "";
+                        while ((line = in.readLine()) != null) {
+                            eal_data += line;
+                        }
+                        in.close();
+
+                        ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    in.close();
+                };
 
-                    ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            };
+                Runnable tmlOv = () -> {
+                    tmlTrips.clear();
+                    try {
+                        String tml_data = "";
 
-            Runnable tmlOv = () -> {
-                tmlTrips.clear();
-                try {
-                    String tml_data = "";
+                        URL url = new URL(link_tml);
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                        conn.setConnectTimeout(5000);
+                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                        conn.connect();
 
-                    URL url = new URL(link_tml);
-                    HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                    conn.setConnectTimeout(5000);
-                    conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                    conn.connect();
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String line = "";
+                        while ((line = in.readLine()) != null) {
+                            tml_data += line;
+                        }
+                        in.close();
 
-                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    String line = "";
-                    while ((line = in.readLine()) != null) {
-                        tml_data += line;
+                        tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    in.close();
+                };
 
-                    tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            };
+                CompletableFuture.allOf(CompletableFuture.runAsync(ealOv), CompletableFuture.runAsync(tmlOv))
+                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS)
+                        .thenRunAsync(() -> {
+                            updateTrainTrips();
+                        });
 
-            CompletableFuture.allOf(CompletableFuture.runAsync(ealOv), CompletableFuture.runAsync(tmlOv))
-                    .thenRunAsync(() -> {
-                        updateTrainTrips();
-                    });
+                handler.postDelayed(this, 5000);
+            }
         };
 
 
