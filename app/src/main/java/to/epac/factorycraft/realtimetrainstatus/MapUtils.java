@@ -35,9 +35,15 @@ public class MapUtils {
      * @param latLng Location to check
      * @return Starting point and ending point of the closest sector
      */
-    public LatLng[] getClosestSector(LatLng latLng, String line) {
+    public LatLng[] getClosestSector(LatLng latLng, String line, boolean isSpur) {
         // Retrieve all sector points
-        List<LatLng> sectorPoints = Utils.getLatLngs(ctx.getResources().getString(line.equals("EAL") ? R.string.eal_main : R.string.tml_main));
+        List<LatLng> sectorPoints = new ArrayList<>();
+        if (line.equals("EAL")) {
+            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(isSpur ? R.string.eal_lmc : R.string.eal_low)));
+            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.eal_main)));
+        } else
+            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.tml_main)));
+
 
         // Closes sector
         LatLng[] closestSector = new LatLng[2];
@@ -69,17 +75,24 @@ public class MapUtils {
     /**
      * Get all sector points between from and to, including trimmed starting point and ending point
      *
-     * @param from From where
-     * @param to   To where
+     * @param from   From where
+     * @param to     To where
+     * @param isSpur Checking spur line instead of main line
      * @return List of the sector points
      */
-    public List<LatLng> getAllSectorPointsBetween(LatLng from, LatLng to, String line) {
+    public List<LatLng> getAllSectorPointsBetween(LatLng from, LatLng to, String line, boolean isSpur) {
         List<LatLng> latLngs = new ArrayList<>();
 
-        List<LatLng> sectors = Utils.getLatLngs(ctx.getResources().getString(line.equals("EAL") ? R.string.eal_main : R.string.tml_main));
+        List<LatLng> sectorPoints = new ArrayList<>();
+        if (line.equals("EAL")) {
+            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(isSpur ? R.string.eal_lmc : R.string.eal_low)));
+            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.eal_main)));
+        } else
+            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.tml_main)));
 
-        LatLng[] fromSector = getClosestSector(from, line);
-        LatLng[] toSector = getClosestSector(to, line);
+
+        LatLng[] fromSector = getClosestSector(from, line, isSpur);
+        LatLng[] toSector = getClosestSector(to, line, isSpur);
 
         boolean swapped = false;
 
@@ -91,21 +104,21 @@ public class MapUtils {
         // If they are in different sector
         else {
             // Get the starting point of from's sector, then retrieve the index of it
-            int start = sectors.indexOf(fromSector[1]);
+            int start = sectorPoints.indexOf(fromSector[1]);
             // Get the ending point of to's sector, then retrieve the index of it
-            int end = sectors.indexOf(toSector[0]);
+            int end = sectorPoints.indexOf(toSector[0]);
 
             if (start > end) {
                 swapped = true;
-                start = sectors.indexOf(toSector[1]);
-                end = sectors.indexOf(fromSector[0]);
+                start = sectorPoints.indexOf(toSector[1]);
+                end = sectorPoints.indexOf(fromSector[0]);
             }
 
             latLngs.add(swapped ? to : from);
 
             // Loop through all sector point between start and end
             for (int i = start; i <= end; i++) {
-                latLngs.add(sectors.get(i));
+                latLngs.add(sectorPoints.get(i));
             }
 
             latLngs.add(swapped ? from : to);
@@ -193,11 +206,16 @@ public class MapUtils {
         if (startDistance > 10000)
             return currLatLng;
 
-        if ((trip.currentStationCode == 0 || trip.currentStationCode == 701) && (trip.nextStationCode == 0 || trip.nextStationCode == 701))
-            return Utils.getLatLng(ctx.getResources().getString(R.string.htd));
+        if ((trip.currentStationCode == 0 || trip.currentStationCode == 701) && (trip.nextStationCode == 0 || trip.nextStationCode == 701)) {
+            if (line.equals("TML"))
+                return Utils.getLatLng(ctx.getResources().getString(R.string.phd));
+            else
+                return Utils.getLatLng(ctx.getResources().getString(R.string.htd));
+        }
 
 
-        List<LatLng> sectorsBetweenCurrAndNext = getAllSectorPointsBetween(currLatLng, nextLatLng, line);
+        List<LatLng> sectorsBetweenCurrAndNext = getAllSectorPointsBetween(currLatLng, nextLatLng, line,
+                trip.currentStationCode == 14 || trip.destinationStationCode == 14 || trip.nextStationCode == 14);
 
         double lengthBetweenCurrAndNext = SphericalUtil.computeLength(sectorsBetweenCurrAndNext);
 

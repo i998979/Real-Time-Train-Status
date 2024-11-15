@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,7 +27,6 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
@@ -184,6 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void run() {
                 Runnable ealOv = () -> {
+                    // TODO: Find why trips are duplicated 3 times and fix
                     ealTrips.clear();
                     try {
                         String eal_data = "";
@@ -208,6 +207,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 };
 
                 Runnable tmlOv = () -> {
+                    // TODO: Find why trips are duplicated 3 times and fix
                     tmlTrips.clear();
                     try {
                         String tml_data = "";
@@ -757,11 +757,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
                             if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
                                 futures.add(CompletableFuture
-                                        .runAsync(fetchNextTrain(entry1.getKey(), station)));
+                                        .runAsync(fetchNextTrain(entry1.getKey(), station))
+                                        .orTimeout(5000, TimeUnit.MILLISECONDS));
                             }
                         }
                         futures.add(CompletableFuture
-                                .runAsync(fetchRoctec(station)));
+                                .runAsync(fetchRoctec(station))
+                                .orTimeout(5000, TimeUnit.MILLISECONDS));
 
                         CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
                                 .thenRunAsync(() -> {
@@ -1037,6 +1039,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void drawLines() {
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_main)), Utils.getColor(this, "eal"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_rac)), Utils.getColor(this, "eal"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_low)), Utils.getColor(this, "eal"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.eal_lmc)), Utils.getColor(this, "eal"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.tml_main)), Utils.getColor(this, "tml"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.ktl_main)), Utils.getColor(this, "ktl"));
@@ -1045,10 +1048,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.isl_main)), Utils.getColor(this, "isl"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.tcl_main)), Utils.getColor(this, "tcl"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.tkl_main)), Utils.getColor(this, "tkl"));
+        mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.tkl_lhp)), Utils.getColor(this, "tkl"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.twl_main)), Utils.getColor(this, "twl"));
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.sil_main)), Utils.getColor(this, "sil"));
     }
 
+    // TODO: Fix duplicate station markers
     public void addStations() {
         for (String station : getResources().getString(R.string.eal_stations).split(" ")) {
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
