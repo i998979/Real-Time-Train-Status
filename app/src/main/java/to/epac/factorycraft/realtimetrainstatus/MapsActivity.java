@@ -870,6 +870,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
                     TextView dest = new TextView(this);
+                    // TODO: Make color GREY if the train is NIS
                     dest.setTextColor(Color.BLACK);
                     dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     dest.setText(Utils.getStationName(this, data[1]) + (data[2].equals("RAC") ? " via Racecourse " : " "));
