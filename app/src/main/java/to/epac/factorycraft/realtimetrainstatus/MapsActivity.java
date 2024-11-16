@@ -182,8 +182,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void run() {
                 Runnable ealOv = () -> {
-                    // TODO: Find why trips are duplicated 3 times and fix
-                    ealTrips.clear();
                     try {
                         String eal_data = "";
 
@@ -200,6 +198,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                         in.close();
 
+                        ealTrips.clear();
                         ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -207,8 +206,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 };
 
                 Runnable tmlOv = () -> {
-                    // TODO: Find why trips are duplicated 3 times and fix
-                    tmlTrips.clear();
                     try {
                         String tml_data = "";
 
@@ -225,6 +222,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                         in.close();
 
+                        tmlTrips.clear();
                         tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -757,13 +755,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
                             if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
                                 futures.add(CompletableFuture
-                                        .runAsync(fetchNextTrain(entry1.getKey(), station))
-                                        .orTimeout(5000, TimeUnit.MILLISECONDS));
+                                        .runAsync(fetchNextTrain(entry1.getKey(), station)));
+                                        //.completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
                             }
                         }
                         futures.add(CompletableFuture
-                                .runAsync(fetchRoctec(station))
-                                .orTimeout(5000, TimeUnit.MILLISECONDS));
+                                .runAsync(fetchRoctec(station)));
+                                //.completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
 
                         CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
                                 .thenRunAsync(() -> {
@@ -870,7 +868,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
                     TextView dest = new TextView(this);
-                    // TODO: Make color GREY if the train is NIS
                     dest.setTextColor(Color.BLACK);
                     dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     dest.setText(Utils.getStationName(this, data[1]) + (data[2].equals("RAC") ? " via Racecourse " : " "));
@@ -919,6 +916,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (i % 2 != 0) trainRow.setBackgroundColor(Color.parseColor("#C5D9E4"));
 
                     TextView dest = new TextView(this);
+                    // TODO: Make color GREY if the train is NIS
                     dest.setTextColor(Color.BLACK);
                     dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
                     dest.setText(Utils.getStationName(this, data[1]) + " ");
