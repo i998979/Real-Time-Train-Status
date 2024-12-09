@@ -1,7 +1,6 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.app.Activity;
-import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
@@ -13,6 +12,15 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class Utils {
+
+    public static boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
     public static String mapStation(int code, String line) {
         // TML
