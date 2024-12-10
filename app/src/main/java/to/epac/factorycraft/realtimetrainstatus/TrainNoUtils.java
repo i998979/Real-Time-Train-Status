@@ -131,7 +131,7 @@ public class TrainNoUtils {
 
                 if (System.currentTimeMillis() - receivedTime > 60000) continue;
 
-                eal.put("EAL", td, trainId);
+                eal.put("NSL", td, trainId);
             }
         } catch (Exception e) {
         }

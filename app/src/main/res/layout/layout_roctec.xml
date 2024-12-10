@@ -55,7 +55,8 @@
                 android:id="@+id/stationLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#FFFFFF">
+                android:background="#FFFFFF"
+                android:stretchColumns="*">
 
                 <TableRow
                     android:layout_width="match_parent"
@@ -75,7 +76,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Trip "
+                        android:text="Trip No. "
                         android:textColor="#FFFFFF"
                         android:textSize="16sp"
                         android:textStyle="bold" />

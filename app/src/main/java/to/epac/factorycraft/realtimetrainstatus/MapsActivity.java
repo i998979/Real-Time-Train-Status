@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -63,19 +64,20 @@ import to.epac.factorycraft.realtimetrainstatus.databinding.ActivityMapsBinding;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    /* EAL */
+    // EAL
     public List<Trip> ealTrips;
     // Train ID : Marker
     public Map<String, Marker> ealTrainMarkers;
     // EAL station markers, used by menu to navigate positions
     public Map<String, Marker> ealStationMarkers;
-    public NumberPicker stationPicker;
-    public NumberPicker trainPicker;
 
     // TML
     public List<Trip> tmlTrips;
     public Map<String, Marker> tmlTrainMarkers;
     public Map<String, Marker> tmlStationMarkers;
+
+    public NumberPicker stationPicker;
+    public NumberPicker trainPicker;
 
     // Line : Stations
     public Map<String, String[]> stations;
@@ -104,16 +106,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String code = "";
     private String link_eal = "";
     private String link_tml = "";
+    private String link_ktl = "";
     private String link_roctec = "";
 
     // link + code = cipher
     private String cipher_eal = "";
     private String cipher_tml = "";
+    private String cipher_ktl = "";
     private String cipher_roctec = "";
 
     // link + secret = encrypted
     private String encrypted_eal = "";
     private String encrypted_tml = "";
+    private String encrypted_ktl = "";
     private String encrypted_roctec = "";
 
     public static String line = "EAL";
@@ -373,67 +378,68 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         // Declare handlers and runnables
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        ExecutorService tripExecutor = Executors.newFixedThreadPool(2);
         tripHandler = new Handler(Looper.getMainLooper());
         tripRunnable = new Runnable() {
             @Override
             public void run() {
                 CompletableFuture<Void> ealOvFuture = CompletableFuture.runAsync(() -> {
-                    Log.d("tagg", Thread.currentThread() + " Running ealOvFuture");
-                    try {
-                        String eal_data = "";
+                            Log.d("tagg", Thread.currentThread() + " Running ealOvFuture");
+                            try {
+                                String eal_data = "";
 
-                        URL url = new URL(link_eal);
-                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                        conn.setConnectTimeout(5000);
-                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                        conn.connect();
+                                URL url = new URL(link_eal);
+                                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                                conn.setConnectTimeout(5000);
+                                conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                                conn.connect();
 
-                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        String line = "";
-                        while ((line = in.readLine()) != null) {
-                            eal_data += line;
-                        }
-                        in.close();
+                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                                String line = "";
+                                while ((line = in.readLine()) != null) {
+                                    eal_data += line;
+                                }
+                                in.close();
 
-                        ealTrips.clear();
-                        ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
+                                ealTrips.clear();
+                                ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
 
-                        trainNos.row("EAL").clear();
-                        trainNos.putAll(TrainNoUtils.getEALTrainNos(eal_data));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }, executor);
+                                trainNos.row("EAL").clear();
+                                trainNos.putAll(TrainNoUtils.getEALTrainNos(eal_data));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }, tripExecutor)
+                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
 
                 CompletableFuture<Void> tmlOvFuture = CompletableFuture.runAsync(() -> {
-                    Log.d("tagg", Thread.currentThread() + " Running tmlOvFuture");
-                    try {
-                        String tml_data = "";
+                            Log.d("tagg", Thread.currentThread() + " Running tmlOvFuture");
+                            try {
+                                String tml_data = "";
 
-                        URL url = new URL(link_tml);
-                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                        conn.setConnectTimeout(5000);
-                        conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                        conn.connect();
+                                URL url = new URL(link_tml);
+                                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                                conn.setConnectTimeout(5000);
+                                conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                                conn.connect();
 
-                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        String line = "";
-                        while ((line = in.readLine()) != null) {
-                            tml_data += line;
-                        }
-                        in.close();
+                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                                String line = "";
+                                while ((line = in.readLine()) != null) {
+                                    tml_data += line;
+                                }
+                                in.close();
 
-                        tmlTrips.clear();
-                        tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }, executor);
+                                tmlTrips.clear();
+                                tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }, tripExecutor)
+                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
 
 
                 CompletableFuture.allOf(ealOvFuture, tmlOvFuture)
-                        // .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS)
                         .thenRunAsync(() -> {
                             updateTrainTrips();
                         });
@@ -443,38 +449,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         };
 
 
-        ExecutorService executor0 = Executors.newFixedThreadPool(1);
+        ExecutorService trainNoExecutor = Executors.newFixedThreadPool(1);
         trainNoHandler = new Handler(Looper.getMainLooper());
         trainNoRunnable = new Runnable() {
             @Override
             public void run() {
                 CompletableFuture<Void> ktlTrainNoFuture = CompletableFuture.runAsync(() -> {
-                    Log.d("tagg", Thread.currentThread() + " Running ktlTrainNo");
-                    try {
-                        String ktl_data = "";
+                            Log.d("tagg", Thread.currentThread() + " Running ktlTrainNo");
+                            try {
+                                String ktl_data = "";
 
-                        URL url = new URL("https://3nx7c25ob6.execute-api.ap-east-1.amazonaws.com/trainLoads");
-                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                        conn.setConnectTimeout(5000);
-                        conn.connect();
+                                URL url = new URL(link_ktl);
+                                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                                conn.setConnectTimeout(5000);
+                                conn.connect();
 
-                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        String line = "";
-                        while ((line = in.readLine()) != null) {
-                            ktl_data += line;
-                        }
-                        in.close();
+                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                                String line = "";
+                                while ((line = in.readLine()) != null) {
+                                    ktl_data += line;
+                                }
+                                in.close();
 
-                        trainNos.row("KTL").clear();
-                        trainNos.putAll(TrainNoUtils.getKTLTrainNos(ktl_data));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }, executor0);
-
-                /*CompletableFuture.runAsync(ktlTrainNo)
-                // .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS)
-                ;*/
+                                trainNos.row("KTL").clear();
+                                trainNos.putAll(TrainNoUtils.getKTLTrainNos(ktl_data));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }, trainNoExecutor)
+                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
 
                 trainNoHandler.postDelayed(this, 5000);
             }
@@ -507,14 +510,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         JSONObject cipher = jsonObject.getJSONObject("cipher");
                         cipher_eal = cipher.getString("eal");
                         cipher_tml = cipher.getString("tml");
+                        cipher_ktl = cipher.getString("ktl");
                         cipher_roctec = cipher.getString("roctec");
                         JSONObject encrypted = jsonObject.getJSONObject("encrypted");
                         encrypted_eal = encrypted.getString("eal");
                         encrypted_tml = encrypted.getString("tml");
+                        encrypted_ktl = encrypted.getString("ktl");
                         encrypted_roctec = encrypted.getString("roctec");
 
                         link_eal = AES.decrypt(cipher_eal, code);
                         link_tml = AES.decrypt(cipher_tml, code);
+                        link_ktl = AES.decrypt(cipher_ktl, code);
                         link_roctec = AES.decrypt(cipher_roctec, code);
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -536,6 +542,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                     link_eal = AES.decrypt(cipher_eal, code);
                                     link_tml = AES.decrypt(cipher_tml, code);
+                                    link_ktl = AES.decrypt(cipher_ktl, code);
                                     link_roctec = AES.decrypt(cipher_roctec, code);
 
                                     tripHandler.post(tripRunnable);
@@ -840,25 +847,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                         for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
-                            if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station))) {
-                                /*ExecutorService executor = Executors.newFixedThreadPool(1);
-                                futures.add(CompletableFuture
-                                        .runAsync(getNextTrainRunnable(entry1.getKey(), station), executor)
-                                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));*/
+                            if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station)))
                                 runnables.add(getNextTrainRunnable(entry1.getKey(), station));
-                            }
                         }
-
                         runnables.add(getRoctecRunnable(station));
+
 
                         ExecutorService executor = Executors.newFixedThreadPool(runnables.size());
                         for (Runnable runnable : runnables) {
-                            futures.add(CompletableFuture.runAsync(runnable, executor));
+                            futures.add(CompletableFuture.runAsync(runnable, executor)
+                                    .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
                         }
 
-                        /*futures.add(CompletableFuture
-                                .runAsync(getRoctecRunnable(station), executor)
-                                .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));*/
 
                         CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
                                 .thenRunAsync(() -> {
@@ -991,6 +991,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 // Roctec
                 else {
+                    // Get the first row
+                    TableRow firstRow = (TableRow) stationLayout.getChildAt(0);
+
+                    // Measure the widths of cells in the first row
+                    int columnCount = firstRow.getChildCount();
+                    int[] columnWidths = new int[columnCount];
+                    for (int j = 0; j < columnCount; j++) {
+                        View cell = firstRow.getChildAt(j);
+                        cell.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                        columnWidths[j] = cell.getMeasuredWidth();
+                    }
+
+
                     if (roctecLine.isEmpty() || !roctecLine.equalsIgnoreCase(data[0])) {
                         roctecLine = data[0];
 
@@ -1017,17 +1030,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     TextView dest = new TextView(this);
                     // TODO: Make color GREY if the train is NIS
                     dest.setTextColor(Color.BLACK);
-                    dest.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    dest.setLayoutParams(new TableRow.LayoutParams(columnWidths[0], TableRow.LayoutParams.WRAP_CONTENT));
                     dest.setText(Utils.getStationName(this, data[1]) + " ");
 
                     TextView td = new TextView(this);
                     td.setTextColor(Color.BLACK);
-                    td.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    td.setLayoutParams(new TableRow.LayoutParams(columnWidths[1], TableRow.LayoutParams.WRAP_CONTENT));
                     td.setText(data[2]);
 
                     TextView train = new TextView(this);
                     train.setTextColor(Color.BLACK);
-                    train.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 2));
+                    TableRow.LayoutParams param = new TableRow.LayoutParams(columnWidths[2], TableRow.LayoutParams.WRAP_CONTENT);
+                    param.setMargins(10, 0, 10, 0);
+                    train.setLayoutParams(param);
                     train.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                     train.setSelected(true);
                     train.setSingleLine(true);
@@ -1048,12 +1063,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     TextView plat = new TextView(this);
                     plat.setTextColor(Color.BLACK);
-                    plat.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    plat.setLayoutParams(new TableRow.LayoutParams(columnWidths[3], TableRow.LayoutParams.WRAP_CONTENT));
                     plat.setText(data[3]);
 
                     TextView ttnt = new TextView(this);
                     ttnt.setTextColor(Color.BLACK);
-                    ttnt.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                    ttnt.setLayoutParams(new TableRow.LayoutParams(columnWidths[4], TableRow.LayoutParams.WRAP_CONTENT));
                     ttnt.setText(data[4]);
 
                     lastUpdateTv.setText(data.length >= 6 ? data[5] : "Never");
@@ -1173,7 +1188,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapUtils.drawPolylines(mMap, Utils.getLatLngs(getString(R.string.sil_main)), Utils.getColor(this, "sil"));
     }
 
-    // TODO: Fix duplicate station markers
     public void addStations() {
         for (String station : getResources().getString(R.string.eal_stations).split(" ")) {
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
@@ -1183,10 +1197,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:eal:" + station);
             ealStationMarkers.put(station, marker);
+
+            if (stationMarkers.containsValue(station)) continue;
             stationMarkers.put(marker, station);
         }
 
         for (String station : getResources().getString(R.string.tml_stations).split(" ")) {
+            if (stationMarkers.containsValue(station)) continue;
+
             String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
                     .anchor(0.5f, 0.5f)
@@ -1194,6 +1212,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
             marker.setTag("station:tml:" + station);
             tmlStationMarkers.put(station, marker);
+
+            if (stationMarkers.containsValue(station)) continue;
             stationMarkers.put(marker, station);
         }
 
