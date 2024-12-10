@@ -1030,19 +1030,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     TextView dest = new TextView(this);
                     // TODO: Make color GREY if the train is NIS
                     dest.setTextColor(Color.BLACK);
-                    dest.setLayoutParams(new TableRow.LayoutParams(columnWidths[0], TableRow.LayoutParams.WRAP_CONTENT));
+                    TableRow.LayoutParams destParam = new TableRow.LayoutParams(columnWidths[0], TableRow.LayoutParams.WRAP_CONTENT);
+                    destParam.setMargins(10, 0, 10, 0);
+                    dest.setLayoutParams(destParam);
+                    dest.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                    dest.setSelected(true);
+                    dest.setSingleLine(true);
+                    dest.setMarqueeRepeatLimit(-1);
                     dest.setText(Utils.getStationName(this, data[1]) + " ");
 
                     TextView td = new TextView(this);
                     td.setTextColor(Color.BLACK);
-                    td.setLayoutParams(new TableRow.LayoutParams(columnWidths[1], TableRow.LayoutParams.WRAP_CONTENT));
+                    td.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                     td.setText(data[2]);
 
                     TextView train = new TextView(this);
                     train.setTextColor(Color.BLACK);
-                    TableRow.LayoutParams param = new TableRow.LayoutParams(columnWidths[2], TableRow.LayoutParams.WRAP_CONTENT);
-                    param.setMargins(10, 0, 10, 0);
-                    train.setLayoutParams(param);
+                    TableRow.LayoutParams trainParam = new TableRow.LayoutParams(columnWidths[2], TableRow.LayoutParams.WRAP_CONTENT);
+                    trainParam.setMargins(10, 0, 10, 0);
+                    train.setLayoutParams(trainParam);
                     train.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                     train.setSelected(true);
                     train.setSingleLine(true);
