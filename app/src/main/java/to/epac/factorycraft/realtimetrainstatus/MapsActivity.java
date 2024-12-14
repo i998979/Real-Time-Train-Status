@@ -736,7 +736,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(("{\"stationcode\":\"" + station.toUpperCase() + "\"}").getBytes());
                 }
-                // conn.setConnectTimeout(5000);
+                conn.setConnectTimeout(5000);
                 conn.connect();
 
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
