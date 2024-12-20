@@ -6,13 +6,13 @@ Additionally, Next Train API and TTNT are also embedded to show the estimated ar
 
 
 ### All MTR stations are shown on map
-![Screenshot_20241220_230911_Real Time Train Status](https://github.com/user-attachments/assets/32271a4b-75a4-4062-88e2-3bf9e57334d1)
+<img src="https://github.com/user-attachments/assets/32271a4b-75a4-4062-88e2-3bf9e57334d1" width="200">
 
 ### Detailed information of the train
-![Screenshot_20241220_230932_Real Time Train Status](https://github.com/user-attachments/assets/1a30bc79-44ef-42d4-80a5-17b7fbafa2c0)
+<img src="https://github.com/user-attachments/assets/1a30bc79-44ef-42d4-80a5-17b7fbafa2c0" width="200">
 
 ### TTNT of the station and train consists (East Rail Line and Kwun Tong Line only)
-![Screenshot_20241220_231013_Real Time Train Status](https://github.com/user-attachments/assets/ef8efdff-76f4-4559-ad3f-9a813c90c960)
+<img src="https://github.com/user-attachments/assets/ef8efdff-76f4-4559-ad3f-9a813c90c960" width="200">
 
 
 
