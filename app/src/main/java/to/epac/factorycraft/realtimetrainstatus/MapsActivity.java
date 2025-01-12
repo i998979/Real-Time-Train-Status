@@ -1054,12 +1054,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     train.setSingleLine(true);
                     train.setMarqueeRepeatLimit(-1);
                     if (roctecLine.equals("KTL") || roctecLine.equals("TWL") || roctecLine.equals("ISL") || roctecLine.equals("TKL")) {
-                        String td0 = Integer.parseInt(data[2].substring(2)) + "";
+                        String td0;
+                        try {
+                            td0 = Integer.parseInt(data[2].substring(2)) + "";
 
-                        if (trainNos.contains(roctecLine, td0))
-                            train.setText(trainNos.get(roctecLine, td0));
-                        else
+                            if (trainNos.contains(roctecLine, td0))
+                                train.setText(trainNos.get(roctecLine, td0));
+                            else
+                                train.setText("-");
+                        } catch (NumberFormatException e) {
                             train.setText("-");
+                        }
                     } else {
                         if (trainNos.contains(roctecLine, data[2]))
                             train.setText(trainNos.get(roctecLine, data[2]));
