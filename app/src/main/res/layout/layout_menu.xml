@@ -155,14 +155,14 @@
 
             </LinearLayout>
 
-            <NumberPicker
+            <to.epac.factorycraft.realtimetrainstatus.NumberPicker
                 android:id="@+id/stationPicker"
                 android:layout_width="match_parent"
                 android:layout_height="140dp"
                 android:layout_weight="1"
                 android:descendantFocusability="blocksDescendants" />
 
-            <NumberPicker
+            <to.epac.factorycraft.realtimetrainstatus.NumberPicker
                 android:id="@+id/trainPicker"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
