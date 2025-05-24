@@ -186,6 +186,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // StationPicker and TrainPicker
         stationPicker = findViewById(R.id.stationPicker);
+        stationPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         stationPicker.setSaveFromParentEnabled(false);
         stationPicker.setSaveEnabled(false);
         stationPicker.setWrapSelectorWheel(false);
@@ -193,6 +194,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         stationPicker.setTextColor(Color.GRAY);
 
         trainPicker = findViewById(R.id.trainPicker);
+        trainPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         trainPicker.setSaveFromParentEnabled(false);
         trainPicker.setSaveEnabled(false);
         trainPicker.setWrapSelectorWheel(false);
