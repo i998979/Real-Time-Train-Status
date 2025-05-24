@@ -1036,7 +1036,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     dest.setSelected(true);
                     dest.setSingleLine(true);
                     dest.setMarqueeRepeatLimit(-1);
-                    dest.setText(Utils.getStationName(this, data[1]) + " ");
+                    String dest0 = Utils.getStationName(this, data[1]) + " ";
+                    if (roctecLine.equals("EAL") || roctecLine.equals("NSL")) {
+                        try {
+                            if (data[2].matches(".*[BGKN].*")) dest0 += "via Racecourse ";
+                        } catch (Exception e) {
+                        }
+                    }
+                    dest.setText(dest0);
 
                     TextView td = new TextView(this);
                     td.setTextColor(Color.BLACK);
