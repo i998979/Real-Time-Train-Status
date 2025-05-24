@@ -25,13 +25,12 @@ public class NumberPicker extends android.widget.NumberPicker {
         super.onAttachedToWindow();
 
         try {
-            // Access the EditText inside NumberPicker
-            EditText input = (EditText) findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+            EditText input = findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
             if (input != null) {
-                input.setFilters(new InputFilter[]{}); // Optional: clean filters
+                input.setFilters(new InputFilter[]{});
             }
         } catch (Exception e) {
-            e.printStackTrace(); // Log but don’t crash
+            e.printStackTrace();
         }
     }
 }
