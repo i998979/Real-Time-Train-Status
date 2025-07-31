@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -37,6 +38,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.common.collect.HashBasedTable;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -90,6 +93,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Runnable tripRunnable;
     private Handler trainNoHandler;
     private Runnable trainNoRunnable;
+    private Handler hkoHandler;
+    private Runnable hkoRunnable;
     private Handler infoHandler;
     private Runnable infoRunnable;
 
@@ -119,6 +124,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String encrypted_tml = "";
     private String encrypted_ktl = "";
     private String encrypted_roctec = "";
+
+    private List<Integer> weatherIcons;
+    private int temperature;
 
     public static String line = "EAL";
 
@@ -161,6 +169,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Code related
         pref = getSharedPreferences("RealTimeTrainStatus", MODE_PRIVATE);
         code = pref.getString("code", "default");
+
+        weatherIcons = new ArrayList<>();
 
         // Station names
         String[] eal_stations = getResources().getString(R.string.eal_stations).split(" ");
@@ -485,6 +495,67 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         };
 
 
+        // Fetch HKO weather data
+        ExecutorService hkoExecutor = Executors.newFixedThreadPool(2);
+        hkoHandler = new Handler(Looper.getMainLooper());
+        hkoRunnable = new Runnable() {
+            @Override
+            public void run() {
+                CompletableFuture<Void> rhrreadFuture = CompletableFuture.runAsync(() -> {
+                            Log.d("tagg", Thread.currentThread() + " Running rhrreadFuture");
+                            try {
+                                String data = "";
+
+                                URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc");
+                                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                                conn.setConnectTimeout(5000);
+                                conn.connect();
+
+                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                                String line = "";
+                                while ((line = in.readLine()) != null) {
+                                    data += line;
+                                }
+                                in.close();
+
+                                updateIconAndTemperature(data);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }, hkoExecutor)
+                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
+
+                CompletableFuture<Void> warnsumFuture = CompletableFuture.runAsync(() -> {
+                            Log.d("tagg", Thread.currentThread() + " Running warnsumFuture");
+                            try {
+                                String data = "";
+
+                                URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=tc");
+                                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                                conn.setConnectTimeout(5000);
+                                conn.connect();
+
+                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                                String line = "";
+                                while ((line = in.readLine()) != null) {
+                                    data += line;
+                                }
+                                in.close();
+
+                                updateWeatherWarnings(data);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }, hkoExecutor)
+                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
+
+                CompletableFuture.allOf(warnsumFuture, rhrreadFuture);
+
+                hkoHandler.postDelayed(this, 5000 /*60000*/);
+            }
+        };
+
+
         // Fetch cipher from GitHub
         CompletableFuture.supplyAsync(() -> {
                     String json = "";
@@ -548,6 +619,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                     tripHandler.post(tripRunnable);
                                     trainNoHandler.post(trainNoRunnable);
+                                    hkoHandler.post(hkoRunnable);
                                 });
                         runOnUiThread(() -> {
                             builder.show();
@@ -569,6 +641,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             tripHandler.removeCallbacks(tripRunnable);
         if (trainNoHandler != null && trainNoHandler.hasCallbacks(trainNoRunnable))
             trainNoHandler.removeCallbacks(trainNoRunnable);
+        if (hkoHandler != null && hkoHandler.hasCallbacks(hkoRunnable))
+            hkoHandler.removeCallbacks(hkoRunnable);
         if (infoHandler != null && infoHandler.hasCallbacks(infoRunnable))
             infoHandler.removeCallbacks(infoRunnable);
     }
@@ -581,6 +655,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             tripHandler.post(tripRunnable);
         if (trainNoHandler != null && !trainNoHandler.hasCallbacks(trainNoRunnable))
             trainNoHandler.post(trainNoRunnable);
+        if (hkoHandler != null && !hkoHandler.hasCallbacks(hkoRunnable))
+            hkoHandler.post(hkoRunnable);
         if (infoHandler != null && !infoHandler.hasCallbacks(infoRunnable))
             infoHandler.post(infoRunnable);
     }
@@ -784,6 +860,62 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    public void updateIconAndTemperature(String data) {
+        try {
+            JSONObject root = new JSONObject(data);
+
+            // Extract all icons into int[]
+            JSONArray iconArray = root.getJSONArray("icon");
+            weatherIcons.clear();
+            for (int i = 0; i < iconArray.length(); i++) {
+                int resId = getResources().getIdentifier("pic" + iconArray.getInt(i), "drawable", getPackageName());
+                weatherIcons.add(resId);
+            }
+
+            // Find temperature for "香港天文台"
+            JSONObject temperatureObj = root.getJSONObject("temperature");
+            JSONArray tempData = temperatureObj.getJSONArray("data");
+            for (int i = 0; i < tempData.length(); i++) {
+                JSONObject entry = tempData.getJSONObject(i);
+                if (entry.getString("place").equals("香港天文台")) {
+                    temperature = entry.getInt("value");
+                    break;
+                }
+            }
+        } catch (JSONException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateWeatherWarnings(String data) {
+        try {
+            JSONObject root = new JSONObject(data);
+
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                JSONObject warning = root.getJSONObject(key);
+
+                if (warning.has("actionCode")) {
+                    String actionCode = warning.getString("actionCode");
+                    if ("CANCEL".equalsIgnoreCase(actionCode)) continue;
+                }
+
+                if (warning.has("code")) {
+                    String code = warning.getString("code");
+
+                    int resId = getResources().getIdentifier(code.toLowerCase(), "drawable", getPackageName());
+                    weatherIcons.add(resId);
+                }
+            }
+        } catch (JSONException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @SuppressLint("PotentialBehaviorOverride")
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -916,6 +1048,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             LinearLayout infoLayout = view.findViewById(R.id.infoLayout);
+            LinearLayout weatherLayout = view.findViewById(R.id.weatherLayout);
             TableLayout stationLayout = view.findViewById(R.id.stationLayout);
             TextView lastUpdateTv = infoLayout.findViewById(R.id.lastUpdate);
 
@@ -923,6 +1056,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (stationLayout.getChildCount() > 1)
                     stationLayout.removeViews(1, stationLayout.getChildCount() - 1);
             }
+
+
+            // Set weather layout
+            weatherLayout.removeAllViews();
+            for (int resId : weatherIcons) {
+                ImageView imageView = new ImageView(this);
+                imageView.setImageResource(resId);
+                int widthDp = 20;
+                int heightDp = 20;
+                int paddingDp = 2;
+
+                float scale = getResources().getDisplayMetrics().density;
+                int widthPx = (int) (widthDp * scale + 0.5f);
+                int heightPx = (int) (heightDp * scale + 0.5f);
+                int paddingPx = (int) (paddingDp * scale + 0.5f);
+
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(widthPx, heightPx);
+                imageView.setLayoutParams(params);
+                imageView.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
+                weatherLayout.addView(imageView);
+            }
+            TextView tempTv = new TextView(this);
+            tempTv.setText(temperature + "°C");
+            tempTv.setTextColor(Color.WHITE);
+            weatherLayout.addView(tempTv);
 
 
             // Set station name and background color
