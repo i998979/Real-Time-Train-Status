@@ -1,5 +1,5 @@
 # Real-Time-Train-Status
-Real Time Train Status is an Android app that retrieves real-time train location information for East Rail Line and Tuen Ma Line, then maps it into a Google Map. Trains can be selected by picking them from the menu, detailed information will be shown by clicking the train icons.
+Real Time Train Status is an Android version of [Real Time Train Status (Web)](https://github.com/i998979/Real-Time-Train-Status-Web) that retrieves real-time train location information for East Rail Line and Tuen Ma Line, then maps it into a Google Map. Trains can be selected by picking them from the menu, detailed information will be shown by clicking the train icons.
 
 
 Additionally, Next Train API and TTNT are also embedded to show the estimated arrival time and train consist (East Rail Line and Kwun Tong Line only) of the trains in the MTR network by clicking the station icons.
