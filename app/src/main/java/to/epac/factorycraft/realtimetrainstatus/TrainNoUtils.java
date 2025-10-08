@@ -90,6 +90,80 @@ public class TrainNoUtils {
         return ktl;
     }
 
+    public static HashBasedTable<String, String, String> getISLTrainNos(String data) {
+        HashBasedTable<String, String, String> isl = HashBasedTable.create();
+
+        try {
+            data = data.substring(data.indexOf("["), data.lastIndexOf("]") + 1);
+
+            JSONArray array = new JSONArray(data);
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject object = array.getJSONObject(i);
+
+                String nextStationCode = object.getString("nextStationCode");
+                String trainId = object.getString("trainId");
+                long ttl = object.getLong("ttl");
+                String destinationStationCode = object.getString("destinationStationCode");
+                // jsonContent
+                String trainType = object.getString("trainType");
+                String td = Utils.isInteger(object.getString("td")) ? Integer.parseInt(object.getString("td")) + "" : object.getString("td");
+                // line
+                long lambdaDateTime = object.has("lambdaDateTime") ? object.getLong("lambdaDateTime") : 0;
+                long updatedTime = object.has("updatedTime") ? object.getLong("updatedTime") : 0;
+                String trainConsist = object.getString("trainConsist");
+                String currentStationCode = object.getString("currentStationCode");
+
+
+                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60000) continue;
+
+                if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
+                    isl.put("ISL", td, trainConsist);
+            }
+        } catch (JSONException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return isl;
+    }
+
+    public static HashBasedTable<String, String, String> getTWLTrainNos(String data) {
+        HashBasedTable<String, String, String> twl = HashBasedTable.create();
+
+        try {
+            data = data.substring(data.indexOf("["), data.lastIndexOf("]") + 1);
+
+            JSONArray array = new JSONArray(data);
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject object = array.getJSONObject(i);
+
+                String nextStationCode = object.getString("nextStationCode");
+                String trainId = object.getString("trainId");
+                long ttl = object.getLong("ttl");
+                String destinationStationCode = object.getString("destinationStationCode");
+                // jsonContent
+                String trainType = object.getString("trainType");
+                String td = Utils.isInteger(object.getString("td")) ? Integer.parseInt(object.getString("td")) + "" : object.getString("td");
+                // line
+                long lambdaDateTime = object.has("lambdaDateTime") ? object.getLong("lambdaDateTime") : 0;
+                long updatedTime = object.has("updatedTime") ? object.getLong("updatedTime") : 0;
+                String trainConsist = object.getString("trainConsist");
+                String currentStationCode = object.getString("currentStationCode");
+
+
+                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60000) continue;
+
+                if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
+                    twl.put("TWL", td, trainConsist);
+            }
+        } catch (JSONException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return twl;
+    }
+
     public static HashBasedTable<String, String, String> getEALTrainNos(String data) {
         HashBasedTable<String, String, String> eal = HashBasedTable.create();
 
