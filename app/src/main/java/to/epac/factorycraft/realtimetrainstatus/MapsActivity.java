@@ -1078,7 +1078,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
 
 
-                        infoFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                        CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
                                 .thenRunAsync(() -> {
                                     updateStation(marker);
                                     runOnUiThread(() -> {
