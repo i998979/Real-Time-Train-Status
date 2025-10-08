@@ -572,11 +572,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         hkoRunnable = new Runnable() {
             @Override
             public void run() {
-                CompletableFuture<Void> rhrreadFuture = CompletableFuture.runAsync(() -> {
+                CompletableFuture<String> rhrreadFuture = CompletableFuture.supplyAsync(() -> {
                             Log.d("tagg", Thread.currentThread() + " Running rhrreadFuture");
-                            try {
-                                String data = "";
 
+                            String data = "";
+                            try {
                                 URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc");
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -588,19 +588,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     data += line;
                                 }
                                 in.close();
-
-                                updateIconAndTemperature(data);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                            return data;
                         }, hkoExecutor)
                         .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
 
-                CompletableFuture<Void> warnsumFuture = CompletableFuture.runAsync(() -> {
+                CompletableFuture<String> warnsumFuture = CompletableFuture.supplyAsync(() -> {
                             Log.d("tagg", Thread.currentThread() + " Running warnsumFuture");
-                            try {
-                                String data = "";
 
+                            String data = "";
+                            try {
                                 URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=tc");
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -612,15 +611,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     data += line;
                                 }
                                 in.close();
-
-                                updateWeatherWarnings(data);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+
+                            return data;
                         }, hkoExecutor)
                         .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
 
-                CompletableFuture.allOf(warnsumFuture, rhrreadFuture);
+
+                CompletableFuture.allOf(
+                        rhrreadFuture.thenAcceptAsync(data -> updateIconAndTemperature(data)),
+                        warnsumFuture.thenAcceptAsync(data -> updateWeatherWarnings(data))
+                );
 
                 hkoHandler.postDelayed(this, 5000 /*60000*/);
             }
@@ -1055,41 +1058,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 createDialog(marker, true);
 
 
-                infoRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("tagg", "Running infoRunnable " + Thread.currentThread());
-                        String station = stationMarkers.get(marker);
-                        List<CompletableFuture<?>> futures = new ArrayList<>();
-                        List<Runnable> runnables = new ArrayList<>();
+                infoRunnable = () -> {
+                    Log.d("tagg", "Running infoRunnable " + Thread.currentThread());
+                    String station = stationMarkers.get(marker);
+                    List<CompletableFuture<?>> futures = new ArrayList<>();
+                    List<Runnable> runnables = new ArrayList<>();
 
 
-                        for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
-                            if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station)))
-                                runnables.add(getNextTrainRunnable(entry1.getKey(), station));
-                        }
-                        runnables.add(getRoctecRunnable(station));
-
-
-                        ExecutorService executor = Executors.newFixedThreadPool(runnables.size());
-                        for (Runnable runnable : runnables) {
-                            futures.add(CompletableFuture.runAsync(runnable, executor)
-                                    .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
-                        }
-
-
-                        CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
-                                .thenRunAsync(() -> {
-                                    updateStation(marker);
-                                    runOnUiThread(() -> {
-                                        createDialog(marker, false);
-                                    });
-
-                                    infoHandler.postDelayed(this, 5000);
-                                }).thenRun(() -> {
-                                    executor.shutdown();
-                                });
+                    for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
+                        if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station)))
+                            runnables.add(getNextTrainRunnable(entry1.getKey(), station));
                     }
+                    runnables.add(getRoctecRunnable(station));
+
+
+                    ExecutorService executor = Executors.newFixedThreadPool(runnables.size());
+                    for (Runnable runnable : runnables) {
+                        futures.add(CompletableFuture.runAsync(runnable, executor)
+                                .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
+                    }
+
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                            .thenRunAsync(() -> {
+                                updateStation(marker);
+                                runOnUiThread(() -> createDialog(marker, false));
+                            }).thenRun(() -> {
+                                executor.shutdown();
+                            });
+
+                    infoHandler.postDelayed(infoRunnable, 5000);
                 };
                 infoHandler.post(infoRunnable);
 
