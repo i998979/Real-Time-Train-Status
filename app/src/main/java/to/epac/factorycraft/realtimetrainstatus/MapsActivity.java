@@ -493,6 +493,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                 trainNos.row("KTL").clear();
                                 trainNos.putAll(TrainNoUtils.getKTLTrainNos(ktl_data));
+                                Log.d("tagg", "ktlTrainNo complete");
                             } catch (Exception e) {
                             }
                         }, trainNoExecutor)
@@ -522,6 +523,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                 trainNos.row("ISL").clear();
                                 trainNos.putAll(TrainNoUtils.getISLTrainNos(isl_data));
+                                Log.d("tagg", "islTrainNo complete");
                             } catch (Exception e) {
                             }
                         }, trainNoExecutor)
@@ -536,7 +538,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             try {
                                 String twl_data = "";
 
-                                Log.d("tagg", link_twl);
                                 URL url = new URL(link_twl);
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -552,6 +553,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                 trainNos.row("TWL").clear();
                                 trainNos.putAll(TrainNoUtils.getTWLTrainNos(twl_data));
+                                Log.d("tagg", "twlTrainNo complete");
                             } catch (Exception e) {
                             }
                         }, trainNoExecutor)
@@ -1452,128 +1454,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void addStations() {
-        for (String station : getResources().getString(R.string.eal_stations).split(" ")) {
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:eal:" + station);
-            ealStationMarkers.put(station, marker);
+        String[][] lines = {
+                {getString(R.string.eal_stations), "eal", "station"},
+                {getString(R.string.tml_stations), "tml", "station"},
+                {getString(R.string.ktl_stations), "ktl", "mtr"},
+                {getString(R.string.ael_stations), "ael", "mtr"},
+                {getString(R.string.drl_stations), "drl", "mtr"},
+                {getString(R.string.isl_stations), "isl", "mtr"},
+                {getString(R.string.tcl_stations), "tcl", "mtr"},
+                {getString(R.string.tkl_stations), "tkl", "mtr"},
+                {getString(R.string.twl_stations), "twl", "mtr"},
+                {getString(R.string.sil_stations), "sil", "mtr"}
+        };
 
-            if (stationMarkers.containsValue(station)) continue;
-            stationMarkers.put(marker, station);
-        }
+        for (String[] line : lines) {
+            for (String station : line[0].split(" ")) {
+                if (stationMarkers.containsValue(station)) continue;
 
-        for (String station : getResources().getString(R.string.tml_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
+                String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(line[2].equals("station") ? R.drawable.station : R.drawable.mtr))
+                        .anchor(0.5f, 0.5f)
+                        .zIndex(100)
+                        .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0])))
+                );
+                marker.setTag("station:" + line[1] + ":" + station);
 
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.station))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tml:" + station);
-            tmlStationMarkers.put(station, marker);
+                if (line[1].equals("eal"))
+                    ealStationMarkers.put(station, marker);
+                else if (line[1].equals("tml"))
+                    tmlStationMarkers.put(station, marker);
 
-            if (stationMarkers.containsValue(station)) continue;
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.ktl_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ktl:" + station);
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.ael_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:ael:" + station);
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.drl_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:drl:" + station);
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.isl_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:isl:" + station);
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.tcl_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tcl:" + station);
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.tkl_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:tkl:" + station);
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.twl_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:twl:" + station);
-            stationMarkers.put(marker, station);
-        }
-
-        for (String station : getResources().getString(R.string.sil_stations).split(" ")) {
-            if (stationMarkers.containsValue(station)) continue;
-
-            String latLng = getResources().getString(getResources().getIdentifier(station, "string", getPackageName()));
-            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.mtr))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(100)
-                    .position(new LatLng(Double.parseDouble(latLng.split(",")[1]), Double.parseDouble(latLng.split(",")[0]))));
-            marker.setTag("station:sil:" + station);
-            stationMarkers.put(marker, station);
+                stationMarkers.put(marker, station);
+            }
         }
     }
 }
