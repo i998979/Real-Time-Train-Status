@@ -403,11 +403,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         tripRunnable = new Runnable() {
             @Override
             public void run() {
-                CompletableFuture<Void> ealOvFuture = CompletableFuture.runAsync(() -> {
+                CompletableFuture<Void> ealOvFuture = CompletableFuture.supplyAsync(() -> {
                             Log.d("tagg", Thread.currentThread() + " Running ealOvFuture");
-                            try {
-                                String eal_data = "";
 
+                            String eal_data = "";
+                            try {
                                 URL url = new URL(link_eal);
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -420,23 +420,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     eal_data += line;
                                 }
                                 in.close();
-
-                                ealTrips.clear();
-                                ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
-
-                                trainNos.row("EAL").clear();
-                                trainNos.putAll(TrainNoUtils.getEALTrainNos(eal_data));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+
+                            return eal_data;
                         }, tripExecutor)
-                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
+                        .thenAccept(eal_data -> {
+                            ealTrips.clear();
+                            ealTrips.addAll(ServerUtils.getEALTripData(eal_data));
 
-                CompletableFuture<Void> tmlOvFuture = CompletableFuture.runAsync(() -> {
+                            trainNos.row("EAL").clear();
+                            trainNos.putAll(TrainNoUtils.getEALTrainNos(eal_data));
+                        });
+
+                CompletableFuture<Void> tmlOvFuture = CompletableFuture.supplyAsync(() -> {
                             Log.d("tagg", Thread.currentThread() + " Running tmlOvFuture");
-                            try {
-                                String tml_data = "";
 
+                            String tml_data = "";
+                            try {
                                 URL url = new URL(link_tml);
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -449,14 +451,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     tml_data += line;
                                 }
                                 in.close();
-
-                                tmlTrips.clear();
-                                tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+
+                            return tml_data;
                         }, tripExecutor)
-                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
+                        .thenAccept(tml_data -> {
+                            tmlTrips.clear();
+                            tmlTrips.addAll(ServerUtils.getTMLTripData(tml_data, mapUtils));
+                        });
 
 
                 CompletableFuture.allOf(ealOvFuture, tmlOvFuture)
@@ -474,11 +478,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         trainNoRunnable = new Runnable() {
             @Override
             public void run() {
-                CompletableFuture<Void> ktlTrainNoFuture = CompletableFuture.runAsync(() -> {
+                CompletableFuture<Void> ktlTrainNoFuture = CompletableFuture.supplyAsync(() -> {
                             Log.d("tagg", Thread.currentThread() + " Running ktlTrainNo");
-                            try {
-                                String ktl_data = "";
 
+                            String ktl_data = "";
+                            try {
                                 URL url = new URL(link_ktl);
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -490,24 +494,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     ktl_data += line;
                                 }
                                 in.close();
-
-                                trainNos.row("KTL").clear();
-                                trainNos.putAll(TrainNoUtils.getKTLTrainNos(ktl_data));
-                                Log.d("tagg", "ktlTrainNo complete");
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
+
+                            return ktl_data;
                         }, trainNoExecutor)
-                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS)
-                        .exceptionally(e -> {
-                            e.printStackTrace();
-                            return null;
+                        .thenAccept(ktl_data -> {
+                            trainNos.row("KTL").clear();
+                            trainNos.putAll(TrainNoUtils.getKTLTrainNos(ktl_data));
+                            Log.d("tagg", "ktlTrainNo complete");
                         });
 
-                CompletableFuture<Void> islTrainNoFuture = CompletableFuture.runAsync(() -> {
+                CompletableFuture<Void> islTrainNoFuture = CompletableFuture.supplyAsync(() -> {
                             Log.d("tagg", Thread.currentThread() + " Running islTrainNo");
-                            try {
-                                String isl_data = "";
 
+                            String isl_data = "";
+                            try {
                                 URL url = new URL(link_isl);
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -520,24 +523,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     isl_data += line;
                                 }
                                 in.close();
-
-                                trainNos.row("ISL").clear();
-                                trainNos.putAll(TrainNoUtils.getISLTrainNos(isl_data));
-                                Log.d("tagg", "islTrainNo complete");
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
+
+                            return isl_data;
                         }, trainNoExecutor)
-                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS)
-                        .exceptionally(e -> {
-                            e.printStackTrace();
-                            return null;
+                        .thenAccept(isl_data -> {
+                            trainNos.row("ISL").clear();
+                            trainNos.putAll(TrainNoUtils.getISLTrainNos(isl_data));
+                            Log.d("tagg", "islTrainNo complete");
                         });
 
-                CompletableFuture<Void> twlTrainNoFuture = CompletableFuture.runAsync(() -> {
+                CompletableFuture<Void> twlTrainNoFuture = CompletableFuture.supplyAsync(() -> {
                             Log.d("tagg", Thread.currentThread() + " Running twlTrainNo");
-                            try {
-                                String twl_data = "";
 
+                            String twl_data = "";
+                            try {
                                 URL url = new URL(link_twl);
                                 HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                                 conn.setConnectTimeout(5000);
@@ -550,17 +552,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     twl_data += line;
                                 }
                                 in.close();
-
-                                trainNos.row("TWL").clear();
-                                trainNos.putAll(TrainNoUtils.getTWLTrainNos(twl_data));
-                                Log.d("tagg", "twlTrainNo complete");
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
+
+                            return twl_data;
                         }, trainNoExecutor)
-                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS)
-                        .exceptionally(e -> {
-                            e.printStackTrace();
-                            return null;
+                        .thenAccept(twl_data -> {
+                            trainNos.row("TWL").clear();
+                            trainNos.putAll(TrainNoUtils.getTWLTrainNos(twl_data));
+                            Log.d("tagg", "twlTrainNo complete");
                         });
 
                 trainNoHandler.postDelayed(this, 5000);
@@ -575,51 +576,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void run() {
                 CompletableFuture<String> rhrreadFuture = CompletableFuture.supplyAsync(() -> {
-                            Log.d("tagg", Thread.currentThread() + " Running rhrreadFuture");
+                    Log.d("tagg", Thread.currentThread() + " Running rhrreadFuture");
 
-                            String data = "";
-                            try {
-                                URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc");
-                                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                                conn.setConnectTimeout(5000);
-                                conn.connect();
+                    String data = "";
+                    try {
+                        URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc");
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                        conn.setConnectTimeout(5000);
+                        conn.connect();
 
-                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                                String line = "";
-                                while ((line = in.readLine()) != null) {
-                                    data += line;
-                                }
-                                in.close();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            return data;
-                        }, hkoExecutor)
-                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String line = "";
+                        while ((line = in.readLine()) != null) {
+                            data += line;
+                        }
+                        in.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return data;
+                }, hkoExecutor);
 
                 CompletableFuture<String> warnsumFuture = CompletableFuture.supplyAsync(() -> {
-                            Log.d("tagg", Thread.currentThread() + " Running warnsumFuture");
+                    Log.d("tagg", Thread.currentThread() + " Running warnsumFuture");
 
-                            String data = "";
-                            try {
-                                URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=tc");
-                                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                                conn.setConnectTimeout(5000);
-                                conn.connect();
+                    String data = "";
+                    try {
+                        URL url = new URL("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=tc");
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                        conn.setConnectTimeout(5000);
+                        conn.connect();
 
-                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                                String line = "";
-                                while ((line = in.readLine()) != null) {
-                                    data += line;
-                                }
-                                in.close();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String line = "";
+                        while ((line = in.readLine()) != null) {
+                            data += line;
+                        }
+                        in.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-                            return data;
-                        }, hkoExecutor)
-                        .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS);
+                    return data;
+                }, hkoExecutor);
 
 
                 CompletableFuture.allOf(
@@ -709,14 +708,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     trainNoHandler.post(trainNoRunnable);
                                     hkoHandler.post(hkoRunnable);
                                 });
-                        runOnUiThread(() -> {
-                            builder.show();
-                        });
+                        runOnUiThread(() -> builder.show());
                     }
                     // Already checked
                     else {
                         tripHandler.post(tripRunnable);
                         trainNoHandler.post(trainNoRunnable);
+                        hkoHandler.post(hkoRunnable);
                     }
                 });
     }
@@ -1050,51 +1048,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mMap.setOnMarkerClickListener(marker -> {
+            // Do not interrupt default marker click action
             if (!stationMarkers.containsKey(marker)) {
                 marker.showInfoWindow();
-                return false;
-            } else {
-                infoHandler.removeCallbacks(infoRunnable);
-
-                updateStation(marker);
-                createDialog(marker, true);
-
-
-                infoRunnable = () -> {
-                    Log.d("tagg", "Running infoRunnable " + Thread.currentThread());
-                    String station = stationMarkers.get(marker);
-                    List<CompletableFuture<?>> futures = new ArrayList<>();
-                    List<Runnable> runnables = new ArrayList<>();
-
-
-                    for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
-                        if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station)))
-                            runnables.add(getNextTrainRunnable(entry1.getKey(), station));
-                    }
-                    runnables.add(getRoctecRunnable(station));
-
-
-                    ExecutorService executor = Executors.newFixedThreadPool(runnables.size());
-                    for (Runnable runnable : runnables) {
-                        futures.add(CompletableFuture.runAsync(runnable, executor)
-                                .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
-                    }
-
-                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
-                            .thenRunAsync(() -> {
-                                updateStation(marker);
-                                runOnUiThread(() -> createDialog(marker, false));
-                            }).thenRun(() -> {
-                                executor.shutdown();
-                            });
-
-                    infoHandler.postDelayed(infoRunnable, 5000);
-                };
-                infoHandler.post(infoRunnable);
-
-
                 return true;
             }
+
+            infoHandler.removeCallbacks(infoRunnable);
+
+            updateStation(marker);
+            createDialog(marker, true);
+
+
+            infoRunnable = () -> {
+                Log.d("tagg", "Running infoRunnable " + Thread.currentThread());
+                String station = stationMarkers.get(marker);
+                List<CompletableFuture<?>> futures = new ArrayList<>();
+                List<Runnable> runnables = new ArrayList<>();
+
+
+                for (Map.Entry<String, String[]> entry1 : stations.entrySet()) {
+                    if (Arrays.stream(entry1.getValue()).anyMatch(s -> s.equalsIgnoreCase(station)))
+                        runnables.add(getNextTrainRunnable(entry1.getKey(), station));
+                }
+                runnables.add(getRoctecRunnable(station));
+
+
+                ExecutorService executor = Executors.newFixedThreadPool(runnables.size());
+                for (Runnable runnable : runnables) {
+                    futures.add(CompletableFuture.runAsync(runnable, executor)
+                            .completeOnTimeout(null, 5000, TimeUnit.MILLISECONDS));
+                }
+
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                        .thenRunAsync(() -> {
+                            updateStation(marker);
+                            runOnUiThread(() -> createDialog(marker, false));
+                        }).thenRun(() -> {
+                            executor.shutdown();
+                        });
+
+                infoHandler.postDelayed(infoRunnable, 5000);
+            };
+            infoHandler.post(infoRunnable);
+
+
+            return true;
         });
     }
 
@@ -1401,39 +1400,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void updateStation(Marker marker) {
         Log.d("tagg", "updateStation");
 
-        if (!stationMarkers.containsKey(marker))
-            return;
-
-
         String station = stationMarkers.get(marker);
+        if (station == null) return;
 
-        if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN) {
-            if (!trains.containsColumn(station)) return;
-        } else {
-            if (!roctecTrains.containsKey(station)) return;
-        }
+        ServerType serverType = ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name()));
 
         String snippet = "";
 
-        List<Train> list = new ArrayList<>();
-        if (ServerType.valueOf(pref.getString("type", ServerType.NEXT_TRAIN.name())) == ServerType.NEXT_TRAIN) {
-            for (Map.Entry<String, List<Train>> entry : trains.column(station).entrySet()) {
-                String line = entry.getKey();
+        List<Train> trainsAtStation = new ArrayList<>();
+        if (serverType == ServerType.NEXT_TRAIN) {
+            if (!trains.containsColumn(station)) return;
 
-                list.addAll(trains.get(line, station));
+            for (List<Train> trains : trains.column(station).values()) {
+                trainsAtStation.addAll(trains);
             }
         } else {
-            list.addAll(roctecTrains.get(station));
+            if (!roctecTrains.containsKey(station)) return;
+
+            trainsAtStation.addAll(roctecTrains.get(station));
         }
 
-        for (Train train : list.stream().sorted(Comparator.comparing(train -> Utils.getLineName(train.line))).collect(Collectors.toList())) {
+        for (Train train : trainsAtStation.stream().sorted(Comparator.comparing(train -> Utils.getLineName(train.line))).collect(Collectors.toList())) {
             snippet += train.line + "," + train.dest + "," + train.route + "," + train.plat + "," + train.ttnt + "," + train.currtime + ";";
         }
 
         String snippet0 = snippet;
-        runOnUiThread(() -> {
-            marker.setSnippet(snippet0);
-        });
+        runOnUiThread(() -> marker.setSnippet(snippet0));
     }
 
     public void drawLines() {
