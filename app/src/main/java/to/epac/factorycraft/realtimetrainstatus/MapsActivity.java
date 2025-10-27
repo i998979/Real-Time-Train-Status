@@ -1303,18 +1303,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     train.setSingleLine(true);
                     train.setMarqueeRepeatLimit(-1);
                     if (roctecLine.equals("KTL") || roctecLine.equals("TWL") || roctecLine.equals("ISL") || roctecLine.equals("TKL")) {
-                        String td0;
                         try {
-                            td0 = Integer.parseInt(data[2].substring(2)) + "";
+                            String td0 = data[2].trim();
+                            int td0Num = Integer.parseInt(td0.substring(Math.max(td0.length() - 2, 0)));
 
-                            if (trainNos.contains(roctecLine, data[2]))
-                                train.setText(trainNos.get(roctecLine, data[2]));
-                            else if (trainNos.contains(roctecLine, td0))
-                                train.setText(trainNos.get(roctecLine, td0));
-                            else if (trainNos.row(roctecLine).keySet().stream().anyMatch(s -> s.endsWith(td0)))
-                                train.setText(trainNos.get(roctecLine, trainNos.row(roctecLine).keySet().stream().filter(s -> s.endsWith(td0)).findFirst().get()));
-                            else
-                                train.setText("-");
+                            String match = "-";
+
+                            for (String td1 : trainNos.row(roctecLine).keySet()) {
+                                try {
+                                    int td1Num = Integer.parseInt(td1.substring(Math.max(td1.length() - 2, 0)));
+                                    if (td1.equals(td0) || td1.endsWith(td0) || td1Num == td0Num) {
+                                        match = trainNos.row(roctecLine).get(td1);
+                                        break;
+                                    }
+                                } catch (NumberFormatException e) {
+                                }
+                            }
+
+                            train.setText(match);
                         } catch (NumberFormatException e) {
                             train.setText("-");
                         }
