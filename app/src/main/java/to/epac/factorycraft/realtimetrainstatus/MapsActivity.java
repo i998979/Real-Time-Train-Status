@@ -769,7 +769,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         train.setZIndex(50);
 
                         // Icon
-                        if (trip.currentStationCode == 0 || System.currentTimeMillis() - trip.receivedTime > 60000) {
+                        if (trip.currentStationCode == 0 || System.currentTimeMillis() / 1000 - trip.receivedTime > 60) {
                             train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_unknown));
                             train.setAlpha(0.5f);
                             train.setZIndex(0);
@@ -822,7 +822,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         train.setZIndex(50);
 
                         // Icon
-                        if (trip.currentStationCode == 0 || System.currentTimeMillis() - trip.receivedTime > 60000) {
+                        if (trip.currentStationCode == 0 || System.currentTimeMillis() / 1000 - trip.receivedTime > 60) {
                             train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_unknown : R.drawable.t1141a_unknown));
                             train.setAlpha(0.5f);
                             train.setZIndex(0);

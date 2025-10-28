@@ -77,7 +77,7 @@ public class TrainNoUtils {
                 String currentStationCode = object.getString("currentStationCode");
 
 
-                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60000) continue;
+                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60) continue;
 
                 if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
                     ktl.put("KTL", td, trainConsist);
@@ -114,7 +114,7 @@ public class TrainNoUtils {
                 String currentStationCode = object.getString("currentStationCode");
 
 
-                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60000) continue;
+                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60) continue;
 
                 if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
                     isl.put("ISL", td, trainConsist);
@@ -151,7 +151,7 @@ public class TrainNoUtils {
                 String currentStationCode = object.getString("currentStationCode");
 
 
-                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60000) continue;
+                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60) continue;
 
                 if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
                     twl.put("TWL", td, trainConsist);
@@ -203,7 +203,7 @@ public class TrainNoUtils {
                 int targetDistance = Integer.parseInt(object.getString("targetDistance"));
                 int startDistance = Integer.parseInt(object.getString("startDistance"));
 
-                if (System.currentTimeMillis() - receivedTime > 60000) continue;
+                if (System.currentTimeMillis() / 1000 - receivedTime > 60) continue;
 
                 eal.put("NSL", td, trainId);
             }
