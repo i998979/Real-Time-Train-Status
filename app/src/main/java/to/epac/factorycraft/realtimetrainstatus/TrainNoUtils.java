@@ -6,51 +6,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class TrainNoUtils {
 
-    public static HashBasedTable<String, Integer, String> getTrainNos(String data, String twl, String isl, String ktl, String tkl, String trainNo, String date) {
-
-        Pattern pTWL = Pattern.compile(twl);
-        Pattern pISL = Pattern.compile(isl);
-        Pattern pKTL = Pattern.compile(ktl);
-        Pattern pTKL = Pattern.compile(tkl);
-        Pattern pTrainNo = Pattern.compile(trainNo);
-        Pattern pDate = Pattern.compile(date);
-
-        String rLine = "";
-
-        try {
-            BufferedReader reader = new BufferedReader(new StringReader(data));
-
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                if (pTWL.matcher(line).matches())
-                    rLine = "TWL";
-                if (pISL.matcher(line).matches())
-                    rLine = "ISL";
-                if (pKTL.matcher(line).matches())
-                    rLine = "KTL";
-                if (pTKL.matcher(line).matches())
-                    rLine = "TKL";
-
-
-            }
-            reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static HashBasedTable<String, String, String> getKTLTrainNos(String data) {
-        HashBasedTable<String, String, String> ktl = HashBasedTable.create();
+    public static HashBasedTable<String, String, String> getTrainNos(String line, String data) {
+        HashBasedTable<String, String, String> table = HashBasedTable.create();
 
         try {
             data = data.substring(data.indexOf("["), data.lastIndexOf("]") + 1);
@@ -77,91 +39,18 @@ public class TrainNoUtils {
                 String currentStationCode = object.getString("currentStationCode");
 
 
-                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60) continue;
+                if (System.currentTimeMillis() / 1000 - lambdaDateTime > (line.equals("TCL") ? 600 : 60))
+                    continue;
 
                 if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
-                    ktl.put("KTL", td, trainConsist);
+                    table.put(line, td, trainConsist);
             }
         } catch (JSONException e) {
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return ktl;
-    }
-
-    public static HashBasedTable<String, String, String> getISLTrainNos(String data) {
-        HashBasedTable<String, String, String> isl = HashBasedTable.create();
-
-        try {
-            data = data.substring(data.indexOf("["), data.lastIndexOf("]") + 1);
-
-            JSONArray array = new JSONArray(data);
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject object = array.getJSONObject(i);
-
-                String nextStationCode = object.getString("nextStationCode");
-                String trainId = object.getString("trainId");
-                long ttl = object.getLong("ttl");
-                String destinationStationCode = object.getString("destinationStationCode");
-                // jsonContent
-                String trainType = object.getString("trainType");
-                String td = Utils.isInteger(object.getString("td")) ? Integer.parseInt(object.getString("td")) + "" : object.getString("td");
-                // line
-                long lambdaDateTime = object.has("lambdaDateTime") ? object.getLong("lambdaDateTime") : 0;
-                long updatedTime = object.has("updatedTime") ? object.getLong("updatedTime") : 0;
-                String trainConsist = object.getString("trainConsist");
-                String currentStationCode = object.getString("currentStationCode");
-
-
-                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60) continue;
-
-                if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
-                    isl.put("ISL", td, trainConsist);
-            }
-        } catch (JSONException e) {
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return isl;
-    }
-
-    public static HashBasedTable<String, String, String> getTWLTrainNos(String data) {
-        HashBasedTable<String, String, String> twl = HashBasedTable.create();
-
-        try {
-            data = data.substring(data.indexOf("["), data.lastIndexOf("]") + 1);
-
-            JSONArray array = new JSONArray(data);
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject object = array.getJSONObject(i);
-
-                String nextStationCode = object.getString("nextStationCode");
-                String trainId = object.getString("trainId");
-                long ttl = object.getLong("ttl");
-                String destinationStationCode = object.getString("destinationStationCode");
-                // jsonContent
-                String trainType = object.getString("trainType");
-                String td = Utils.isInteger(object.getString("td")) ? Integer.parseInt(object.getString("td")) + "" : object.getString("td");
-                // line
-                long lambdaDateTime = object.has("lambdaDateTime") ? object.getLong("lambdaDateTime") : 0;
-                long updatedTime = object.has("updatedTime") ? object.getLong("updatedTime") : 0;
-                String trainConsist = object.getString("trainConsist");
-                String currentStationCode = object.getString("currentStationCode");
-
-
-                if (System.currentTimeMillis() / 1000 - lambdaDateTime > 60) continue;
-
-                if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
-                    twl.put("TWL", td, trainConsist);
-            }
-        } catch (JSONException e) {
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return twl;
+        return table;
     }
 
     public static HashBasedTable<String, String, String> getEALTrainNos(String data) {
