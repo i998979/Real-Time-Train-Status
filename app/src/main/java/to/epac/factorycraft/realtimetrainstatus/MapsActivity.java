@@ -1378,13 +1378,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (roctecLine.equals("KTL") || roctecLine.equals("TWL") || roctecLine.equals("ISL") || roctecLine.equals("TKL") || roctecLine.equals("TCL")) {
                         try {
                             String td0 = data[2].trim();
-                            int td0Num = Integer.parseInt(td0.substring(Math.max(td0.length() - 2, 0)));
+                            int td0Num;
+                            if (roctecLine.equals("TCL"))
+                                td0Num = Integer.parseInt(td0.substring(Math.max(td0.length() - 3, 0)));
+                            else
+                                td0Num = Integer.parseInt(td0.substring(Math.max(td0.length() - 2, 0)));
 
                             String match = "-";
 
                             for (String td1 : trainNos.row(roctecLine).keySet()) {
                                 try {
-                                    int td1Num = Integer.parseInt(td1.substring(Math.max(td1.length() - 2, 0)));
+                                    int td1Num;
+                                    if (roctecLine.equals("TCL"))
+                                        td1Num = Integer.parseInt(td1.substring(Math.max(td1.length() - 3, 0)));
+                                    else
+                                        td1Num = Integer.parseInt(td1.substring(Math.max(td1.length() - 2, 0)));
+
                                     if (td1.equals(td0) || td1.endsWith(td0) || td1Num == td0Num) {
                                         match = trainNos.row(roctecLine).get(td1);
                                         break;

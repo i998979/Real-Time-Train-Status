@@ -43,7 +43,7 @@ public class TrainNoUtils {
                     continue;
 
                 if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
-                    table.put(line, td, trainConsist);
+                    table.put(line, td, line.equals("TKL") ? trainId : trainConsist);
             }
         } catch (JSONException e) {
         } catch (Exception e) {
