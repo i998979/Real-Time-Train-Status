@@ -54,7 +54,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -811,72 +810,59 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.d("tagg2", "updateTMLTrips");
 
         Map<String, Trip> tripMap = tmlTrips.stream().collect(Collectors.toMap(trip -> trip.trainId, trip -> trip));
-        Map<String, LatLng> trainPositions = new ConcurrentHashMap<>();
 
         List<CompletableFuture<Void>> futures = tripMap.values().stream().map(trip ->
-                        CompletableFuture.supplyAsync(() -> {
-                                    return mapUtils.getTrainAt(trip, "TML");
-                                }, tmlExecutor)
-                                .thenAccept(latLng -> {
-                                    if (latLng != null) {
-                                        trainPositions.put(trip.trainId, latLng);
-                                        Log.d("tagg2", trip.trainId + " " + trip.trainSpeed + " " + latLng);
+                CompletableFuture.supplyAsync(() -> {
+                            return mapUtils.getTrainAt(trip, "TML");
+                        }, tmlExecutor)
+                        .thenAccept(latLng -> {
+                            if (latLng != null) {
+                                Log.d("tagg2", trip.trainId + " " + trip.trainSpeed + " " + latLng);
+                                runOnUiThread(() -> {
+                                    Marker train = tmlTrainMarkers.computeIfAbsent(trip.trainId, k ->
+                                            mMap.addMarker(new MarkerOptions()
+                                                    .position(latLng)
+                                                    .zIndex(50)
+                                                    .anchor(0.5f, 0.5f)
+                                                    .title(k)
+                                                    .draggable(false)));
+
+                                    train.setTag("train");
+                                    train.setAlpha(1.0f);
+                                    train.setZIndex(50);
+
+                                    if (trip.currentStationCode == 0 || System.currentTimeMillis() / 1000 - trip.receivedTime > 60) {
+                                        train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_unknown : R.drawable.t1141a_unknown));
+                                        train.setAlpha(0.5f);
+                                        train.setZIndex(0);
+                                    } /*else if (!Utils.isPassengerTrain(trip.td))
+                                    train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.r_train_nis : R.drawable.t1141a_nis));*/ else {
+                                        int tdNum = Integer.parseInt(trip.td.substring(2));
+                                        if (tdNum % 2 != 0)
+                                            train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_up : R.drawable.t1141a_up));
+                                        else
+                                            train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_dn : R.drawable.t1141a_dn));
                                     }
-                                }))
-                .collect(Collectors.toList());
+
+                                    String snippet = trip.trainId + " "
+                                            + Utils.mapStation(trip.currentStationCode, "TML") + " to " + Utils.mapStation(trip.nextStationCode, "TML")
+                                            + (trip.destinationStationCode > 0 ? "(" + Utils.mapStation(trip.destinationStationCode, "TML") + ")" : "")
+                                            + " " + trip.trainSpeed + "km/h;";
+                                    for (Car car : trip.listCars) {
+                                        snippet += car.carName + "," + car.passengerCount + "," + trip.td + ";";
+                                    }
+
+                                    train.setSnippet(snippet);
+
+                                    // Position
+                                    train.setPosition(latLng);
+                                });
+                            }
+                        })).collect(Collectors.toList());
+
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
             runOnUiThread(() -> {
-                for (Map.Entry<String, LatLng> entry : trainPositions.entrySet()) {
-                    String trainId = entry.getKey();
-                    LatLng latLng = entry.getValue();
-
-                    Trip trip = tripMap.get(trainId);
-                    if (trip == null) continue;
-
-                    Marker train = tmlTrainMarkers.computeIfAbsent(trainId, k ->
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(latLng)
-                                    .zIndex(50)
-                                    .anchor(0.5f, 0.5f)
-                                    .title(k)
-                                    .draggable(false)));
-
-                    // Set constant properties once, then update dynamic ones
-                    train.setTag("train");
-                    train.setAlpha(1.0f);
-                    train.setZIndex(50);
-
-                    // Icon Logic
-                    if (trip.currentStationCode == 0 || System.currentTimeMillis() / 1000 - trip.receivedTime > 60) {
-                        train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_unknown : R.drawable.t1141a_unknown));
-                        train.setAlpha(0.5f);
-                        train.setZIndex(0);
-                    } /*else if (!Utils.isPassengerTrain(trip.td))
-                            train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.r_train_nis : R.drawable.t1141a_nis));*/ else {
-                        int tdNum = Integer.parseInt(trip.td.substring(2));
-                        if (tdNum % 2 != 0)
-                            train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_up : R.drawable.t1141a_up));
-                        else
-                            train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_dn : R.drawable.t1141a_dn));
-                    }
-
-                    // Pass data to adapter
-                    String snippet = trip.trainId + " "
-                            + Utils.mapStation(trip.currentStationCode, "TML") + " to " + Utils.mapStation(trip.nextStationCode, "TML")
-                            + (trip.destinationStationCode > 0 ? "(" + Utils.mapStation(trip.destinationStationCode, "TML") + ")" : "")
-                            + " " + trip.trainSpeed + "km/h;";
-                    for (Car car : trip.listCars) {
-                        snippet += car.carName + "," + car.passengerCount + "," + trip.td + ";";
-                    }
-
-                    train.setSnippet(snippet);
-
-                    // Position
-                    train.setPosition(latLng);
-                }
-
-
                 if (line.equals("TML")) {
                     List<String> tml_trains = tmlTrips.stream()
                             .map(trip -> trip.trainId + " " + Utils.mapStation(trip.currentStationCode, line) + " to " + Utils.mapStation(trip.nextStationCode, line)
@@ -903,7 +889,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // EAL
         Map<String, Trip> tripMap = ealTrips.stream().collect(Collectors.toMap(trip -> trip.trainId, trip -> trip));
-        Map<String, LatLng> trainPositions = new ConcurrentHashMap<>();
+
 
         List<CompletableFuture<Void>> futures = tripMap.values().stream().map(trip ->
                         CompletableFuture.supplyAsync(() -> {
@@ -911,64 +897,60 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }, ealExecutor)
                                 .thenAccept(latLng -> {
                                     if (latLng != null) {
-                                        trainPositions.put(trip.trainId, latLng);
                                         Log.d("tagg12", trip.trainId + " " + trip.trainSpeed + " " + latLng);
+
+                                        runOnUiThread(() -> {
+
+                                            Marker train = ealTrainMarkers.computeIfAbsent(trip.trainId, k ->
+                                                    mMap.addMarker(new MarkerOptions()
+                                                            .position(latLng)
+                                                            .zIndex(50)
+                                                            .anchor(0.5f, 0.5f)
+                                                            .title(k)
+                                                            .draggable(false)));
+
+                                            // Set constant properties once, then update dynamic ones
+                                            train.setTag("train");
+                                            train.setAlpha(1.0f);
+                                            train.setZIndex(50);
+
+                                            // Icon Logic
+                                            if (trip.currentStationCode == 0 || System.currentTimeMillis() / 1000 - trip.receivedTime > 60) {
+                                                train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_unknown));
+                                                train.setAlpha(0.5f);
+                                                train.setZIndex(0);
+                                            } else if (!Utils.isPassengerTrain(trip.td)) {
+                                                train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_nis));
+                                            } else {
+                                                int tdNum = Integer.parseInt(trip.td.substring(2));
+                                                if (tdNum % 2 != 0)
+                                                    train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_up));
+                                                else
+                                                    train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_dn));
+                                            }
+
+                                            // Pass data to adapter
+                                            String snippet = trip.trainId + "(T" + (Integer.parseInt(trip.trainId) / 3) + ") " + trip.td + " "
+                                                    + Utils.mapStation(trip.currentStationCode, "EAL") + " to " + Utils.mapStation(trip.nextStationCode, "EAL")
+                                                    + (trip.destinationStationCode > 0 ? "(" + Utils.mapStation(trip.destinationStationCode, "EAL") + ")" : "")
+                                                    + " " + trip.trainSpeed + "km/h;";
+                                            for (Car car : trip.listCars) {
+                                                snippet += car.carName + "," + car.passengerCount + "," + trip.td + ";";
+                                            }
+                                            train.setSnippet(snippet);
+
+                                            // Position
+                                            train.setPosition(latLng);
+
+
+                                        });
                                     }
                                 }))
                 .collect(Collectors.toList());
 
+
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
             runOnUiThread(() -> {
-                for (Map.Entry<String, LatLng> entry : trainPositions.entrySet()) {
-                    String trainId = entry.getKey();
-                    LatLng latLng = entry.getValue();
-
-                    Trip trip = tripMap.get(trainId);
-                    if (trip == null) continue;
-
-                    Marker train = ealTrainMarkers.computeIfAbsent(trainId, k ->
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(latLng)
-                                    .zIndex(50)
-                                    .anchor(0.5f, 0.5f)
-                                    .title(k)
-                                    .draggable(false)));
-
-                    // Set constant properties once, then update dynamic ones
-                    train.setTag("train");
-                    train.setAlpha(1.0f);
-                    train.setZIndex(50);
-
-                    // Icon Logic
-                    if (trip.currentStationCode == 0 || System.currentTimeMillis() / 1000 - trip.receivedTime > 60) {
-                        train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_unknown));
-                        train.setAlpha(0.5f);
-                        train.setZIndex(0);
-                    } else if (!Utils.isPassengerTrain(trip.td)) {
-                        train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_nis));
-                    } else {
-                        int tdNum = Integer.parseInt(trip.td.substring(2));
-                        if (tdNum % 2 != 0)
-                            train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_up));
-                        else
-                            train.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.r_train_dn));
-                    }
-
-                    // Pass data to adapter
-                    String snippet = trip.trainId + "(T" + (Integer.parseInt(trip.trainId) / 3) + ") " + trip.td + " "
-                            + Utils.mapStation(trip.currentStationCode, "EAL") + " to " + Utils.mapStation(trip.nextStationCode, "EAL")
-                            + (trip.destinationStationCode > 0 ? "(" + Utils.mapStation(trip.destinationStationCode, "EAL") + ")" : "")
-                            + " " + trip.trainSpeed + "km/h;";
-                    for (Car car : trip.listCars) {
-                        snippet += car.carName + "," + car.passengerCount + "," + trip.td + ";";
-                    }
-                    train.setSnippet(snippet);
-
-                    // Position
-                    train.setPosition(latLng);
-                }
-
-
                 if (line.equals("EAL")) {
                     List<String> eal_trains = tripMap.values().stream()
                             .map(trip -> trip.trainId + "(T" + (Integer.parseInt(trip.trainId) / 3) + ") " + trip.td + " "

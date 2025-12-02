@@ -45,19 +45,20 @@ public class MapUtils {
             sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.tml_main)));
 
 
-        // Closes sector
+        // Closest sector
         LatLng[] closestSector = new LatLng[2];
         // How close it is
         double closestDistance = Double.MAX_VALUE;
 
-        // Loop through all sectors, omit the last one as it must be the ending point
+        // Loop through all sectors, omitting the last point
         for (int i = 0; i < sectorPoints.size() - 1; i++) {
             LatLng from = sectorPoints.get(i);
             LatLng to = sectorPoints.get(i + 1);
 
-            // Split sectors into 10 sub-points
-            for (int j = 0; j <= 100; j++) {
-                LatLng temp = SphericalUtil.interpolate(from, to, j * 0.01);
+            // Split sectors into 10 sub-points (0 to 10, total 11 checks)
+            for (int j = 0; j <= 10; j++) {
+                // Interpolate from 0.0 to 1.0 in steps of 0.1
+                LatLng temp = SphericalUtil.interpolate(from, to, j * 0.1);
                 double dist = SphericalUtil.computeDistanceBetween(temp, latLng);
 
                 // If the distance between sub-point and location is closer than the saved one
@@ -96,27 +97,35 @@ public class MapUtils {
 
         boolean swapped = false;
 
-        // If both "from" and "to" is in the same sector
-        if (Arrays.asList(fromSector).containsAll(Arrays.asList(toSector))) {
+        // If both "from" and "to" are in the same sector
+        if (Arrays.equals(fromSector, toSector)) {
             latLngs.add(from);
             latLngs.add(to);
         }
-        // If they are in different sector
+        // If they are in different sectors
         else {
             // Get the starting point of from's sector, then retrieve the index of it
             int start = sectorPoints.indexOf(fromSector[1]);
             // Get the ending point of to's sector, then retrieve the index of it
             int end = sectorPoints.indexOf(toSector[0]);
 
+            if (start == -1 || end == -1) {
+                // If sector points are not found, return a minimal path (should be avoided)
+                latLngs.add(from);
+                latLngs.add(to);
+                return latLngs;
+            }
+
             if (start > end) {
                 swapped = true;
+                // Swap start and end points for reversal logic
                 start = sectorPoints.indexOf(toSector[1]);
                 end = sectorPoints.indexOf(fromSector[0]);
             }
 
             latLngs.add(swapped ? to : from);
 
-            // Loop through all sector point between start and end
+            // Loop through all sector points between start and end indices
             for (int i = start; i <= end; i++) {
                 latLngs.add(sectorPoints.get(i));
             }
@@ -137,6 +146,8 @@ public class MapUtils {
      * @return LatLng between sub-sector which the length is within
      */
     public LatLng getLatLngFromSectorsByLength(List<LatLng> latLngs, double length) {
+        if (latLngs.size() < 2) return latLngs.get(0);
+
         LatLng[] sector = new LatLng[]{latLngs.get(0), latLngs.get(1)};
         double elapsedDistance = 0;
 
@@ -156,7 +167,10 @@ public class MapUtils {
             }
         }
 
-        return SphericalUtil.interpolate(sector[0], sector[1], (length - elapsedDistance) / SphericalUtil.computeDistanceBetween(sector[0], sector[1]));
+        double sectorDistance = SphericalUtil.computeDistanceBetween(sector[0], sector[1]);
+        if (sectorDistance == 0) return sector[0];
+
+        return SphericalUtil.interpolate(sector[0], sector[1], (length - elapsedDistance) / sectorDistance);
     }
 
     /**
@@ -174,25 +188,13 @@ public class MapUtils {
         int targetDistance = trip.targetDistance;
         int startDistance = trip.startDistance;
 
-        int curr = ctx.getResources().getIdentifier(Utils.mapStation(currentStationCode, line).toLowerCase(), "string", ctx.getPackageName());
-        int next = ctx.getResources().getIdentifier(Utils.mapStation(nextStationCode, line).toLowerCase(), "string", ctx.getPackageName());
-        int targ = ctx.getResources().getIdentifier(Utils.mapStation(destinationStationCode, line).toLowerCase(), "string", ctx.getPackageName());
+        int currResId = ctx.getResources().getIdentifier(Utils.mapStation(currentStationCode, line).toLowerCase(), "string", ctx.getPackageName());
+        int nextResId = ctx.getResources().getIdentifier(Utils.mapStation(nextStationCode, line).toLowerCase(), "string", ctx.getPackageName());
+        int targResId = ctx.getResources().getIdentifier(Utils.mapStation(destinationStationCode, line).toLowerCase(), "string", ctx.getPackageName());
 
-        LatLng currLatLng = null;
-        if (curr > 0) {
-            currLatLng = Utils.getLatLng(ctx.getResources().getString(curr));
-        }
-
-        LatLng nextLatLng = null;
-        if (next > 0) {
-            nextLatLng = Utils.getLatLng(ctx.getResources().getString(next));
-        }
-
-
-        LatLng targLatLng = null;
-        if (targ > 0) {
-            targLatLng = Utils.getLatLng(ctx.getResources().getString(targ));
-        }
+        LatLng currLatLng = currResId > 0 ? Utils.getLatLng(ctx.getResources().getString(currResId)) : null;
+        LatLng nextLatLng = nextResId > 0 ? Utils.getLatLng(ctx.getResources().getString(nextResId)) : null;
+        LatLng targLatLng = targResId > 0 ? Utils.getLatLng(ctx.getResources().getString(targResId)) : null;
 
 
         // FOT->SHT->ADM will show FOT->SHT when arrived SHT
@@ -206,11 +208,15 @@ public class MapUtils {
         if (startDistance > 10000)
             return currLatLng;
 
-        if ((trip.currentStationCode == 0 || trip.currentStationCode == 701) && (trip.nextStationCode == 0 || trip.nextStationCode == 701)) {
+        if ((currentStationCode == 0 || currentStationCode == 701) && (nextStationCode == 0 || nextStationCode == 701)) {
             if (line.equals("TML"))
                 return Utils.getLatLng(ctx.getResources().getString(R.string.phd));
             else
                 return Utils.getLatLng(ctx.getResources().getString(R.string.htd));
+        }
+
+        if (currLatLng == null || nextLatLng == null) {
+            return null;
         }
 
 
