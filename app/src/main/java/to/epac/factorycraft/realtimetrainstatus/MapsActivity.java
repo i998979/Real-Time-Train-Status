@@ -838,7 +838,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     } /*else if (!Utils.isPassengerTrain(trip.td))
                                     train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.r_train_nis : R.drawable.t1141a_nis));*/ else {
                                         int tdNum = Integer.parseInt(trip.td.substring(2));
-                                        if (tdNum % 2 != 0)
+                                        if (tdNum % 2 == 0)
                                             train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_up : R.drawable.t1141a_up));
                                         else
                                             train.setIcon(BitmapDescriptorFactory.fromResource(trip.trainType.equals("SP1900") ? R.drawable.sp1900_dn : R.drawable.t1141a_dn));
