@@ -38,6 +38,7 @@
     <string name="htd_1">114.2016032,22.3997404,0</string>
     <string name="eal_stations">adm exc huh mkk kot taw sht rac fot uni tap two fan shs lmc low</string>
     <string name="eal_stations_long">Admiralty;Exhibition Centre;Hung Hom;Mong Kok East;Kowloon Tong;Tai Wai;Sha Tin;Racecourse;Fo Tan;University;Tai Po Market;Tai Wo;Fanling;Sheung Shui;Lok Ma Chau;Lo Wu</string>
+    <string name="eal_stations_long_zh">金鐘;會展;紅磡;旺角東;九龍塘;大圍;沙田;馬場;火炭;大學;大埔墟;太和;粉嶺;上水;落馬洲;羅湖</string>
 
 
     <!-- Tuen Ma Line -->

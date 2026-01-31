@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.app.Activity;
+import android.content.Context;
 
 import androidx.core.content.ContextCompat;
 
@@ -230,7 +231,11 @@ public class Utils {
         }
     }
 
-    public static String getStationName(Activity context, String code) {
+    public static String getStationName(Context context, String code) {
+        return getStationName(context, code, false);
+    }
+
+    public static String getStationName(Context context, String code, boolean zhhk) {
         String[] stations = Arrays.stream((context.getResources().getString(R.string.eal_stations) + " "
                         + context.getResources().getString(R.string.tml_stations) + " "
                         + context.getResources().getString(R.string.ktl_stations) + " "
@@ -243,7 +248,8 @@ public class Utils {
                         + context.getResources().getString(R.string.sil_stations)).split(" "))
                 .distinct().toArray(String[]::new);
 
-        String[] stations_long = Arrays.stream((context.getResources().getString(R.string.eal_stations_long) + ";"
+        String[] stations_long = Arrays.stream((zhhk ? context.getResources().getString(R.string.eal_stations_long_zh)
+                        : context.getResources().getString(R.string.eal_stations_long) + ";"
                         + context.getResources().getString(R.string.tml_stations_long) + ";"
                         + context.getResources().getString(R.string.ktl_stations_long) + ";"
                         + context.getResources().getString(R.string.ael_stations_long) + ";"
