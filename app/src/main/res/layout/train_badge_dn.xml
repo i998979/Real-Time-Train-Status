@@ -1,0 +1,78 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_train_dn"
+    android:layout_width="45dp"
+    android:layout_height="70dp"
+    android:layout_margin="15dp"
+    android:background="@drawable/badge_background_dn"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingBottom="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="2dp">
+
+        <TextView
+            android:id="@+id/tv_train_id_dn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="各停・羅湖"
+            android:textColor="#FFFFFF"
+            android:textSize="8sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_car_dn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="8両"
+            android:textColor="#FFFFFF"
+            android:textSize="8sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="7dp"
+            android:layout_height="10dp"
+            android:background="@drawable/outline_boy_24" />
+
+        <View
+            android:layout_width="7dp"
+            android:layout_height="10dp"
+            android:background="@drawable/outline_boy_24" />
+
+        <View
+            android:layout_width="7dp"
+            android:layout_height="10dp"
+            android:background="@drawable/outline_boy_24" />
+
+        <View
+            android:layout_width="7dp"
+            android:layout_height="10dp"
+            android:background="@drawable/outline_boy_24" />
+
+        <View
+            android:layout_width="7dp"
+            android:layout_height="10dp"
+            android:background="@drawable/outline_boy_24" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:src="@drawable/r_train" />
+
+</LinearLayout>
