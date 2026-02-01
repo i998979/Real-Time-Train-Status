@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
@@ -10,6 +11,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:clipChildren="false"
         android:orientation="horizontal">
 
         <TextView
@@ -26,21 +28,22 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clipChildren="false"
             android:orientation="horizontal">
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_up_main"
-                layout="@layout/train_badge_up"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:clipChildren="false" />
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_dn_main"
-                layout="@layout/train_badge_dn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:clipChildren="false" />
         </LinearLayout>
 
         <FrameLayout
@@ -67,7 +70,6 @@
                 android:layout_gravity="center"
                 android:background="@drawable/baseline_trip_origin_24" />
         </FrameLayout>
-
     </LinearLayout>
 
     <View
@@ -79,6 +81,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:clipChildren="false"
         android:orientation="horizontal">
 
         <FrameLayout
@@ -110,21 +113,22 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1.1"
+            android:clipChildren="false"
             android:orientation="horizontal">
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_up_spur"
-                layout="@layout/train_badge_up"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:clipChildren="false" />
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_dn_spur"
-                layout="@layout/train_badge_dn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:clipChildren="false" />
         </LinearLayout>
 
         <TextView
@@ -136,6 +140,5 @@
             android:textColor="#333333"
             android:textSize="14sp"
             android:textStyle="bold" />
-
     </LinearLayout>
 </LinearLayout>

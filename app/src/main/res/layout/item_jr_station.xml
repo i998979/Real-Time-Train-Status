@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
@@ -18,17 +19,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipChildren="false"
         android:orientation="horizontal"
         android:weightSum="2">
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/layout_train_up"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center_vertical|end">
-
-            <include layout="@layout/train_badge_up" />
-        </LinearLayout>
+            android:clipChildren="false" />
 
         <FrameLayout
             android:layout_width="20dp"
@@ -56,13 +56,11 @@
                 android:background="@drawable/baseline_trip_origin_24" />
         </FrameLayout>
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/layout_train_dn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center_vertical|start">
-
-            <include layout="@layout/train_badge_dn" />
-        </LinearLayout>
+            android:clipChildren="false" />
     </LinearLayout>
 </FrameLayout>

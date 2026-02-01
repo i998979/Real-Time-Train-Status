@@ -5,12 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -94,16 +94,23 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private void bindStation(StationViewHolder h, int currentStation) {
         h.tvStationName.setText(Utils.getStationName(context, Utils.mapStation(currentStation, "EAL"), true));
-        resetUI(h.layoutUp, h.layoutDn);
+
+        List<Trip> upTrips = new ArrayList<>();
+        List<Trip> dnTrips = new ArrayList<>();
 
         for (Trip trip : trips) {
-            if (trip.trainSpeed == 0 && trip.currentStationCode == currentStation)
-                updateTrainUI(trip, h.layoutUp, h.layoutDn, h.tvIdUp, h.tvIdDn);
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
+            if (trip.trainSpeed == 0 && trip.currentStationCode == currentStation) {
+                if (isUp(trip.td)) upTrips.add(trip);
+                else dnTrips.add(trip);
+            }
         }
+
+        updateTrainUI(upTrips, h.layoutUp, true);
+        updateTrainUI(dnTrips, h.layoutDn, false);
     }
 
     private void bindBranch(BranchViewHolder h, int stationIdx) {
-        resetUI(h.upMain, h.dnMain, h.upSpur, h.dnSpur);
         int currentStation = stationCodes[stationIdx];
         int nextStation = stationCodes[stationIdx + 1];
 
@@ -114,164 +121,227 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         else
             h.imgRail.setImageResource(R.drawable.rail_branch_merge);
 
+        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
+        List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
+
         for (Trip trip : trips) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
             if (trip.trainSpeed > 0) {
                 boolean isUp = isUp(trip.td);
-
-                boolean isAtThisSegment = (isUp && trip.nextStationCode == currentStation)
-                        || (!isUp && trip.nextStationCode == nextStation);
+                boolean isAtThisSegment = (isUp && trip.nextStationCode == currentStation) || (!isUp && trip.nextStationCode == nextStation);
 
                 if (isAtThisSegment) {
-                    if (trip.currentStationCode == 6 || trip.nextStationCode == 6
-                            || trip.currentStationCode == 13 || trip.nextStationCode == 13)
-                        updateTrainUI(trip, h.upMain, h.dnMain, h.idUpMain, h.idDnMain);
-                    if (trip.currentStationCode == 7 || trip.nextStationCode == 7
-                            || trip.currentStationCode == 14 || trip.nextStationCode == 14)
-                        updateTrainUI(trip, h.upSpur, h.dnSpur, h.idUpSpur, h.idDnSpur);
+                    boolean isMain = trip.currentStationCode == 6 || trip.nextStationCode == 6 || trip.currentStationCode == 13 || trip.nextStationCode == 13;
+                    boolean isSpur = trip.currentStationCode == 7 || trip.nextStationCode == 7 || trip.currentStationCode == 14 || trip.nextStationCode == 14;
+
+                    if (isMain) {
+                        if (isUp) upMain.add(trip);
+                        else dnMain.add(trip);
+                    }
+                    if (isSpur) {
+                        if (isUp) upSpur.add(trip);
+                        else dnSpur.add(trip);
+                    }
                 }
             }
         }
+        updateTrainUI(upMain, h.upMain, true);
+        updateTrainUI(dnMain, h.dnMain, false);
+        updateTrainUI(upSpur, h.upSpur, true);
+        updateTrainUI(dnSpur, h.dnSpur, false);
     }
 
     private void bindParallel(ParallelViewHolder h, int stationIdx) {
-        resetUI(h.upMain, h.dnMain, h.upSpur, h.dnSpur);
-
         int code = stationCodes[stationIdx];
+        int mainCode = (code == 6 || code == 7) ? 6 : 13;
+        int spurCode = (code == 6 || code == 7) ? 7 : 14;
 
-        if (code == 6 || code == 7) {
-            h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(6, "EAL"), true));
-            h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(7, "EAL"), true));
+        h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(mainCode, "EAL"), true));
+        h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(spurCode, "EAL"), true));
 
-            for (Trip trip : trips) {
-                if (trip.trainSpeed == 0) {
-                    if (trip.currentStationCode == 6)
-                        updateTrainUI(trip, h.upMain, h.dnMain, h.idUpMain, h.idDnMain);
-                    if (trip.currentStationCode == 7)
-                        updateTrainUI(trip, h.upSpur, h.dnSpur, h.idUpSpur, h.idDnSpur);
+        List<Trip> upM = new ArrayList<>(), dnM = new ArrayList<>();
+        List<Trip> upS = new ArrayList<>(), dnS = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
+            if (trip.trainSpeed == 0) {
+                if (trip.currentStationCode == mainCode) {
+                    if (isUp(trip.td)) upM.add(trip);
+                    else dnM.add(trip);
                 }
-            }
-        } else if (code == 13 || code == 14) {
-            h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(13, "EAL"), true));
-            h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(14, "EAL"), true));
-
-            for (Trip trip : trips) {
-                if (trip.trainSpeed == 0) {
-                    if (trip.currentStationCode == 13)
-                        updateTrainUI(trip, h.upMain, h.dnMain, h.idUpMain, h.idDnMain);
-                    if (trip.currentStationCode == 14)
-                        updateTrainUI(trip, h.upSpur, h.dnSpur, h.idUpSpur, h.idDnSpur);
+                if (trip.currentStationCode == spurCode) {
+                    if (isUp(trip.td)) upS.add(trip);
+                    else dnS.add(trip);
                 }
             }
         }
+        updateTrainUI(upM, h.upMain, true);
+        updateTrainUI(dnM, h.dnMain, false);
+        updateTrainUI(upS, h.upSpur, true);
+        updateTrainUI(dnS, h.dnSpur, false);
     }
 
     private void bindBetween(BetweenViewHolder h, int stationIdx) {
-        resetUI(h.layoutUp, h.layoutDn);
-
         int currentStation = stationCodes[stationIdx];
         int nextStation = stationCodes[stationIdx + 1];
 
+        List<Trip> upTrips = new ArrayList<>();
+        List<Trip> dnTrips = new ArrayList<>();
+
         for (Trip trip : trips) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
             if (trip.trainSpeed > 0) {
                 boolean isUp = isUp(trip.td);
-                if (isUp && trip.nextStationCode == currentStation)
-                    updateTrainUI(trip, h.layoutUp, h.layoutDn, h.tvIdUp, h.tvIdDn);
-                else if (!isUp && trip.nextStationCode == nextStation)
-                    updateTrainUI(trip, h.layoutUp, h.layoutDn, h.tvIdUp, h.tvIdDn);
+                if (isUp && trip.nextStationCode == currentStation) upTrips.add(trip);
+                else if (!isUp && trip.nextStationCode == nextStation) dnTrips.add(trip);
             }
         }
+        updateTrainUI(upTrips, h.layoutUp, true);
+        updateTrainUI(dnTrips, h.layoutDn, false);
     }
 
     private boolean isUp(String td) {
         return Character.getNumericValue(td.charAt(td.length() - 1)) % 2 != 0;
     }
 
-    private void updateTrainUI(Trip trip, View up, View dn, TextView tUp, TextView tDn) {
-        if (isUp(trip.td)) {
-            up.setVisibility(View.VISIBLE);
-            tUp.setText(trip.td);
-        } else {
-            dn.setVisibility(View.VISIBLE);
-            tDn.setText(trip.td);
+    private void updateTrainUI(List<Trip> tripsAtLocation, ViewGroup container, boolean isUp) {
+        container.removeAllViews();
+
+        if (tripsAtLocation.isEmpty()) {
+            container.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        container.setVisibility(View.VISIBLE);
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        for (int i = 0; i < tripsAtLocation.size(); i++) {
+            Trip trip = tripsAtLocation.get(i);
+            View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
+
+            TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
+            if (tvId != null) tvId.setText(trip.td);
+
+            if (container instanceof android.widget.FrameLayout) {
+                android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) badge.getLayoutParams();
+                params.gravity = isUp ? (android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.END)
+                        : (android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
+                badge.setLayoutParams(params);
+            }
+
+            float offset = i * 35f;
+            badge.setTranslationX(isUp ? -offset : offset);
+
+            badge.setElevation((tripsAtLocation.size() - i) * 5f);
+
+            badge.setOnClickListener(v -> {
+                showTrainsDetailDialog(tripsAtLocation, isUp);
+            });
+
+            container.addView(badge);
         }
     }
 
-    private void resetUI(View... views) {
-        for (View v : views) if (v != null) v.setVisibility(View.INVISIBLE);
+    private void showTrainsDetailDialog(List<Trip> tripsAtLocation, boolean isUp) {
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(context);
+
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_bottom_sheet_container, null);
+        androidx.recyclerview.widget.RecyclerView recyclerView = dialogView.findViewById(R.id.rv_trains_list);
+
+        recyclerView.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(context));
+        recyclerView.setAdapter(new RecyclerView.Adapter<>() {
+            @NonNull
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View v = LayoutInflater.from(context).inflate(R.layout.item_train_detail_card, parent, false);
+                return new RecyclerView.ViewHolder(v) {
+                };
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                Trip trip = tripsAtLocation.get(position);
+                View v = holder.itemView;
+
+                TextView tvDestination = v.findViewById(R.id.tv_destination);
+
+                if (trip.destinationStationCode == -1) {
+                    tvDestination.setText("不載客列車");
+                } else {
+                    String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, "EAL"), true);
+                    tvDestination.setText(destName + " 行");
+                }
+
+                TextView tvDelay = v.findViewById(R.id.tv_delay_status);
+                if (trip.trainSpeed == 0) {
+                    tvDelay.setText("站內停車中");
+                    tvDelay.setBackgroundColor(android.graphics.Color.parseColor("#757575"));
+                } else {
+                    tvDelay.setText("定時運行");
+                    tvDelay.setBackgroundColor(android.graphics.Color.parseColor("#4CAF50"));
+                }
+            }
+
+            @Override
+            public int getItemCount() {
+                return tripsAtLocation.size();
+            }
+        });
+
+        dialog.setContentView(dialogView);
+        dialog.show();
     }
 
 
     private static class StationViewHolder extends RecyclerView.ViewHolder {
-        TextView tvStationName, tvIdUp, tvIdDn;
-        LinearLayout layoutUp, layoutDn;
+        TextView tvStationName;
+        ViewGroup layoutUp, layoutDn;
 
         StationViewHolder(View v) {
             super(v);
-
             tvStationName = v.findViewById(R.id.tv_station_name);
             layoutUp = v.findViewById(R.id.layout_train_up);
             layoutDn = v.findViewById(R.id.layout_train_dn);
-            tvIdUp = v.findViewById(R.id.tv_train_id_up);
-            tvIdDn = v.findViewById(R.id.tv_train_id_dn);
         }
     }
 
     private static class BetweenViewHolder extends RecyclerView.ViewHolder {
-        TextView tvIdUp, tvIdDn;
-        LinearLayout layoutUp, layoutDn;
+        ViewGroup layoutUp, layoutDn;
 
         BetweenViewHolder(View v) {
             super(v);
-
             layoutUp = v.findViewById(R.id.layout_train_up);
             layoutDn = v.findViewById(R.id.layout_train_dn);
-            tvIdUp = v.findViewById(R.id.tv_train_id_up);
-            tvIdDn = v.findViewById(R.id.tv_train_id_dn);
         }
     }
 
     private static class BranchViewHolder extends RecyclerView.ViewHolder {
         ImageView imgRail;
-        View upMain, dnMain, upSpur, dnSpur;
-        TextView idUpMain, idDnMain, idUpSpur, idDnSpur;
+        ViewGroup upMain, dnMain, upSpur, dnSpur;
 
         BranchViewHolder(View v) {
             super(v);
-
             imgRail = v.findViewById(R.id.img_branch_rail);
-
             upMain = v.findViewById(R.id.train_up_main);
             dnMain = v.findViewById(R.id.train_dn_main);
             upSpur = v.findViewById(R.id.train_up_spur);
             dnSpur = v.findViewById(R.id.train_dn_spur);
-
-            idUpMain = upMain.findViewById(R.id.tv_train_id_up);
-            idDnMain = dnMain.findViewById(R.id.tv_train_id_dn);
-            idUpSpur = upSpur.findViewById(R.id.tv_train_id_up);
-            idDnSpur = dnSpur.findViewById(R.id.tv_train_id_dn);
         }
     }
 
     private static class ParallelViewHolder extends RecyclerView.ViewHolder {
-        View upMain, dnMain, upSpur, dnSpur;
+        ViewGroup upMain, dnMain, upSpur, dnSpur;
         TextView tvMain, tvSpur;
-        TextView idUpMain, idDnMain, idUpSpur, idDnSpur;
 
         ParallelViewHolder(View v) {
             super(v);
-
             tvMain = v.findViewById(R.id.tv_station_main);
             tvSpur = v.findViewById(R.id.tv_station_spur);
-
             upMain = v.findViewById(R.id.train_up_main);
             dnMain = v.findViewById(R.id.train_dn_main);
             upSpur = v.findViewById(R.id.train_up_spur);
             dnSpur = v.findViewById(R.id.train_dn_spur);
-
-            idUpMain = upMain.findViewById(R.id.tv_train_id_up);
-            idDnMain = dnMain.findViewById(R.id.tv_train_id_dn);
-            idUpSpur = upSpur.findViewById(R.id.tv_train_id_up);
-            idDnSpur = dnSpur.findViewById(R.id.tv_train_id_dn);
         }
     }
 }

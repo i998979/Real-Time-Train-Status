@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
@@ -13,6 +14,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipChildren="false"
         android:orientation="horizontal"
         android:weightSum="2.4">
 
@@ -20,21 +22,22 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clipChildren="false"
             android:gravity="center"
             android:orientation="horizontal">
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_up_main"
-                layout="@layout/train_badge_up"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginEnd="4dp"
+                android:clipChildren="false" />
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_dn_main"
-                layout="@layout/train_badge_dn"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:clipChildren="false" />
         </LinearLayout>
 
         <View
@@ -46,21 +49,22 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clipChildren="false"
             android:gravity="center"
             android:orientation="horizontal">
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_up_spur"
-                layout="@layout/train_badge_up"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginEnd="4dp"
+                android:clipChildren="false" />
 
-            <include
+            <FrameLayout
                 android:id="@+id/train_dn_spur"
-                layout="@layout/train_badge_dn"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:clipChildren="false" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

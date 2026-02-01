@@ -70,7 +70,7 @@
             android:id="@+id/tv_car_up"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="8両"
+            android:text="9両"
             android:textColor="#FFFFFF"
             android:textSize="8sp"
             android:textStyle="bold" />
