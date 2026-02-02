@@ -98,130 +98,8 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
 
-    private void bindStation(StationViewHolder h, int stationIdx) {
-        int code = stationCodes[stationIdx];
-        h.tvStationName.setText(Utils.getStationName(context, Utils.mapStation(code, "EAL"), true));
-
-        List<Trip> upTrips = new ArrayList<>();
-        List<Trip> dnTrips = new ArrayList<>();
-
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
-
-            if (trip.trainSpeed == 0 && trip.currentStationCode == code) {
-                if (isUp(trip.td))
-                    upTrips.add(trip);
-                else
-                    dnTrips.add(trip);
-            }
-        }
-
-        updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
-    }
-
-    private void bindBranch(BranchViewHolder h, int stationIdx) {
-        int currentStation = stationCodes[stationIdx];
-        int nextStation = stationCodes[stationIdx + 1];
-
-        if (currentStation == 12 && (nextStation == 13 || nextStation == 14))
-            h.imgRail.setImageResource(R.drawable.rail_branch_split);
-        else if (nextStation == 6 || nextStation == 7)
-            h.imgRail.setImageResource(R.drawable.rail_branch_split);
-        else
-            h.imgRail.setImageResource(R.drawable.rail_branch_merge);
-
-        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
-        List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
-
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
-            if (trip.trainSpeed > 0) {
-                boolean isUp = isUp(trip.td);
-                boolean isAtThisSegment = (isUp && trip.nextStationCode == currentStation) || (!isUp && trip.nextStationCode == nextStation);
-
-                if (isAtThisSegment) {
-                    boolean isMain = trip.currentStationCode == 6 || trip.nextStationCode == 6 || trip.currentStationCode == 13 || trip.nextStationCode == 13;
-                    boolean isSpur = trip.currentStationCode == 7 || trip.nextStationCode == 7 || trip.currentStationCode == 14 || trip.nextStationCode == 14;
-
-                    if (isMain) {
-                        if (isUp) upMain.add(trip);
-                        else dnMain.add(trip);
-                    }
-                    if (isSpur) {
-                        if (isUp) upSpur.add(trip);
-                        else dnSpur.add(trip);
-                    }
-                }
-            }
-        }
-        updateTrainUI(upMain, h.upMain, true);
-        updateTrainUI(dnMain.reversed(), h.dnMain, false);
-        updateTrainUI(upSpur, h.upSpur, true);
-        updateTrainUI(dnSpur.reversed(), h.dnSpur, false);
-    }
-
-    private void bindParallel(ParallelViewHolder h, int stationIdx) {
-        int code = stationCodes[stationIdx];
-        int mainCode = (code == 6 || code == 7) ? 6 : 13;
-        int spurCode = (code == 6 || code == 7) ? 7 : 14;
-
-        h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(mainCode, "EAL"), true));
-        h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(spurCode, "EAL"), true));
-
-        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
-        List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
-
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
-
-            if (trip.trainSpeed == 0) {
-                if (trip.currentStationCode == mainCode) {
-                    if (isUp(trip.td)) upMain.add(trip);
-                    else dnMain.add(trip);
-                }
-                if (trip.currentStationCode == spurCode) {
-                    if (isUp(trip.td))
-                        upSpur.add(trip);
-                    else
-                        dnSpur.add(trip);
-                }
-            }
-        }
-        updateTrainUI(upMain, h.upMain, true);
-        updateTrainUI(dnMain.reversed(), h.dnMain, false);
-        updateTrainUI(upSpur, h.upSpur, true);
-        updateTrainUI(dnSpur.reversed(), h.dnSpur, false);
-    }
-
-    private void bindBetween(BetweenViewHolder h, int stationIdx) {
-        int currentStation = stationCodes[stationIdx];
-        int nextStation = stationCodes[stationIdx + 1];
-
-        List<Trip> upTrips = new ArrayList<>();
-        List<Trip> dnTrips = new ArrayList<>();
-
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
-
-            if (trip.trainSpeed > 0) {
-                if (isUp(trip.td) && trip.nextStationCode == currentStation)
-                    upTrips.add(trip);
-                else if (!isUp(trip.td) && trip.nextStationCode == nextStation)
-                    dnTrips.add(trip);
-            }
-        }
-
-        updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
-    }
-
     private final long[] TRAVEL_SECONDS = {244L, 141L, 297L, 136L, 331L, 195L, 160L, 145L, 267L, 169L, 202L, 228L, 93L};
     private final long LMC_SHS_SECONDS = 469L;
-
-    private boolean isUp(String td) {
-        return Character.getNumericValue(td.charAt(td.length() - 1)) % 2 != 0;
-    }
 
     private void updateTrainUI(List<Trip> tripsAtLocation, ViewGroup container, boolean isUp) {
         container.removeAllViews();
@@ -489,6 +367,130 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         dialog.setContentView(dialogView);
         setupFullHeightBottomSheet(dialog, dialogView);
         dialog.show();
+    }
+
+
+    private boolean isUp(String td) {
+        return Character.getNumericValue(td.charAt(td.length() - 1)) % 2 != 0;
+    }
+
+
+    private void bindStation(StationViewHolder h, int stationIdx) {
+        int code = stationCodes[stationIdx];
+        h.tvStationName.setText(Utils.getStationName(context, Utils.mapStation(code, "EAL"), true));
+
+        List<Trip> upTrips = new ArrayList<>();
+        List<Trip> dnTrips = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
+
+            if (trip.trainSpeed == 0 && trip.currentStationCode == code) {
+                if (isUp(trip.td))
+                    upTrips.add(trip);
+                else
+                    dnTrips.add(trip);
+            }
+        }
+
+        updateTrainUI(upTrips, h.layoutUp, true);
+        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
+    }
+
+    private void bindBranch(BranchViewHolder h, int stationIdx) {
+        int currentStation = stationCodes[stationIdx];
+        int nextStation = stationCodes[stationIdx + 1];
+
+        if (currentStation == 12 && (nextStation == 13 || nextStation == 14))
+            h.imgRail.setImageResource(R.drawable.rail_branch_split);
+        else if (nextStation == 6 || nextStation == 7)
+            h.imgRail.setImageResource(R.drawable.rail_branch_split);
+        else
+            h.imgRail.setImageResource(R.drawable.rail_branch_merge);
+
+        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
+        List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
+            if (trip.trainSpeed > 0) {
+                boolean isUp = isUp(trip.td);
+                boolean isAtThisSegment = (isUp && trip.nextStationCode == currentStation) || (!isUp && trip.nextStationCode == nextStation);
+
+                if (isAtThisSegment) {
+                    boolean isMain = trip.currentStationCode == 6 || trip.nextStationCode == 6 || trip.currentStationCode == 13 || trip.nextStationCode == 13;
+                    boolean isSpur = trip.currentStationCode == 7 || trip.nextStationCode == 7 || trip.currentStationCode == 14 || trip.nextStationCode == 14;
+
+                    if (isMain) {
+                        if (isUp) upMain.add(trip);
+                        else dnMain.add(trip);
+                    }
+                    if (isSpur) {
+                        if (isUp) upSpur.add(trip);
+                        else dnSpur.add(trip);
+                    }
+                }
+            }
+        }
+        updateTrainUI(upMain, h.upMain, true);
+        updateTrainUI(dnMain.reversed(), h.dnMain, false);
+        updateTrainUI(upSpur, h.upSpur, true);
+        updateTrainUI(dnSpur.reversed(), h.dnSpur, false);
+    }
+
+    private void bindParallel(ParallelViewHolder h, int stationIdx) {
+        int code = stationCodes[stationIdx];
+        int mainCode = (code == 6 || code == 7) ? 6 : 13;
+        int spurCode = (code == 6 || code == 7) ? 7 : 14;
+
+        h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(mainCode, "EAL"), true));
+        h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(spurCode, "EAL"), true));
+
+        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
+        List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
+
+            if (trip.trainSpeed == 0) {
+                if (trip.currentStationCode == mainCode) {
+                    if (isUp(trip.td)) upMain.add(trip);
+                    else dnMain.add(trip);
+                }
+                if (trip.currentStationCode == spurCode) {
+                    if (isUp(trip.td))
+                        upSpur.add(trip);
+                    else
+                        dnSpur.add(trip);
+                }
+            }
+        }
+        updateTrainUI(upMain, h.upMain, true);
+        updateTrainUI(dnMain.reversed(), h.dnMain, false);
+        updateTrainUI(upSpur, h.upSpur, true);
+        updateTrainUI(dnSpur.reversed(), h.dnSpur, false);
+    }
+
+    private void bindBetween(BetweenViewHolder h, int stationIdx) {
+        int currentStation = stationCodes[stationIdx];
+        int nextStation = stationCodes[stationIdx + 1];
+
+        List<Trip> upTrips = new ArrayList<>();
+        List<Trip> dnTrips = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
+
+            if (trip.trainSpeed > 0) {
+                if (isUp(trip.td) && trip.nextStationCode == currentStation)
+                    upTrips.add(trip);
+                else if (!isUp(trip.td) && trip.nextStationCode == nextStation)
+                    dnTrips.add(trip);
+            }
+        }
+
+        updateTrainUI(upTrips, h.layoutUp, true);
+        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
     }
 
 
