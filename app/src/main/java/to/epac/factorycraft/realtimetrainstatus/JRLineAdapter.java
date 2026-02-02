@@ -296,6 +296,44 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
+    // 基於 Non-peak 數據 (Run Time + Dwell Time)
+// 順序：羅湖->上水, 上水->粉嶺, 粉嶺->太和, 太和->大埔墟, 大埔墟->大學,
+// 大學->火炭, 火炭->沙田, 沙田->大圍, 大圍->九龍塘, 九龍塘->旺角東,
+// 旺角東->紅磡, 紅磡->會展, 會展->金鐘
+    private final int[] TRAVEL_TIMES = {4, 2, 5, 2, 6, 3, 3, 2, 5, 3, 3, 4, 2};
+
+    private String calculateArrivalTime(long baseTimeMillis, int minutesToAdd) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTimeInMillis(baseTimeMillis + (minutesToAdd * 60 * 1000L));
+        return String.format("%02d:%02d", cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE));
+    }
+
+    private void addStationRow(LinearLayout container, int stationIdx, long currentTime, int minutes, boolean isLast) {
+        View row = LayoutInflater.from(context).inflate(R.layout.item_station_row, container, false);
+
+        TextView tvTime = row.findViewById(R.id.tv_arrival_time);
+        TextView tvName = row.findViewById(R.id.tv_row_station_name);
+        View line = row.findViewById(R.id.view_blue_line);
+
+        // 時間顯示：綠色在深色模式下會很亮，日間則顯得穩重
+        tvTime.setText(calculateArrivalTime(currentTime, minutes));
+        tvTime.setTextColor(Color.parseColor("#4CAF50"));
+
+        tvName.setText(Utils.getStationName(context, Utils.mapStation(stationCodes[stationIdx], "EAL"), true));
+
+        // 最後一站的線條截斷處理
+        if (isLast) {
+            line.post(() -> {
+                android.widget.RelativeLayout.LayoutParams params = (android.widget.RelativeLayout.LayoutParams) line.getLayoutParams();
+                // 只顯示上半段線條，讓它停在圓點中心
+                params.height = row.getHeight() / 2;
+                line.setLayoutParams(params);
+            });
+        }
+
+        container.addView(row);
+    }
+
     private void showTrainsDetailDialog(List<Trip> tripsAtLocation) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
 
@@ -386,6 +424,66 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 int avg = totalLoad / trip.listCars.size();
                 ((TextView) view.findViewById(R.id.tv_crowd_level_text))
                         .setText(avg < 100 ? "尚有座位" : avg < 200 ? "稍微擁擠" : "非常擁擠");
+
+                // 在 Dialog 的 onBindViewHolder 內
+                View foldableHeader = view.findViewById(R.id.layout_foldable_header);
+                View timelineContainer = view.findViewById(R.id.layout_stations_timeline);
+                ImageView imgArrow = view.findViewById(R.id.img_fold_arrow);
+
+                foldableHeader.setOnClickListener(v -> {
+                    if (timelineContainer.getVisibility() == View.VISIBLE) {
+                        // 隱藏內容
+                        timelineContainer.setVisibility(View.GONE);
+                        // 箭頭向下 (使用你的資源或旋轉動畫)
+                        imgArrow.setRotation(180f);
+                    } else {
+                        // 顯示內容
+                        timelineContainer.setVisibility(View.VISIBLE);
+                        // 箭頭向上
+                        imgArrow.setRotation(0f);
+                    }
+                });
+
+                // 在 Dialog 的 onBindViewHolder 內
+                LinearLayout stationContainer = view.findViewById(R.id.container_station_rows);
+                stationContainer.removeAllViews();
+
+                boolean isUpDirection = isUp(trip.td);
+
+// 1. 找出「下一站」和「目的站」在陣列中的索引
+                int nextIdx = -1;
+                int destIdx = -1;
+
+                for (int i = 0; i < stationCodes.length; i++) {
+                    if (stationCodes[i] == trip.nextStationCode) nextIdx = i;
+                    if (stationCodes[i] == trip.destinationStationCode) destIdx = i;
+                }
+
+// 如果找不到目的站（例如不載客列車），則不顯示停車站情報
+                if (nextIdx != -1 && destIdx != -1) {
+                    long currentTime = System.currentTimeMillis();
+                    int accumulatedMinutes = 0;
+
+                    if (isUpDirection) {
+                        // --- UP 往羅湖方向：索引遞減 ---
+                        // 確保循環只執行到目的站 (destIdx 應該小於或等於 nextIdx)
+                        for (int i = nextIdx; i >= destIdx; i--) {
+                            addStationRow(stationContainer, i, currentTime, accumulatedMinutes, i == destIdx);
+                            if (i > destIdx) {
+                                accumulatedMinutes += TRAVEL_TIMES[i - 1];
+                            }
+                        }
+                    } else {
+                        // --- DN 往金鐘方向：索引遞增 ---
+                        // 確保循環只執行到目的站 (destIdx 應該大於或等於 nextIdx)
+                        for (int i = nextIdx; i <= destIdx; i++) {
+                            addStationRow(stationContainer, i, currentTime, accumulatedMinutes, i == destIdx);
+                            if (i < destIdx) {
+                                accumulatedMinutes += TRAVEL_TIMES[i];
+                            }
+                        }
+                    }
+                }
             }
 
             @Override
