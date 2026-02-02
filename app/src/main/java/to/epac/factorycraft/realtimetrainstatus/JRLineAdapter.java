@@ -183,14 +183,6 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-
-    private String calculateArrivalTime(long baseTimeMillis, int minutesToAdd) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(baseTimeMillis + (minutesToAdd * 60 * 1000L));
-
-        return String.format("%02d:%02d", cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE));
-    }
-
     private void addStationRow(LinearLayout container, int stationIdx, long currentTime, int minutes, boolean isLast) {
         View row = LayoutInflater.from(context).inflate(R.layout.item_station_row, container, false);
 
@@ -198,7 +190,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         TextView tvName = row.findViewById(R.id.tv_row_station_name);
         View line = row.findViewById(R.id.view_blue_line);
 
-        tvTime.setText(calculateArrivalTime(currentTime, minutes));
+        tvTime.setText(getTime(currentTime, minutes));
         tvTime.setTextColor(Color.parseColor("#4CAF50"));
         tvName.setText(Utils.getStationName(context, Utils.mapStation(stationCodes[stationIdx], "EAL"), true));
 
@@ -211,7 +203,6 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
         container.addView(row);
     }
-
 
     private void populateTimeline(LinearLayout container, Trip trip) {
         container.removeAllViews();
@@ -372,6 +363,13 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private boolean isUp(String td) {
         return Character.getNumericValue(td.charAt(td.length() - 1)) % 2 != 0;
+    }
+
+    private String getTime(long baseTimeMillis, int minutesToAdd) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(baseTimeMillis + (minutesToAdd * 60 * 1000L));
+
+        return String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
     }
 
 
