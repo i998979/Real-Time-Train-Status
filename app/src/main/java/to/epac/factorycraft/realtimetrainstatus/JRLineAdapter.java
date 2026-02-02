@@ -1,14 +1,21 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -217,6 +224,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         for (int i = 0; i < tripsAtLocation.size(); i++) {
             Trip trip = tripsAtLocation.get(i);
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
 
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
@@ -235,52 +243,103 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             badge.setElevation((tripsAtLocation.size() - i) * 5f);
 
             badge.setOnClickListener(v -> {
-                showTrainsDetailDialog(tripsAtLocation, isUp);
+                showTrainsDetailDialog(tripsAtLocation);
             });
 
             container.addView(badge);
         }
     }
 
-    private void showTrainsDetailDialog(List<Trip> tripsAtLocation, boolean isUp) {
-        com.google.android.material.bottomsheet.BottomSheetDialog dialog =
-                new com.google.android.material.bottomsheet.BottomSheetDialog(context);
+    private void showTrainsDetailDialog(List<Trip> tripsAtLocation) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
 
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_bottom_sheet_container, null);
-        androidx.recyclerview.widget.RecyclerView recyclerView = dialogView.findViewById(R.id.rv_trains_list);
+        RecyclerView recyclerView = dialogView.findViewById(R.id.rv_trains_list);
 
-        recyclerView.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(context));
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(new RecyclerView.Adapter<>() {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View v = LayoutInflater.from(context).inflate(R.layout.item_train_detail_card, parent, false);
-                return new RecyclerView.ViewHolder(v) {
+                return new RecyclerView.ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_train_detail_card, parent, false)) {
                 };
             }
 
             @Override
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
                 Trip trip = tripsAtLocation.get(position);
-                View v = holder.itemView;
+                View view = holder.itemView;
+                float density = context.getResources().getDisplayMetrics().density;
 
-                TextView tvDestination = v.findViewById(R.id.tv_destination);
+                TextView tvLine = view.findViewById(R.id.tv_line_name);
+                tvLine.setBackgroundColor(Color.parseColor(Utils.getColor(context, "EAL")));
+                tvLine.setText("東鐵綫");
 
-                if (trip.destinationStationCode == -1) {
-                    tvDestination.setText("不載客列車");
+                TextView tvType = view.findViewById(R.id.tv_service_type);
+                GradientDrawable typeBg = new GradientDrawable();
+                typeBg.setCornerRadius(10f);
+                boolean viaRacecourse = trip.td.matches(".*[BGKN].*");
+                if (viaRacecourse) {
+                    tvType.setText("經馬場");
+                    typeBg.setColor(0xCD5DE2FF);
                 } else {
-                    String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, "EAL"), true);
-                    tvDestination.setText(destName + " 行");
+                    tvType.setText("普通");
+                    typeBg.setColor(0xFF4CAF50);
+                }
+                tvType.setBackground(typeBg);
+
+                TextView tvCarCount = view.findViewById(R.id.tv_car_count);
+                GradientDrawable carCountBg = new GradientDrawable();
+                carCountBg.setCornerRadius(10f);
+                carCountBg.setColor(0xFF444444);
+                tvCarCount.setText("9両");
+                tvCarCount.setBackground(carCountBg);
+
+                ((TextView) view.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
+
+                String dest = trip.destinationStationCode == -1 ? "不載客列車" :
+                        Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, "EAL"), true) + " 行";
+                ((TextView) view.findViewById(R.id.tv_destination)).setText(dest);
+
+                TextView tvStatus = view.findViewById(R.id.tv_delay_status);
+                tvStatus.setText(trip.trainSpeed == 0 ? "站內停車中" : "準時運行");
+                GradientDrawable statusBg = new GradientDrawable();
+                statusBg.setCornerRadius(100f);
+                statusBg.setColor(trip.trainSpeed == 0 ? 0xFF757575 : 0xFF4CAF50);
+
+                tvStatus.setBackground(statusBg);
+
+                LinearLayout container = view.findViewById(R.id.layout_cars_container);
+                container.removeAllViews();
+                int totalLoad = 0;
+
+                for (int i = 0; i < trip.listCars.size(); i++) {
+                    int idx = isUp(trip.td) ? i : (trip.listCars.size() - 1 - i);
+                    Car car = trip.listCars.get(idx);
+                    totalLoad += car.passengerCount;
+
+                    View carView = new View(context);
+                    LinearLayout.LayoutParams p = new LinearLayout.LayoutParams((int) (24 * density), (int) (26 * density));
+                    p.setMargins((int) (2 * density), 0, (int) (2 * density), 0);
+                    carView.setLayoutParams(p);
+
+                    GradientDrawable gd = new GradientDrawable();
+                    gd.setCornerRadius(4 * density);
+
+                    int count = car.passengerCount;
+                    boolean isFirst = (idx == 3);
+                    int color = (isFirst ? (count < 70 ? 0xFF00FF00 : count < 150 ? 0xFFFFFF00 : 0xFFFF0000) :
+                            (count < 110 ? 0xFF00FF00 : count < 250 ? 0xFFFFFF00 : 0xFFFF0000));
+                    gd.setColor(color);
+                    if (isFirst) gd.setStroke((int) (3 * density), 0xFFFFA500);
+
+                    carView.setBackground(gd);
+                    container.addView(carView);
                 }
 
-                TextView tvDelay = v.findViewById(R.id.tv_delay_status);
-                if (trip.trainSpeed == 0) {
-                    tvDelay.setText("站內停車中");
-                    tvDelay.setBackgroundColor(android.graphics.Color.parseColor("#757575"));
-                } else {
-                    tvDelay.setText("定時運行");
-                    tvDelay.setBackgroundColor(android.graphics.Color.parseColor("#4CAF50"));
-                }
+                int avg = totalLoad / trip.listCars.size();
+                ((TextView) view.findViewById(R.id.tv_crowd_level_text))
+                        .setText(avg < 100 ? "座位有空" : avg < 200 ? "稍微擁擠" : "非常擁擠");
             }
 
             @Override
@@ -290,7 +349,32 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         });
 
         dialog.setContentView(dialogView);
+
+        View btnClose = dialogView.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
         dialog.show();
+
+        View bs = (View) dialogView.getParent();
+        BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bs);
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        bs.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+        behavior.setSkipCollapsed(true);
+
+        behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onSlide(@NonNull View view, float offset) {
+                if (offset > 0.5f && behavior.getState() == BottomSheetBehavior.STATE_SETTLING)
+                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+
+            @Override
+            public void onStateChanged(@NonNull View view, int state) {
+                if (state == BottomSheetBehavior.STATE_HIDDEN) dialog.dismiss();
+                if (state == BottomSheetBehavior.STATE_SETTLING && view.getTop() < view.getHeight() * 0.1)
+                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+        });
     }
 
 

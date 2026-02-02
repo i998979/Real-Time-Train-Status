@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
-    android:background="#0D000000"
+    android:background="?attr/colorSurfaceVariant"
     android:clipChildren="false"
     android:gravity="center_horizontal"
     android:orientation="horizontal">
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
             android:text="Fo Tan"
-            android:textColor="#333333"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -58,8 +58,8 @@
                 android:background="#52B4E5" />
 
             <View
-                android:layout_width="14dp"
-                android:layout_height="14dp"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
                 android:layout_gravity="center"
                 android:background="@android:drawable/presence_online"
                 android:backgroundTint="#FFFFFF" />
@@ -96,8 +96,8 @@
                 android:background="#52B4E5" />
 
             <View
-                android:layout_width="14dp"
-                android:layout_height="14dp"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
                 android:layout_gravity="center"
                 android:background="@android:drawable/presence_online"
                 android:backgroundTint="#FFFFFF" />
@@ -137,7 +137,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
             android:text="Racecourse"
-            android:textColor="#333333"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             android:textStyle="bold" />
     </LinearLayout>

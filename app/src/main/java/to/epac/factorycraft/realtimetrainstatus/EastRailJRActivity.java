@@ -5,7 +5,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,10 +36,30 @@ public class EastRailJRActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_east_rail_jractivity);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_east_rail_jr);
+
+        androidx.core.view.WindowInsetsControllerCompat controller =
+                new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+
+        // 檢查目前是否為夜間模式
+        boolean isDarkMode = (getResources().getConfiguration().uiMode &
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES;
+
+        // 如果是日間模式，將圖示設為深色 (!isDarkMode = true)
+        // 如果是夜間模式，將圖示設為淺色 (!isDarkMode = false)
+        controller.setAppearanceLightStatusBars(!isDarkMode);
+        controller.setAppearanceLightNavigationBars(!isDarkMode);
 
         rvEastRailLine = findViewById(R.id.rv_east_rail_line);
         rvEastRailLine.setLayoutManager(new LinearLayoutManager(this));
+
+        ViewCompat.setOnApplyWindowInsetsListener(rvEastRailLine, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         adapter = new JRLineAdapter(this, EAL_STATION_CODES, activeTrips);
         rvEastRailLine.setAdapter(adapter);
@@ -59,7 +83,7 @@ public class EastRailJRActivity extends AppCompatActivity {
     private void fetchDataInBackground() {
         new Thread(() -> {
             try {
-                URL url = new URL(/* Link */);
+                URL url = new URL("LINK");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
 

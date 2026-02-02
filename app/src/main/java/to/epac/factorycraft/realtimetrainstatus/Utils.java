@@ -1,6 +1,5 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
-import android.app.Activity;
 import android.content.Context;
 
 import androidx.core.content.ContextCompat;
@@ -298,7 +297,7 @@ public class Utils {
         }
     }
 
-    public static String getColor(Activity context, String line) {
+    public static String getColor(Context context, String line) {
         if (line.equalsIgnoreCase("nsl") || line.equalsIgnoreCase("erl")) line = "eal";
         if (line.equalsIgnoreCase("ewl")) line = "tml";
 

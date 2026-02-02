@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
-    android:background="#0D000000"
+    android:background="?attr/colorSurfaceVariant"
     android:clipChildren="false">
 
     <TextView
@@ -12,7 +12,7 @@
         android:layout_gravity="top|start"
         android:layout_margin="8dp"
         android:text="Exhibition Centre"
-        android:textColor="#333333"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="12sp"
         android:textStyle="bold" />
 
@@ -43,8 +43,8 @@
                 android:background="#52B4E5" />
 
             <View
-                android:layout_width="14dp"
-                android:layout_height="14dp"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
                 android:layout_gravity="center"
                 android:background="@android:drawable/presence_online"
                 android:backgroundTint="#FFFFFF" />
