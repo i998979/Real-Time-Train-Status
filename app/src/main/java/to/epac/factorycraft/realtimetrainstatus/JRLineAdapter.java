@@ -105,8 +105,8 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
 
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
+        for (Trip trip : trips.reversed()) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed == 0 && trip.currentStationCode == currentStation) {
                 if (isUp(trip.td)) upTrips.add(trip);
                 else dnTrips.add(trip);
@@ -131,8 +131,8 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
         List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
 
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
+        for (Trip trip : trips.reversed()) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed > 0) {
                 boolean isUp = isUp(trip.td);
                 boolean isAtThisSegment = (isUp && trip.nextStationCode == currentStation) || (!isUp && trip.nextStationCode == nextStation);
@@ -169,8 +169,8 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upM = new ArrayList<>(), dnM = new ArrayList<>();
         List<Trip> upS = new ArrayList<>(), dnS = new ArrayList<>();
 
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
+        for (Trip trip : trips.reversed()) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed == 0) {
                 if (trip.currentStationCode == mainCode) {
                     if (isUp(trip.td)) upM.add(trip);
@@ -195,8 +195,8 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
 
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
+        for (Trip trip : trips.reversed()) {
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed > 0) {
                 boolean isUp = isUp(trip.td);
                 if (isUp && trip.nextStationCode == currentStation) upTrips.add(trip);
@@ -224,7 +224,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         for (int i = 0; i < tripsAtLocation.size(); i++) {
             Trip trip = tripsAtLocation.get(i);
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime > 60) continue;
+            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
 
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
