@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
@@ -105,7 +106,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
 
-        for (Trip trip : trips.reversed()) {
+        for (Trip trip : trips) {
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed == 0 && trip.currentStationCode == currentStation) {
                 if (isUp(trip.td)) upTrips.add(trip);
@@ -114,7 +115,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips, h.layoutDn, false);
+        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
     }
 
     private void bindBranch(BranchViewHolder h, int stationIdx) {
@@ -131,7 +132,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
         List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
 
-        for (Trip trip : trips.reversed()) {
+        for (Trip trip : trips) {
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed > 0) {
                 boolean isUp = isUp(trip.td);
@@ -153,9 +154,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
         }
         updateTrainUI(upMain, h.upMain, true);
-        updateTrainUI(dnMain, h.dnMain, false);
+        updateTrainUI(dnMain.reversed(), h.dnMain, false);
         updateTrainUI(upSpur, h.upSpur, true);
-        updateTrainUI(dnSpur, h.dnSpur, false);
+        updateTrainUI(dnSpur.reversed(), h.dnSpur, false);
     }
 
     private void bindParallel(ParallelViewHolder h, int stationIdx) {
@@ -169,7 +170,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upM = new ArrayList<>(), dnM = new ArrayList<>();
         List<Trip> upS = new ArrayList<>(), dnS = new ArrayList<>();
 
-        for (Trip trip : trips.reversed()) {
+        for (Trip trip : trips) {
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed == 0) {
                 if (trip.currentStationCode == mainCode) {
@@ -183,9 +184,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
         }
         updateTrainUI(upM, h.upMain, true);
-        updateTrainUI(dnM, h.dnMain, false);
+        updateTrainUI(dnM.reversed(), h.dnMain, false);
         updateTrainUI(upS, h.upSpur, true);
-        updateTrainUI(dnS, h.dnSpur, false);
+        updateTrainUI(dnS.reversed(), h.dnSpur, false);
     }
 
     private void bindBetween(BetweenViewHolder h, int stationIdx) {
@@ -195,7 +196,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
 
-        for (Trip trip : trips.reversed()) {
+        for (Trip trip : trips) {
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed > 0) {
                 boolean isUp = isUp(trip.td);
@@ -204,7 +205,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
         }
         updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips, h.layoutDn, false);
+        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
     }
 
     private boolean isUp(String td) {
@@ -230,6 +231,8 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
             if (tvId != null) tvId.setText(trip.td);
 
+            updateTrainBadge(badge, trip);
+
             if (container instanceof android.widget.FrameLayout) {
                 android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) badge.getLayoutParams();
                 params.gravity = isUp ? (android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.END)
@@ -237,8 +240,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 badge.setLayoutParams(params);
             }
 
-            float offset = i * 35f;
+            float offset = i * 15f;
             badge.setTranslationX(isUp ? -offset : offset);
+            badge.setTranslationY(isUp ? -offset : offset);
 
             badge.setElevation((tripsAtLocation.size() - i) * 5f);
 
@@ -247,6 +251,48 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             });
 
             container.addView(badge);
+        }
+    }
+
+    private void updateTrainBadge(View badgeView, Trip trip) {
+        if (trip.listCars == null || trip.listCars.isEmpty()) return;
+
+        double totalLoadPercentage = 0;
+        int carCount = trip.listCars.size();
+
+        for (int i = 0; i < carCount; i++) {
+            Car car = trip.listCars.get(i);
+            int capacity = (i == 3) ? 150 : 250;
+            double load = (double) car.passengerCount / capacity;
+            totalLoadPercentage += load;
+        }
+
+        double avgPercentage = totalLoadPercentage / carCount;
+
+        View[] boys = {
+                badgeView.findViewById(R.id.boy_1),
+                badgeView.findViewById(R.id.boy_2),
+                badgeView.findViewById(R.id.boy_3),
+                badgeView.findViewById(R.id.boy_4),
+                badgeView.findViewById(R.id.boy_5)
+        };
+
+        int activeColor;
+        if (avgPercentage < 0.4) {
+            activeColor = 0xFF00FF00;
+        } else if (avgPercentage < 0.8) {
+            activeColor = 0xFFFFFF00;
+        } else {
+            activeColor = 0xFFFF0000;
+        }
+
+        for (int i = 0; i < 5; i++) {
+            double threshold = (i + 1) * 0.2;
+            if (avgPercentage >= threshold) {
+                boys[i].setBackgroundTintList(ColorStateList.valueOf(activeColor));
+            } else {
+                boys[i].setBackgroundTintList(ColorStateList.valueOf(0x33AAAAAA));
+            }
         }
     }
 
@@ -339,7 +385,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
                 int avg = totalLoad / trip.listCars.size();
                 ((TextView) view.findViewById(R.id.tv_crowd_level_text))
-                        .setText(avg < 100 ? "座位有空" : avg < 200 ? "稍微擁擠" : "非常擁擠");
+                        .setText(avg < 100 ? "尚有座位" : avg < 200 ? "稍微擁擠" : "非常擁擠");
             }
 
             @Override

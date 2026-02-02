@@ -20,29 +20,35 @@
         android:paddingBottom="2dp">
 
         <View
-            android:layout_width="7dp"
+            android:id="@+id/boy_1"
+            android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:layout_width="7dp"
+            android:id="@+id/boy_2"
+            android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:layout_width="7dp"
+            android:id="@+id/boy_3"
+            android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:layout_width="7dp"
+            android:id="@+id/boy_4"
+            android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:layout_width="7dp"
+            android:id="@+id/boy_5"
+            android:layout_width="5dp"
             android:layout_height="10dp"
-            android:background="@drawable/outline_boy_24" />
+            android:background="@drawable/outline_boy_24"
+            android:padding="-5dp" />
     </LinearLayout>
 
     <View
