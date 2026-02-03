@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,8 +128,6 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         for (int i = 0; i < tripsAtLocation.size(); i++) {
             Trip trip = tripsAtLocation.get(i);
-            Log.d("tagg", trip.td + " ");
-            // if (trip.currentStationCode == 12 && trip.nextStationCode == 14)
 
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
