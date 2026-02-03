@@ -52,6 +52,7 @@
             android:layout_marginLeft="-4dp">
 
             <View
+                android:id="@+id/rail_line"
                 android:layout_width="6dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
@@ -90,6 +91,7 @@
             android:layout_marginRight="-4dp">
 
             <View
+                android:id="@+id/rail_line2"
                 android:layout_width="6dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"

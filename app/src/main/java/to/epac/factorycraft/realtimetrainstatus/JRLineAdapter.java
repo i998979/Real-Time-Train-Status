@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,7 +22,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TimeZone;
 
 public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int TYPE_STATION = 0;
@@ -30,33 +34,47 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private final Context context;
     private final int[] stationCodes;
+    private final String lineCode;
+    private final int lineColor;
     private final List<Trip> trips;
 
-    public JRLineAdapter(Context context, int[] stationCodes, List<Trip> trips) {
+    public JRLineAdapter(Context context, String lineCode, int[] stationCodes, List<Trip> trips) {
         this.context = context;
+        this.lineCode = lineCode;
         this.stationCodes = stationCodes;
         this.trips = trips;
+
+        int colorResId = context.getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
+        this.lineColor = context.getResources().getColor(colorResId, null);
     }
 
     @Override
     public int getItemViewType(int position) {
         int idx = position / 2;
-
         if (position % 2 == 0) {
-            int code = stationCodes[idx];
-
-            if (code == 6 || code == 7 || code == 13 || code == 14) return TYPE_PARALLEL;
+            if (lineCode.equalsIgnoreCase("eal")) {
+                int code = stationCodes[idx];
+                if (code == 6 || code == 7 || code == 13 || code == 14) return TYPE_PARALLEL;
+            }
             return TYPE_STATION;
         } else {
-            int curr = stationCodes[idx];
-            int next = stationCodes[idx + 1];
+            if (lineCode.equalsIgnoreCase("eal")) {
+                int curr = stationCodes[idx];
+                int next = stationCodes[idx + 1];
 
-            boolean isFotRac = (curr == 5 && (next == 6 || next == 7)) || (next == 5 && (curr == 6 || curr == 7)) ||
-                    (curr == 8 && (next == 6 || next == 7)) || (next == 8 && (curr == 6 || curr == 7));
+                // 羅湖/落馬洲分叉 (12 與 13/14 之間)
+                boolean isBorder = (curr == 12 && (next == 13 || next == 14)) ||
+                        (next == 12 && (curr == 13 || curr == 14));
 
-            boolean isBorder = (curr == 12 && (next == 13 || next == 14)) || (next == 12 && (curr == 13 || curr == 14));
+                // 火炭/馬場分叉與匯合 (5 與 6/7 之間，以及 6/7 與 8 之間)
+                // 修正：增加 (curr == 6 || curr == 7) && next == 8 的判斷
+                boolean isFotRac = (curr == 5 && (next == 6 || next == 7)) ||
+                        (next == 5 && (curr == 6 || curr == 7)) ||
+                        ((curr == 6 || curr == 7) && next == 8) ||
+                        (curr == 8 && (next == 6 || next == 7));
 
-            if (isFotRac || isBorder) return TYPE_BRANCH;
+                if (isBorder || isFotRac) return TYPE_BRANCH;
+            }
             return TYPE_BETWEEN;
         }
     }
@@ -98,9 +116,6 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
 
-    private final long[] TRAVEL_SECONDS = {244L, 141L, 297L, 136L, 331L, 195L, 160L, 145L, 267L, 169L, 202L, 228L, 93L};
-    private final long LMC_SHS_SECONDS = 469L;
-
     private void updateTrainUI(List<Trip> tripsAtLocation, ViewGroup container, boolean isUp) {
         container.removeAllViews();
 
@@ -114,16 +129,19 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         for (int i = 0; i < tripsAtLocation.size(); i++) {
             Trip trip = tripsAtLocation.get(i);
+            Log.d("tagg", trip.td + " ");
+            // if (trip.currentStationCode == 12 && trip.nextStationCode == 14)
+
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
 
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
             if (tvId != null) tvId.setText(trip.td);
 
-            updateTrainBadge(badge, trip);
+            updateBadgeLoad(badge, trip);
 
-            if (container instanceof android.widget.FrameLayout) {
-                android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) badge.getLayoutParams();
+            if (container instanceof FrameLayout) {
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) badge.getLayoutParams();
                 params.gravity = isUp ? (android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.END)
                         : (android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
                 badge.setLayoutParams(params);
@@ -143,18 +161,18 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-    private void updateTrainBadge(View badgeView, Trip trip) {
-        double totalLoadPercentage = 0;
+    private void updateBadgeLoad(View badgeView, Trip trip) {
+        double totalPercent = 0;
         int carCount = trip.listCars.size();
 
         for (int i = 0; i < carCount; i++) {
             Car car = trip.listCars.get(i);
             int capacity = (i == 3) ? 150 : 250;
             double load = (double) car.passengerCount / capacity;
-            totalLoadPercentage += load;
+            totalPercent += load;
         }
 
-        double avgPercentage = totalLoadPercentage / carCount;
+        double avgPercent = totalPercent / carCount;
 
         View[] boys = {
                 badgeView.findViewById(R.id.boy_1),
@@ -164,35 +182,39 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 badgeView.findViewById(R.id.boy_5)
         };
 
-        int activeColor;
-        if (avgPercentage < 0.4) {
-            activeColor = 0xFF00FF00;
-        } else if (avgPercentage < 0.8) {
-            activeColor = 0xFFFFFF00;
+        int color;
+        if (avgPercent < 0.4) {
+            color = 0xFF00FF00;
+        } else if (avgPercent < 0.8) {
+            color = 0xFFFFFF00;
         } else {
-            activeColor = 0xFFFF0000;
+            color = 0xFFFF0000;
         }
 
         for (int i = 0; i < 5; i++) {
             double threshold = (i + 1) * 0.2;
-            if (avgPercentage >= threshold) {
-                boys[i].setBackgroundTintList(ColorStateList.valueOf(activeColor));
+            if (avgPercent >= threshold) {
+                boys[i].setBackgroundTintList(ColorStateList.valueOf(color));
             } else {
                 boys[i].setBackgroundTintList(ColorStateList.valueOf(0x33AAAAAA));
             }
         }
     }
 
-    private void addStationRow(LinearLayout container, int stationIdx, long currentTime, int minutes, boolean isLast) {
+    private void addStationRow(LinearLayout container, int stationCode, long currentTime, int minutes, boolean isLast) {
         View row = LayoutInflater.from(context).inflate(R.layout.item_station_row, container, false);
 
         TextView tvTime = row.findViewById(R.id.tv_arrival_time);
         TextView tvName = row.findViewById(R.id.tv_row_station_name);
         View line = row.findViewById(R.id.view_blue_line);
+        line.setBackgroundColor(lineColor);
 
         tvTime.setText(getTime(currentTime, minutes));
         tvTime.setTextColor(Color.parseColor("#4CAF50"));
-        tvName.setText(Utils.getStationName(context, Utils.mapStation(stationCodes[stationIdx], "EAL"), true));
+
+        // 修正點：直接使用傳入的 stationCode 進行映射
+        // 不要再透過 stationCodes[idx] 轉換，避免 14 被轉成 13
+        tvName.setText(Utils.getStationName(context, Utils.mapStation(stationCode, lineCode), true));
 
         if (isLast) {
             line.post(() -> {
@@ -206,28 +228,138 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private void populateTimeline(LinearLayout container, Trip trip) {
         container.removeAllViews();
+        boolean isUp = isUp(trip.td);
+        int destCode = trip.destinationStationCode;
 
-        int nextIdx = -1, destIdx = -1;
-        for (int i = 0; i < stationCodes.length; i++) {
-            if (stationCodes[i] == trip.nextStationCode) nextIdx = i;
-            if (stationCodes[i] == trip.destinationStationCode) destIdx = i;
+        List<Integer> myRoute = new ArrayList<>();
+
+        if (isUp) {
+            // 北行：從金鐘往北找 (假設 stationCodes 是 [LOW, SHS, ..., ADM])
+            boolean foundNext = false;
+            for (int j = stationCodes.length - 1; j >= 0; j--) {
+                int code = stationCodes[j];
+                if (code == trip.nextStationCode) foundNext = true;
+
+                if (foundNext) {
+                    // 關鍵修正：如果目的地是落馬洲，且當前走到上水(12)之後
+                    // 應當加入 14 而不是陣列裡的 13
+                    if (destCode == 14 && code == 13) {
+                        myRoute.add(14);
+                    } else {
+                        myRoute.add(code);
+                    }
+                }
+                // 抵達目的地代碼則停止
+                if (code == destCode || (destCode == 14 && code == 13)) break;
+            }
+        } else {
+            // 南行：從落馬洲或羅湖往金鐘
+            boolean foundNext = false;
+            for (int code : stationCodes) {
+                if (code == trip.nextStationCode) foundNext = true;
+                if (foundNext) myRoute.add(code);
+                if (code == destCode) break;
+            }
         }
 
-        if (nextIdx == -1 || destIdx == -1) return;
+        long nowMillis = System.currentTimeMillis();
+        long totalSec = 0;
 
-        long totalSec = trip.ttl;
-        while (isUp(trip.td) ? nextIdx >= destIdx : nextIdx <= destIdx) {
-            addStationRow(container, nextIdx, System.currentTimeMillis(), (int) (totalSec / 60), nextIdx == destIdx);
+        // 計算第一站時間
+        totalSec = (trip.trainSpeed <= 3.0) ?
+                getFixedRunTimeByCode(trip.nextStationCode, isUp) :
+                (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
 
-            if (nextIdx != destIdx) {
-                if (isUp(trip.td)) {
-                    totalSec += (stationCodes[destIdx] == 14 && nextIdx == 1) ? LMC_SHS_SECONDS : TRAVEL_SECONDS[nextIdx - 1];
-                    nextIdx--;
-                } else {
-                    totalSec += (trip.currentStationCode == 14 && nextIdx == 0) ? LMC_SHS_SECONDS : TRAVEL_SECONDS[nextIdx];
-                    nextIdx++;
-                }
-            } else break;
+        // 渲染
+        for (int k = 0; k < myRoute.size(); k++) {
+            int currentCode = myRoute.get(k);
+            // 這裡直接傳入 currentCode (如 14)，addStationRow 就會顯示落馬洲
+            addStationRow(container, currentCode, nowMillis, (int) (totalSec / 60), k == myRoute.size() - 1);
+
+            if (k < myRoute.size() - 1) {
+                totalSec += getFixedDwellTimeByCode(currentCode, isUp);
+                totalSec += getFixedRunTimeByCode(myRoute.get(k + 1), isUp);
+            }
+        }
+    }
+
+    // 修正後的數據獲取方法（改用 Station Code 而非 Index）
+    private long getFixedRunTimeByCode(int code, boolean isUp) {
+        // 這裡放入您圖片中的秒數映射
+        // 例如：code 12(SHS) 在 Up Track 時，如果是去 LMC(14) 回傳 408
+        if (isUp) {
+            if (code == 14) return 408; // SHS -> LMC
+            if (code == 13) return 202; // FAN -> SHS -> LOW (最後一段)
+            // ... 其他根據 Code 返回 EAL_RUN_UP ...
+        } else {
+            if (code == 12) return 422; // LMC -> SHS (假設是從LMC出發後的第一站)
+            // ...
+        }
+        return 120; // 預設
+    }
+
+    private long getFixedDwellTimeByCode(int code, boolean isUp) {
+        if (isUp) { // 北行
+            switch (code) {
+                case 0:
+                    return 47; // ADM
+                case 1:
+                    return 44; // EXC
+                case 2:
+                    return 44; // HUH
+                case 3:
+                    return 47; // MKK
+                case 4:
+                    return 47; // KOT
+                case 5:
+                    return 35; // TAW
+                case 6:
+                case 7:
+                    return 35; // SHT / FOT
+                case 8:
+                    return 35; // UNI
+                case 9:
+                    return 35; // TAP
+                case 10:
+                    return 35; // TWO
+                case 11:
+                    return 35; // FAN
+                case 12:
+                    return 47; // SHS
+                default:
+                    return 0;  // LOW/LMC 終點站
+            }
+        } else { // 南行
+            switch (code) {
+                case 13:
+                case 14:
+                    return 47; // LOW / LMC
+                case 12:
+                    return 35; // SHS
+                case 11:
+                    return 35; // FAN
+                case 10:
+                    return 40; // TWO
+                case 9:
+                    return 30;  // TAP
+                case 8:
+                    return 35;  // UNI
+                case 6:
+                case 7:
+                    return 40; // SHT / FOT
+                case 5:
+                    return 47;  // TAW
+                case 4:
+                    return 47;  // KOT
+                case 3:
+                    return 44;  // MKK
+                case 2:
+                    return 44;  // HUH
+                case 1:
+                    return 44;  // EXC
+                default:
+                    return 0;  // ADM 終點站
+            }
         }
     }
 
@@ -319,12 +451,19 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 Trip trip = tripsAtLocation.get(position);
                 View v = holder.itemView;
 
-                v.findViewById(R.id.tv_line_name).setBackgroundColor(Color.parseColor(Utils.getColor(context, "EAL")));
+                TextView tvLine = v.findViewById(R.id.tv_line_name);
+                tvLine.setBackgroundColor(lineColor);
+                tvLine.setText(Utils.getLineName(lineCode, true));
+
                 ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
 
-                String destName = trip.destinationStationCode == -1 ? "不載客" :
-                        Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, "EAL"), true);
-                ((TextView) v.findViewById(R.id.tv_destination)).setText(destName + " 行");
+                TextView tvDestination = v.findViewById(R.id.tv_destination);
+                if (trip.destinationStationCode == -1) {
+                    tvDestination.setText("不載客列車");
+                } else {
+                    String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
+                    tvDestination.setText(destName + " 行");
+                }
 
                 TextView tvType = v.findViewById(R.id.tv_service_type);
                 boolean viaRacecourse = trip.td.matches(".*[BGKN].*");
@@ -366,7 +505,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private String getTime(long baseTimeMillis, int minutesToAdd) {
-        Calendar cal = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
         cal.setTimeInMillis(baseTimeMillis + (minutesToAdd * 60 * 1000L));
 
         return String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
@@ -374,8 +513,10 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 
     private void bindStation(StationViewHolder h, int stationIdx) {
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
         int code = stationCodes[stationIdx];
-        h.tvStationName.setText(Utils.getStationName(context, Utils.mapStation(code, "EAL"), true));
+        h.tvStationName.setText(Utils.getStationName(context, Utils.mapStation(code, lineCode), true));
 
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
@@ -391,58 +532,101 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
         }
 
+        upTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
         updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
+        updateTrainUI(dnTrips, h.layoutDn, false);
     }
 
     private void bindBranch(BranchViewHolder h, int stationIdx) {
-        int currentStation = stationCodes[stationIdx];
-        int nextStation = stationCodes[stationIdx + 1];
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
-        if (currentStation == 12 && (nextStation == 13 || nextStation == 14))
+        int currentSector = stationCodes[stationIdx];
+        int nextSector = stationCodes[stationIdx + 1];
+
+        if (currentSector == 12 && (nextSector == 13 || nextSector == 14))
             h.imgRail.setImageResource(R.drawable.rail_branch_split);
-        else if (nextStation == 6 || nextStation == 7)
+        else if ((nextSector == 6 || nextSector == 7))
             h.imgRail.setImageResource(R.drawable.rail_branch_split);
         else
             h.imgRail.setImageResource(R.drawable.rail_branch_merge);
+
 
         List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
         List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
 
         for (Trip trip : trips) {
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
-            if (trip.trainSpeed > 0) {
-                boolean isUp = isUp(trip.td);
-                boolean isAtThisSegment = (isUp && trip.nextStationCode == currentStation) || (!isUp && trip.nextStationCode == nextStation);
+            if (trip.trainSpeed <= 0) continue;
 
-                if (isAtThisSegment) {
-                    boolean isMain = trip.currentStationCode == 6 || trip.nextStationCode == 6 || trip.currentStationCode == 13 || trip.nextStationCode == 13;
-                    boolean isSpur = trip.currentStationCode == 7 || trip.nextStationCode == 7 || trip.currentStationCode == 14 || trip.nextStationCode == 14;
+            boolean isUp = isUp(trip.td);
+            boolean isAtThisSegment = false;
 
-                    if (isMain) {
-                        if (isUp) upMain.add(trip);
-                        else dnMain.add(trip);
+            if (isUp) {
+                if (currentSector == 13 && nextSector == 12) {
+                    if (trip.nextStationCode == 13 || trip.nextStationCode == 14)
+                        isAtThisSegment = true;
+                } else if (currentSector == 8 && nextSector == 6) {
+                    if (trip.nextStationCode == 8) isAtThisSegment = true;
+                } else if (currentSector == 6 && nextSector == 5) {
+                    if (trip.nextStationCode == 6 || trip.nextStationCode == 7)
+                        isAtThisSegment = true;
+                }
+            } else {
+                if (currentSector == 13 && nextSector == 12) {
+                    if ((trip.currentStationCode == 13 || trip.currentStationCode == 14) && trip.nextStationCode == 12) {
+                        isAtThisSegment = true;
                     }
-                    if (isSpur) {
-                        if (isUp) upSpur.add(trip);
-                        else dnSpur.add(trip);
+                } else if (currentSector == 8 && nextSector == 6) {
+                    if (trip.currentStationCode == 8 && (trip.nextStationCode == 6 || trip.nextStationCode == 7)) {
+                        isAtThisSegment = true;
+                    }
+                } else if (currentSector == 6 && nextSector == 5) {
+                    if ((trip.currentStationCode == 6 || trip.currentStationCode == 7) && trip.nextStationCode == 5) {
+                        isAtThisSegment = true;
                     }
                 }
             }
+
+            if (isAtThisSegment) {
+                boolean isMain = (trip.nextStationCode == 13 || trip.currentStationCode == 13 ||
+                        trip.nextStationCode == 6 || trip.currentStationCode == 6);
+                if (isMain) {
+                    if (isUp)
+                        upMain.add(trip);
+                    else
+                        dnMain.add(trip);
+                } else {
+                    if (isUp)
+                        upSpur.add(trip);
+                    else
+                        dnSpur.add(trip);
+                }
+            }
         }
+
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        upSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
         updateTrainUI(upMain, h.upMain, true);
-        updateTrainUI(dnMain.reversed(), h.dnMain, false);
+        updateTrainUI(dnMain, h.dnMain, false);
         updateTrainUI(upSpur, h.upSpur, true);
-        updateTrainUI(dnSpur.reversed(), h.dnSpur, false);
+        updateTrainUI(dnSpur, h.dnSpur, false);
     }
 
     private void bindParallel(ParallelViewHolder h, int stationIdx) {
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+        h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
         int code = stationCodes[stationIdx];
         int mainCode = (code == 6 || code == 7) ? 6 : 13;
         int spurCode = (code == 6 || code == 7) ? 7 : 14;
 
-        h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(mainCode, "EAL"), true));
-        h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(spurCode, "EAL"), true));
+        h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(mainCode, lineCode), true));
+        h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(spurCode, lineCode), true));
 
         List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
         List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
@@ -452,8 +636,10 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             if (trip.trainSpeed == 0) {
                 if (trip.currentStationCode == mainCode) {
-                    if (isUp(trip.td)) upMain.add(trip);
-                    else dnMain.add(trip);
+                    if (isUp(trip.td))
+                        upMain.add(trip);
+                    else
+                        dnMain.add(trip);
                 }
                 if (trip.currentStationCode == spurCode) {
                     if (isUp(trip.td))
@@ -463,13 +649,21 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
             }
         }
+
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        upSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
         updateTrainUI(upMain, h.upMain, true);
-        updateTrainUI(dnMain.reversed(), h.dnMain, false);
+        updateTrainUI(dnMain, h.dnMain, false);
         updateTrainUI(upSpur, h.upSpur, true);
-        updateTrainUI(dnSpur.reversed(), h.dnSpur, false);
+        updateTrainUI(dnSpur, h.dnSpur, false);
     }
 
     private void bindBetween(BetweenViewHolder h, int stationIdx) {
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
         int currentStation = stationCodes[stationIdx];
         int nextStation = stationCodes[stationIdx + 1];
 
@@ -487,17 +681,22 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
         }
 
+        upTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
         updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips.reversed(), h.layoutDn, false);
+        updateTrainUI(dnTrips, h.layoutDn, false);
     }
 
 
     private static class StationViewHolder extends RecyclerView.ViewHolder {
+        View railLine;
         TextView tvStationName;
         ViewGroup layoutUp, layoutDn;
 
         StationViewHolder(View v) {
             super(v);
+            railLine = v.findViewById(R.id.rail_line);
             tvStationName = v.findViewById(R.id.tv_station_name);
             layoutUp = v.findViewById(R.id.layout_train_up);
             layoutDn = v.findViewById(R.id.layout_train_dn);
@@ -505,21 +704,25 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private static class BetweenViewHolder extends RecyclerView.ViewHolder {
+        View railLine;
         ViewGroup layoutUp, layoutDn;
 
         BetweenViewHolder(View v) {
             super(v);
+            railLine = v.findViewById(R.id.rail_line);
             layoutUp = v.findViewById(R.id.layout_train_up);
             layoutDn = v.findViewById(R.id.layout_train_dn);
         }
     }
 
     private static class BranchViewHolder extends RecyclerView.ViewHolder {
+        View railLine;
         ImageView imgRail;
         ViewGroup upMain, dnMain, upSpur, dnSpur;
 
         BranchViewHolder(View v) {
             super(v);
+            railLine = v.findViewById(R.id.rail_line);
             imgRail = v.findViewById(R.id.img_branch_rail);
             upMain = v.findViewById(R.id.train_up_main);
             dnMain = v.findViewById(R.id.train_dn_main);
@@ -529,11 +732,14 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private static class ParallelViewHolder extends RecyclerView.ViewHolder {
+        View railLine, railLine2;
         ViewGroup upMain, dnMain, upSpur, dnSpur;
         TextView tvMain, tvSpur;
 
         ParallelViewHolder(View v) {
             super(v);
+            railLine = v.findViewById(R.id.rail_line);
+            railLine2 = v.findViewById(R.id.rail_line2);
             tvMain = v.findViewById(R.id.tv_station_main);
             tvSpur = v.findViewById(R.id.tv_station_spur);
             upMain = v.findViewById(R.id.train_up_main);

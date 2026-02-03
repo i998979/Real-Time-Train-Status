@@ -8,8 +8,9 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Map;
 
 public class Utils {
 
@@ -24,7 +25,7 @@ public class Utils {
 
     public static String mapStation(int code, String line) {
         // TML
-        if (line.equals("TML")) {
+        if (line.equalsIgnoreCase("TML")) {
             switch (code) {
                 case 1:
                     return "HUH";
@@ -97,7 +98,7 @@ public class Utils {
             }
         }
         // EAL
-        else if (line.equals("EAL")) {
+        else if (line.equalsIgnoreCase("EAL")) {
             switch (code) {
                 case 0:
                     return "HTD";
@@ -235,65 +236,56 @@ public class Utils {
     }
 
     public static String getStationName(Context context, String code, boolean zhhk) {
-        String[] stations = Arrays.stream((context.getResources().getString(R.string.eal_stations) + " "
-                        + context.getResources().getString(R.string.tml_stations) + " "
-                        + context.getResources().getString(R.string.ktl_stations) + " "
-                        + context.getResources().getString(R.string.ael_stations) + " "
-                        + context.getResources().getString(R.string.drl_stations) + " "
-                        + context.getResources().getString(R.string.isl_stations) + " "
-                        + context.getResources().getString(R.string.tcl_stations) + " "
-                        + context.getResources().getString(R.string.tkl_stations) + " "
-                        + context.getResources().getString(R.string.twl_stations) + " "
-                        + context.getResources().getString(R.string.sil_stations)).split(" "))
-                .distinct().toArray(String[]::new);
+        if (code == null || code.isEmpty()) return "";
 
-        String[] stations_long = Arrays.stream((zhhk ? context.getResources().getString(R.string.eal_stations_long_zh)
-                        : context.getResources().getString(R.string.eal_stations_long) + ";"
-                        + context.getResources().getString(R.string.tml_stations_long) + ";"
-                        + context.getResources().getString(R.string.ktl_stations_long) + ";"
-                        + context.getResources().getString(R.string.ael_stations_long) + ";"
-                        + context.getResources().getString(R.string.drl_stations_long) + ";"
-                        + context.getResources().getString(R.string.isl_stations_long) + ";"
-                        + context.getResources().getString(R.string.tcl_stations_long) + ";"
-                        + context.getResources().getString(R.string.tkl_stations_long) + ";"
-                        + context.getResources().getString(R.string.twl_stations_long) + ";"
-                        + context.getResources().getString(R.string.sil_stations_long)).split(";"))
-                .distinct().toArray(String[]::new);
+        int[] shortRes = {R.string.eal_stations, R.string.tml_stations, R.string.ktl_stations, R.string.ael_stations, R.string.drl_stations, R.string.isl_stations, R.string.tcl_stations, R.string.tkl_stations, R.string.twl_stations, R.string.sil_stations};
+        int[] longRes = zhhk ? new int[]{R.string.eal_stations_long_zh, R.string.tml_stations_long_zh, R.string.ktl_stations_long_zh, R.string.ael_stations_long_zh, R.string.drl_stations_long_zh, R.string.isl_stations_long_zh, R.string.tcl_stations_long_zh, R.string.tkl_stations_long_zh, R.string.twl_stations_long_zh, R.string.sil_stations_long_zh}
+                : new int[]{R.string.eal_stations_long, R.string.tml_stations_long, R.string.ktl_stations_long, R.string.ael_stations_long, R.string.drl_stations_long, R.string.isl_stations_long, R.string.tcl_stations_long, R.string.tkl_stations_long, R.string.twl_stations_long, R.string.sil_stations_long};
 
-        int index = IntStream.range(0, stations.length)
-                .filter(i -> stations[i].equalsIgnoreCase(code))
-                .findFirst().orElse(Integer.MAX_VALUE);
+        Map<String, String> nameMap = new HashMap<>();
+        for (int i = 0; i < shortRes.length; i++) {
+            String[] codes = context.getString(shortRes[i]).split(" ");
+            String[] names = context.getString(longRes[i]).split(";");
 
-        return Arrays.stream(stations_long).skip(index).findFirst().orElse(code);
+            for (int j = 0; j < Math.min(codes.length, names.length); j++) {
+                nameMap.put(codes[j].toUpperCase(), names[j]);
+            }
+        }
+
+        return nameMap.getOrDefault(code.toUpperCase(), code);
     }
 
     public static String getLineName(String code) {
+        return getLineName(code, false);
+    }
+
+    public static String getLineName(String code, boolean zhhk) {
         switch (code.toLowerCase()) {
             case "eal":
             case "nsl":
             case "erl":
-                return "East Rail Line";
+                return zhhk ? "東鐵綫" : "East Rail Line";
             case "tml":
             case "ewl":
-                return "Tuen Ma Line";
+                return zhhk ? "屯馬綫" : "Tuen Ma Line";
             case "ktl":
-                return "Kwun Tong Line";
+                return zhhk ? "觀塘綫" : "Kwun Tong Line";
             case "ael":
-                return "Airport Express Line";
+                return zhhk ? "機場快綫" : "Airport Express Line";
             case "drl":
-                return "Disneyland Resort Line";
+                return zhhk ? "迪士尼綫" : "Disneyland Resort Line";
             case "isl":
-                return "Island Line";
+                return zhhk ? "港島綫" : "Island Line";
             case "tcl":
-                return "Tung Chung Line";
+                return zhhk ? "東涌綫" : "Tung Chung Line";
             case "tkl":
-                return "Tseung Kwan O Line";
+                return zhhk ? "將軍澳綫" : "Tseung Kwan O Line";
             case "twl":
-                return "Tsuen Wan Line";
+                return zhhk ? "荃灣綫" : "Tsuen Wan Line";
             case "sil":
-                return "South Island Line";
+                return zhhk ? "南港島綫" : "South Island Line";
             default:
-                return code;
+                return code.toUpperCase();
         }
     }
 
