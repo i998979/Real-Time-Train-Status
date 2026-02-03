@@ -72,69 +72,70 @@ public class EastRailJRActivity extends AppCompatActivity {
         dwellTimeUpMap = new HashMap<>();
         dwellTimeDnMap = new HashMap<>();
 
-        // --- 北行 (Up: ADM -> LOW/LMC) ---
-        // Run Time (行車)
-        runTimeUpMap.put(1, 94L);
-        runTimeUpMap.put(2, 185L);
-        runTimeUpMap.put(3, 211L);
-        runTimeUpMap.put(4, 123L);
-        runTimeUpMap.put(5, 216L);
-        runTimeUpMap.put(6, 99L);
-        runTimeUpMap.put(7, 120L);
-        runTimeUpMap.put(8, 163L);
-        runTimeUpMap.put(9, 303L);
-        runTimeUpMap.put(10, 97L);
-        runTimeUpMap.put(11, 265L);
-        runTimeUpMap.put(12, 106L);
-        runTimeUpMap.put(13, 202L);
-        runTimeUpMap.put(14, 408L);
+        // --- 北行 (Up: Key 是目的地) ---
+        runTimeUpMap.put(22, 94L);  // ADM -> EXC
+        runTimeUpMap.put(21, 185L); // EXC -> HUH
+        runTimeUpMap.put(2, 211L);  // HUH -> MKK
+        runTimeUpMap.put(3, 123L);  // MKK -> KOT
+        runTimeUpMap.put(4, 216L);  // KOT -> TAW
+        runTimeUpMap.put(5, 99L);   // TAW -> SHT
+        runTimeUpMap.put(6, 120L);  // SHT -> FOT
+        runTimeUpMap.put(7, 120L);  // SHT -> RAC
+        runTimeUpMap.put(8, 163L);  // FOT/RAC -> UNI
+        runTimeUpMap.put(9, 303L);  // UNI -> TAP
+        runTimeUpMap.put(10, 97L);  // TAP -> TWO
+        runTimeUpMap.put(11, 265L); // TWO -> FAN
+        runTimeUpMap.put(12, 106L); // FAN -> SHS
+        runTimeUpMap.put(13, 202L); // SHS -> LOW
+        runTimeUpMap.put(14, 408L); // SHS -> LMC
 
         // Dwell Time (停站)
-        dwellTimeUpMap.put(23, 47L);
-        dwellTimeUpMap.put(1, 44L);
-        dwellTimeUpMap.put(2, 44L);
-        dwellTimeUpMap.put(3, 47L);
-        dwellTimeUpMap.put(4, 47L);
-        dwellTimeUpMap.put(5, 35L);
-        dwellTimeUpMap.put(6, 35L);
-        dwellTimeUpMap.put(7, 35L);
-        dwellTimeUpMap.put(8, 35L);
-        dwellTimeUpMap.put(9, 35L);
-        dwellTimeUpMap.put(10, 35L);
-        dwellTimeUpMap.put(11, 35L);
-        dwellTimeUpMap.put(12, 47L);
+        dwellTimeUpMap.put(23, 47L); // ADM -> EXC
+        dwellTimeUpMap.put(1, 44L);  // EXC -> HUH
+        dwellTimeUpMap.put(2, 44L);  // HUH -> MKK
+        dwellTimeUpMap.put(3, 47L);  // MKK -> KOT
+        dwellTimeUpMap.put(4, 47L);  // KOT -> TAW
+        dwellTimeUpMap.put(5, 35L);  // TAW -> SHT
+        dwellTimeUpMap.put(6, 35L);  // SHT -> FOT
+        dwellTimeUpMap.put(7, 35L);  // SHT -> RAC
+        dwellTimeUpMap.put(8, 35L);  // FOT/RAC -> UNI
+        dwellTimeUpMap.put(9, 35L);  // UNI -> TAP
+        dwellTimeUpMap.put(10, 35L); // TAP -> TWO
+        dwellTimeUpMap.put(11, 35L); // TWO -> FAN
+        dwellTimeUpMap.put(12, 47L); // FAN -> SHS
 
-        // --- 南行 (Dn: LOW/LMC -> ADM) ---
-        // Run Time (行車)
-        runTimeDnMap.put(12, 197L); // 預設羅湖出發
-        runTimeDnMap.put(11, 106L);
-        runTimeDnMap.put(10, 262L);
-        runTimeDnMap.put(9, 96L);
-        runTimeDnMap.put(8, 301L);
-        runTimeDnMap.put(6, 160L);
-        runTimeDnMap.put(7, 120L);
-        runTimeDnMap.put(5, 98L);
-        runTimeDnMap.put(4, 220L);
-        runTimeDnMap.put(3, 125L);
-        runTimeDnMap.put(2, 158L);
-        runTimeDnMap.put(1, 184L);
-        runTimeDnMap.put(23, 93L);
+        // --- 南行 (Dn: Key 是起點站) ---
+        runTimeDnMap.put(14, 422L); // LMC -> SHS
+        runTimeDnMap.put(13, 197L); // LOW -> SHS
+        runTimeDnMap.put(12, 106L); // SHS -> FAN
+        runTimeDnMap.put(11, 262L); // FAN -> TWO
+        runTimeDnMap.put(10, 96L);  // TWO -> TAP
+        runTimeDnMap.put(9, 301L);  // TAP -> UNI
+        runTimeDnMap.put(8, 160L);  // UNI -> FOT
+        runTimeDnMap.put(7, 120L);  // RAC -> SHT
+        runTimeDnMap.put(6, 120L);  // FOT -> SHT
+        runTimeDnMap.put(5, 98L);   // SHT -> TAW
+        runTimeDnMap.put(4, 220L);  // TAW -> KOT
+        runTimeDnMap.put(3, 125L);  // KOT -> MKK
+        runTimeDnMap.put(2, 158L);  // MKK -> HUH
+        runTimeDnMap.put(21, 184L); // HUH -> EXC
+        runTimeDnMap.put(22, 93L);  // EXC -> ADM
 
         // Dwell Time (停站)
-        dwellTimeDnMap.put(13, 47L);
-        dwellTimeDnMap.put(14, 47L);
-        dwellTimeDnMap.put(12, 35L);
-        dwellTimeDnMap.put(11, 35L);
-        dwellTimeDnMap.put(10, 40L);
-        dwellTimeDnMap.put(9, 30L);
-        dwellTimeDnMap.put(8, 35L);
-        dwellTimeDnMap.put(6, 40L);
-        dwellTimeDnMap.put(7, 40L);
-        dwellTimeDnMap.put(5, 47L);
-        dwellTimeDnMap.put(4, 47L);
-        dwellTimeDnMap.put(3, 44L);
-        dwellTimeDnMap.put(2, 44L);
-        dwellTimeDnMap.put(1, 44L);
+        dwellTimeDnMap.put(14, 47L); // LMC -> SHS
+        dwellTimeDnMap.put(13, 47L); // LOW -> SHS
+        dwellTimeDnMap.put(12, 35L); // SHS -> FAN
+        dwellTimeDnMap.put(11, 35L); // FAN -> TWO
+        dwellTimeDnMap.put(10, 40L); // TWO -> TAP
+        dwellTimeDnMap.put(9, 30L);  // TAP -> UNI
+        dwellTimeDnMap.put(8, 35L);  // UNI -> FOT
+        dwellTimeDnMap.put(7, 40L);  // RAC -> SHT
+        dwellTimeDnMap.put(6, 40L);  // FOT -> SHT
+        dwellTimeDnMap.put(5, 47L);  // SHT -> TAW
+        dwellTimeDnMap.put(4, 47L);  // TAW -> KOT
+        dwellTimeDnMap.put(3, 44L);  // KOT -> MKK
+        dwellTimeDnMap.put(2, 44L);  // MKK -> HUH
+        dwellTimeDnMap.put(1, 44L);  // HUH -> EXC
 
 
         Bundle extras = getIntent().getExtras();
@@ -158,7 +159,7 @@ public class EastRailJRActivity extends AppCompatActivity {
         stationCodes = new int[]{49, 48, 47, 46, 45, 44, 43, 42, 41, 50, 14, 1,
                 61, 62, 63, 64, 65, 66, 21, 22, 23, 24, 25, 26, 27, 28, 29};*/
 
-        adapter = new JRLineAdapter(this, lineCode, stationCodes, activeTrips);
+        adapter = new JRLineAdapter(this, lineCode, stationCodes, activeTrips, runTimeUpMap, runTimeDnMap, dwellTimeUpMap, dwellTimeDnMap);
         rvEastRailLine.setAdapter(adapter);
 
         rvEastRailLine.setClipChildren(false);
