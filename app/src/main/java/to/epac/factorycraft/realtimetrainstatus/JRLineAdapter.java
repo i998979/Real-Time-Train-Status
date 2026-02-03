@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -32,19 +34,32 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private static final int TYPE_BRANCH = 3;
 
     private final Context context;
+
     private final int[] stationCodes;
     private final String lineCode;
     private final int lineColor;
     private final List<Trip> trips;
 
-    public JRLineAdapter(Context context, String lineCode, int[] stationCodes, List<Trip> trips) {
+    private HashMap<Integer, Long> runTimeUpMap;
+    private HashMap<Integer, Long> runTimeDnMap;
+    private HashMap<Integer, Long> dwellTimeUpMap;
+    private HashMap<Integer, Long> dwellTimeDnMap;
+
+    public JRLineAdapter(Context context, String lineCode, int[] stationCodes, List<Trip> trips,
+                         HashMap<Integer, Long> runTimeUpMap, HashMap<Integer, Long> runTimeDnMap,
+                         HashMap<Integer, Long> dwellTimeUpMap, HashMap<Integer, Long> dwellTimeDnMap) {
         this.context = context;
+
         this.lineCode = lineCode;
         this.stationCodes = stationCodes;
-        this.trips = trips;
-
         int colorResId = context.getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
         this.lineColor = context.getResources().getColor(colorResId, null);
+        this.trips = trips;
+
+        this.runTimeUpMap = runTimeUpMap;
+        this.runTimeDnMap = runTimeDnMap;
+        this.dwellTimeUpMap = dwellTimeUpMap;
+        this.dwellTimeDnMap = dwellTimeDnMap;
     }
 
     @Override
@@ -130,6 +145,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             Trip trip = tripsAtLocation.get(i);
 
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
+
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
 
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
@@ -139,8 +155,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             if (container instanceof FrameLayout) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) badge.getLayoutParams();
-                params.gravity = isUp ? (android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.END)
-                        : (android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
+                params.gravity = isUp ? (Gravity.CENTER_VERTICAL | Gravity.END) : (Gravity.CENTER_VERTICAL | Gravity.START);
                 badge.setLayoutParams(params);
             }
 
@@ -223,141 +238,70 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         container.addView(row);
     }
 
-    private void populateTimeline(LinearLayout container, Trip trip) {
+    private int populateTimeline(LinearLayout container, Trip trip) {
         container.removeAllViews();
         boolean isUp = isUp(trip.td);
         int destCode = trip.destinationStationCode;
 
-        List<Integer> myRoute = new ArrayList<>();
+        List<Integer> route = new ArrayList<>();
+        boolean shouldAdd = false;
 
         if (isUp) {
-            // 北行：從金鐘往北找 (假設 stationCodes 是 [LOW, SHS, ..., ADM])
-            boolean foundNext = false;
-            for (int j = stationCodes.length - 1; j >= 0; j--) {
-                int code = stationCodes[j];
-                if (code == trip.nextStationCode) foundNext = true;
+            for (int i = stationCodes.length - 1; i >= 0; i--) {
+                int code = stationCodes[i];
 
-                if (foundNext) {
-                    // 關鍵修正：如果目的地是落馬洲，且當前走到上水(12)之後
-                    // 應當加入 14 而不是陣列裡的 13
-                    if (destCode == 14 && code == 13) {
-                        myRoute.add(14);
-                    } else {
-                        myRoute.add(code);
-                    }
+                int effectiveCode = (code == 13 && destCode == 14) ? 14 : code;
+
+                if (effectiveCode == trip.nextStationCode) shouldAdd = true;
+
+                if (shouldAdd) {
+                    route.add(effectiveCode);
+                    if (effectiveCode == destCode) break;
                 }
-                // 抵達目的地代碼則停止
-                if (code == destCode || (destCode == 14 && code == 13)) break;
             }
         } else {
-            // 南行：從落馬洲或羅湖往金鐘
-            boolean foundNext = false;
             for (int code : stationCodes) {
-                if (code == trip.nextStationCode) foundNext = true;
-                if (foundNext) myRoute.add(code);
-                if (code == destCode) break;
+                if (trip.currentStationCode == 14 && code == 13) continue;
+                if (trip.currentStationCode == 13 && code == 14) continue;
+
+                if (code == trip.nextStationCode) shouldAdd = true;
+
+                if (shouldAdd) {
+                    route.add(code);
+                    if (code == destCode) break;
+                }
             }
         }
+
+        if (route.isEmpty()) return 0;
+
 
         long nowMillis = System.currentTimeMillis();
-        long totalSec = 0;
+        long totalSec;
 
-        // 計算第一站時間
-        totalSec = (trip.trainSpeed <= 3.0) ?
-                getFixedRunTimeByCode(trip.nextStationCode, isUp) :
-                (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
-
-        // 渲染
-        for (int k = 0; k < myRoute.size(); k++) {
-            int currentCode = myRoute.get(k);
-            // 這裡直接傳入 currentCode (如 14)，addStationRow 就會顯示落馬洲
-            addStationRow(container, currentCode, nowMillis, (int) (totalSec / 60), k == myRoute.size() - 1);
-
-            if (k < myRoute.size() - 1) {
-                totalSec += getFixedDwellTimeByCode(currentCode, isUp);
-                totalSec += getFixedRunTimeByCode(myRoute.get(k + 1), isUp);
-            }
-        }
-    }
-
-    // 修正後的數據獲取方法（改用 Station Code 而非 Index）
-    private long getFixedRunTimeByCode(int code, boolean isUp) {
-        // 這裡放入您圖片中的秒數映射
-        // 例如：code 12(SHS) 在 Up Track 時，如果是去 LMC(14) 回傳 408
-        if (isUp) {
-            if (code == 14) return 408; // SHS -> LMC
-            if (code == 13) return 202; // FAN -> SHS -> LOW (最後一段)
-            // ... 其他根據 Code 返回 EAL_RUN_UP ...
+        if (trip.trainSpeed <= 3.0) {
+            totalSec = isUp ? runTimeUpMap.getOrDefault(trip.nextStationCode, 120L)
+                    : runTimeDnMap.getOrDefault(trip.currentStationCode, 120L);
         } else {
-            if (code == 12) return 422; // LMC -> SHS (假設是從LMC出發後的第一站)
-            // ...
+            totalSec = (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
         }
-        return 120; // 預設
-    }
 
-    private long getFixedDwellTimeByCode(int code, boolean isUp) {
-        if (isUp) { // 北行
-            switch (code) {
-                case 0:
-                    return 47; // ADM
-                case 1:
-                    return 44; // EXC
-                case 2:
-                    return 44; // HUH
-                case 3:
-                    return 47; // MKK
-                case 4:
-                    return 47; // KOT
-                case 5:
-                    return 35; // TAW
-                case 6:
-                case 7:
-                    return 35; // SHT / FOT
-                case 8:
-                    return 35; // UNI
-                case 9:
-                    return 35; // TAP
-                case 10:
-                    return 35; // TWO
-                case 11:
-                    return 35; // FAN
-                case 12:
-                    return 47; // SHS
-                default:
-                    return 0;  // LOW/LMC 終點站
-            }
-        } else { // 南行
-            switch (code) {
-                case 13:
-                case 14:
-                    return 47; // LOW / LMC
-                case 12:
-                    return 35; // SHS
-                case 11:
-                    return 35; // FAN
-                case 10:
-                    return 40; // TWO
-                case 9:
-                    return 30;  // TAP
-                case 8:
-                    return 35;  // UNI
-                case 6:
-                case 7:
-                    return 40; // SHT / FOT
-                case 5:
-                    return 47;  // TAW
-                case 4:
-                    return 47;  // KOT
-                case 3:
-                    return 44;  // MKK
-                case 2:
-                    return 44;  // HUH
-                case 1:
-                    return 44;  // EXC
-                default:
-                    return 0;  // ADM 終點站
+        for (int k = 0; k < route.size(); k++) {
+            int currentCode = route.get(k);
+            addStationRow(container, currentCode, nowMillis, (int) (totalSec / 60), k == route.size() - 1);
+
+            if (k < route.size() - 1) {
+                int nextCode = route.get(k + 1);
+
+                totalSec += isUp ? dwellTimeUpMap.getOrDefault(currentCode, 35L)
+                        : dwellTimeDnMap.getOrDefault(currentCode, 35L);
+
+                totalSec += isUp ? runTimeUpMap.getOrDefault(nextCode, 120L)
+                        : runTimeDnMap.getOrDefault(currentCode, 120L);
             }
         }
+
+        return route.size();
     }
 
     private void updateTrainDetailsCrowd(LinearLayout container, Trip trip, View itemView) {
@@ -473,16 +417,33 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 LinearLayout crowdContainer = v.findViewById(R.id.layout_cars_container);
                 updateTrainDetailsCrowd(crowdContainer, trip, v);
 
-                View timelineContainer = v.findViewById(R.id.layout_stations_timeline);
-                ImageView arrow = v.findViewById(R.id.img_fold_arrow);
-                v.findViewById(R.id.layout_foldable_header).setOnClickListener(view -> {
-                    boolean isVisible = timelineContainer.getVisibility() == View.VISIBLE;
-                    timelineContainer.setVisibility(isVisible ? View.GONE : View.VISIBLE);
-                    arrow.animate().rotation(isVisible ? 180f : 0f).setDuration(200).start();
-                });
-
                 LinearLayout stationRows = v.findViewById(R.id.container_station_rows);
-                populateTimeline(stationRows, trip);
+                View timelineContainer = v.findViewById(R.id.layout_stations_timeline);
+                View foldableHeader = v.findViewById(R.id.layout_foldable_header);
+                ImageView arrow = v.findViewById(R.id.img_fold_arrow);
+
+                int stationCount = populateTimeline(stationRows, trip);
+                if (stationCount == 0) {
+                    foldableHeader.setVisibility(View.GONE);
+                    timelineContainer.setVisibility(View.GONE);
+                } else {
+                    foldableHeader.setVisibility(View.VISIBLE);
+
+                    if (tripsAtLocation.size() == 1) {
+                        timelineContainer.setVisibility(View.VISIBLE);
+                        arrow.setRotation(0f);
+                    } else {
+                        timelineContainer.setVisibility(View.GONE);
+                        arrow.setRotation(180f);
+                    }
+
+                    foldableHeader.setOnClickListener(view -> {
+                        boolean isVisible = timelineContainer.getVisibility() == View.VISIBLE;
+
+                        timelineContainer.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+                        arrow.animate().rotation(isVisible ? 180f : 0f).setDuration(200).start();
+                    });
+                }
             }
 
             @Override
