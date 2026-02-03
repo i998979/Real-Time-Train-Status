@@ -180,7 +180,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         for (int i = 0; i < carCount; i++) {
             Car car = trip.listCars.get(i);
-            int capacity = (i == 3) ? 150 : 250;
+            int capacity = (lineCode.equalsIgnoreCase("eal") && i == 3) ? 150 : 250;
             double load = (double) car.passengerCount / capacity;
             totalPercent += load;
         }
@@ -239,7 +239,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private int populateTimeline(LinearLayout container, Trip trip) {
         container.removeAllViews();
-        boolean isUp = isUp(trip.td);
+        boolean isUp = isUp(trip);
         int destCode = trip.destinationStationCode;
 
         List<Integer> route = new ArrayList<>();
@@ -311,7 +311,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         int carCount = trip.listCars.size();
 
         for (int i = 0; i < carCount; i++) {
-            int idx = isUp(trip.td) ? i : (carCount - 1 - i);
+            int idx = isUp(trip) ? i : (carCount - 1 - i);
             Car car = trip.listCars.get(idx);
             totalLoad += car.passengerCount;
 
@@ -323,7 +323,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             GradientDrawable gd = new GradientDrawable();
             gd.setCornerRadius(4 * density);
 
-            boolean isFirstClass = (idx == 3);
+            boolean isFirstClass = lineCode.equalsIgnoreCase("eal") && idx == 3;
             int color;
             if (isFirstClass) {
                 color = (car.passengerCount < 70) ? 0xFF00FF00 : (car.passengerCount < 150) ? 0xFFFFFF00 : 0xFFFF0000;
@@ -398,7 +398,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
 
                 TextView tvDest = v.findViewById(R.id.tv_destination);
-                if (trip.destinationStationCode == -1) {
+                if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                     tvDest.setText("不載客列車");
                 } else {
                     String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
@@ -459,8 +459,16 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
 
-    private boolean isUp(String td) {
-        return Character.getNumericValue(td.charAt(td.length() - 1)) % 2 != 0;
+    private boolean isUp(Trip trip) {
+        boolean b = false;
+        if (lineCode.equalsIgnoreCase("eal")) {
+            if (Character.getNumericValue(trip.td.charAt(trip.td.length() - 1)) % 2 != 0) b = true;
+        } else if (lineCode.equalsIgnoreCase("tml")) {
+            if (Utils.covertStationOrder(trip.currentStationCode) < Utils.covertStationOrder(trip.destinationStationCode))
+                return true;
+        }
+
+        return b;
     }
 
     private String getTime(long baseTimeMillis, int minutesToAdd) {
@@ -484,7 +492,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
 
             if (trip.trainSpeed == 0 && trip.currentStationCode == code) {
-                if (isUp(trip.td))
+                if (isUp(trip))
                     upTrips.add(trip);
                 else
                     dnTrips.add(trip);
@@ -519,7 +527,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
             if (trip.trainSpeed <= 0) continue;
 
-            boolean isUp = isUp(trip.td);
+            boolean isUp = isUp(trip);
             boolean isAtThisSegment = false;
 
             if (isUp) {
@@ -595,13 +603,13 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             if (trip.trainSpeed == 0) {
                 if (trip.currentStationCode == mainCode) {
-                    if (isUp(trip.td))
+                    if (isUp(trip))
                         upMain.add(trip);
                     else
                         dnMain.add(trip);
                 }
                 if (trip.currentStationCode == spurCode) {
-                    if (isUp(trip.td))
+                    if (isUp(trip))
                         upSpur.add(trip);
                     else
                         dnSpur.add(trip);
@@ -633,9 +641,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
 
             if (trip.trainSpeed > 0) {
-                if (isUp(trip.td) && trip.nextStationCode == currentStation)
+                if (isUp(trip) && trip.nextStationCode == currentStation)
                     upTrips.add(trip);
-                else if (!isUp(trip.td) && trip.nextStationCode == nextStation)
+                else if (!isUp(trip) && trip.nextStationCode == nextStation)
                     dnTrips.add(trip);
             }
         }
