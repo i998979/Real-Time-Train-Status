@@ -87,7 +87,7 @@
                     android:background="#444444"
                     android:paddingHorizontal="6dp"
                     android:paddingVertical="2dp"
-                    android:text="9 兩"
+                    android:text="9 両"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp"
                     android:textStyle="bold" />
