@@ -225,8 +225,6 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         tvArrvTime.setText(getTime(currentTime, minutes));
         tvArrvTime.setTextColor(Color.parseColor("#4CAF50"));
 
-        // 修正點：直接使用傳入的 stationCode 進行映射
-        // 不要再透過 stationCodes[idx] 轉換，避免 14 被轉成 13
         tvStaName.setText(Utils.getStationName(context, Utils.mapStation(stationCode, lineCode), true));
 
         if (isLast) {
@@ -408,7 +406,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
 
                 TextView tvSvcType = v.findViewById(R.id.tv_service_type);
-                boolean viaRacecourse = trip.td.matches(".*[BGKN].*");
+                boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
                 tvSvcType.setText(viaRacecourse ? "經馬場" : "普通");
                 GradientDrawable typeBg = new GradientDrawable();
                 typeBg.setCornerRadius(10f);
