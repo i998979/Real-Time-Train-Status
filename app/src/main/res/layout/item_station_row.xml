@@ -19,7 +19,7 @@
         android:layout_height="match_parent">
 
         <View
-            android:id="@+id/view_blue_line"
+            android:id="@+id/tv_line"
             android:layout_width="5dp"
             android:layout_height="match_parent"
             android:layout_centerHorizontal="true"

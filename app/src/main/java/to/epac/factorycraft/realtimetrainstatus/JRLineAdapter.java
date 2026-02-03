@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -187,11 +188,11 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         double avgPercent = totalPercent / carCount;
 
         View[] boys = {
-                badgeView.findViewById(R.id.boy_1),
-                badgeView.findViewById(R.id.boy_2),
-                badgeView.findViewById(R.id.boy_3),
-                badgeView.findViewById(R.id.boy_4),
-                badgeView.findViewById(R.id.boy_5)
+                badgeView.findViewById(R.id.crowd_1),
+                badgeView.findViewById(R.id.crowd_2),
+                badgeView.findViewById(R.id.crowd_3),
+                badgeView.findViewById(R.id.crowd_4),
+                badgeView.findViewById(R.id.crowd_5)
         };
 
         int color;
@@ -216,17 +217,17 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private void addStationRow(LinearLayout container, int stationCode, long currentTime, int minutes, boolean isLast) {
         View row = LayoutInflater.from(context).inflate(R.layout.item_station_row, container, false);
 
-        TextView tvTime = row.findViewById(R.id.tv_arrival_time);
-        TextView tvName = row.findViewById(R.id.tv_row_station_name);
-        View line = row.findViewById(R.id.view_blue_line);
+        TextView tvArrvTime = row.findViewById(R.id.tv_arrival_time);
+        TextView tvStaName = row.findViewById(R.id.tv_row_station_name);
+        View line = row.findViewById(R.id.tv_line);
         line.setBackgroundColor(lineColor);
 
-        tvTime.setText(getTime(currentTime, minutes));
-        tvTime.setTextColor(Color.parseColor("#4CAF50"));
+        tvArrvTime.setText(getTime(currentTime, minutes));
+        tvArrvTime.setTextColor(Color.parseColor("#4CAF50"));
 
         // 修正點：直接使用傳入的 stationCode 進行映射
         // 不要再透過 stationCodes[idx] 轉換，避免 14 被轉成 13
-        tvName.setText(Utils.getStationName(context, Utils.mapStation(stationCode, lineCode), true));
+        tvStaName.setText(Utils.getStationName(context, Utils.mapStation(stationCode, lineCode), true));
 
         if (isLast) {
             line.post(() -> {
@@ -339,8 +340,8 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         int avg = totalLoad / carCount;
-        TextView tvCrowd = itemView.findViewById(R.id.tv_crowd_level_text);
-        tvCrowd.setText(avg < 100 ? "尚有座位" : avg < 200 ? "稍微擁擠" : "非常擁擠");
+        TextView tvCrowdLvl = itemView.findViewById(R.id.tv_crowd_level);
+        tvCrowdLvl.setText(avg < 100 ? "尚有座位" : avg < 200 ? "稍微擁擠" : "非常擁擠");
     }
 
     private void setupFullHeightBottomSheet(BottomSheetDialog dialog, View dialogView) {
@@ -355,7 +356,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             behavior.setSkipCollapsed(true);
 
-            View btnClose = dialogView.findViewById(R.id.btn_close);
+            ImageButton btnClose = dialogView.findViewById(R.id.btn_close);
             btnClose.setOnClickListener(v -> dialog.dismiss());
 
             behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
@@ -376,10 +377,10 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private void showTrainsDetailDialog(List<Trip> tripsAtLocation) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_bottom_sheet_container, null);
-        RecyclerView rv = dialogView.findViewById(R.id.rv_trains_list);
+        RecyclerView trainsList = dialogView.findViewById(R.id.rv_trains_list);
 
-        rv.setLayoutManager(new LinearLayoutManager(context));
-        rv.setAdapter(new RecyclerView.Adapter<>() {
+        trainsList.setLayoutManager(new LinearLayoutManager(context));
+        trainsList.setAdapter(new RecyclerView.Adapter<>() {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) {
@@ -398,49 +399,51 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
                 ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
 
-                TextView tvDestination = v.findViewById(R.id.tv_destination);
+                TextView tvDest = v.findViewById(R.id.tv_destination);
                 if (trip.destinationStationCode == -1) {
-                    tvDestination.setText("不載客列車");
+                    tvDest.setText("不載客列車");
                 } else {
                     String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
-                    tvDestination.setText(destName + " 行");
+                    tvDest.setText(destName + " 行");
                 }
 
-                TextView tvType = v.findViewById(R.id.tv_service_type);
+                TextView tvSvcType = v.findViewById(R.id.tv_service_type);
                 boolean viaRacecourse = trip.td.matches(".*[BGKN].*");
-                tvType.setText(viaRacecourse ? "經馬場" : "普通");
+                tvSvcType.setText(viaRacecourse ? "經馬場" : "普通");
                 GradientDrawable typeBg = new GradientDrawable();
                 typeBg.setCornerRadius(10f);
                 typeBg.setColor(viaRacecourse ? 0xCD5DE2FF : 0xFF4CAF50);
-                tvType.setBackground(typeBg);
+                tvSvcType.setBackground(typeBg);
 
-                LinearLayout crowdContainer = v.findViewById(R.id.layout_cars_container);
+                LinearLayout crowdContainer = v.findViewById(R.id.crowd_container);
                 updateTrainDetailsCrowd(crowdContainer, trip, v);
 
-                LinearLayout stationRows = v.findViewById(R.id.container_station_rows);
-                View timelineContainer = v.findViewById(R.id.layout_stations_timeline);
-                View foldableHeader = v.findViewById(R.id.layout_foldable_header);
-                ImageView arrow = v.findViewById(R.id.img_fold_arrow);
+
+                View header = v.findViewById(R.id.station_header);
+                ImageView arrow = v.findViewById(R.id.fold_arrow);
+
+                LinearLayout stationRows = v.findViewById(R.id.station_rows);
+                View timeLine = v.findViewById(R.id.station_timeline);
 
                 int stationCount = populateTimeline(stationRows, trip);
                 if (stationCount == 0) {
-                    foldableHeader.setVisibility(View.GONE);
-                    timelineContainer.setVisibility(View.GONE);
+                    header.setVisibility(View.GONE);
+                    timeLine.setVisibility(View.GONE);
                 } else {
-                    foldableHeader.setVisibility(View.VISIBLE);
+                    header.setVisibility(View.VISIBLE);
 
                     if (tripsAtLocation.size() == 1) {
-                        timelineContainer.setVisibility(View.VISIBLE);
+                        timeLine.setVisibility(View.VISIBLE);
                         arrow.setRotation(0f);
                     } else {
-                        timelineContainer.setVisibility(View.GONE);
+                        timeLine.setVisibility(View.GONE);
                         arrow.setRotation(180f);
                     }
 
-                    foldableHeader.setOnClickListener(view -> {
-                        boolean isVisible = timelineContainer.getVisibility() == View.VISIBLE;
+                    header.setOnClickListener(view -> {
+                        boolean isVisible = timeLine.getVisibility() == View.VISIBLE;
 
-                        timelineContainer.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+                        timeLine.setVisibility(isVisible ? View.GONE : View.VISIBLE);
                         arrow.animate().rotation(isVisible ? 180f : 0f).setDuration(200).start();
                     });
                 }

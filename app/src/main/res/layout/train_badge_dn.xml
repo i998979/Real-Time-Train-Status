@@ -46,31 +46,31 @@
         android:paddingBottom="2dp">
 
         <View
-            android:id="@+id/boy_1"
+            android:id="@+id/crowd_1"
             android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:id="@+id/boy_2"
+            android:id="@+id/crowd_2"
             android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:id="@+id/boy_3"
+            android:id="@+id/crowd_3"
             android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:id="@+id/boy_4"
+            android:id="@+id/crowd_4"
             android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
 
         <View
-            android:id="@+id/boy_5"
+            android:id="@+id/crowd_5"
             android:layout_width="5dp"
             android:layout_height="10dp"
             android:background="@drawable/outline_boy_24" />
