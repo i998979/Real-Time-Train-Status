@@ -158,6 +158,13 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             headerLayer.setTint(lineColor);
             trainIconView.setBackground(layers);
 
+            if (lineCode.equalsIgnoreCase("tml")) {
+                if (Integer.parseInt(trip.trainId) < 397)
+                    ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.sp1900);
+                else
+                    ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.t1141a);
+            }
+
 
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
             String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
@@ -410,6 +417,12 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 tvLine.setText(Utils.getLineName(lineCode, true));
 
                 ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
+                if (lineCode.equalsIgnoreCase("tml")) {
+                    if (Integer.parseInt(trip.trainId) < 397)
+                        ((ImageView) v.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.sp1900);
+                    else
+                        ((ImageView) v.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.t1141a);
+                }
 
                 TextView tvDest = v.findViewById(R.id.tv_destination);
                 if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
