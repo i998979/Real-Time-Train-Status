@@ -145,7 +145,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         container.setVisibility(View.VISIBLE);
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        for (int i = 0; i < tripsAtLocation.size(); i++) {
+        for (int i = 0; i < Math.min(3, tripsAtLocation.size()); i++) {
             Trip trip = tripsAtLocation.get(i);
 
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
@@ -167,9 +167,16 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
-            String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
-            boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
-            tvId.setText((viaRacecourse ? "經馬場" : "普通") + " " + destName);
+            if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
+                tvId.setText("不載客");
+            } else {
+                String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
+                boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
+                tvId.setText((viaRacecourse ? "經馬場" : "普通") + " " + destName);
+            }
+
+            TextView tvCar = badge.findViewById(isUp ? R.id.tv_car_up : R.id.tv_car_dn);
+            tvCar.setText(lineCode.equalsIgnoreCase("eal") ? "9両" : "8両");
 
             updateBadgeLoad(badge, trip);
 
@@ -262,6 +269,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         boolean isUp = isUp(trip);
         int destCode = trip.destinationStationCode;
 
+        boolean isViaRacecourse = lineCode.equalsIgnoreCase("eal") &&
+                ((trip.td != null && trip.td.matches(".*[BGKN].*")) || destCode == 7);
+
         List<Integer> route = new ArrayList<>();
         boolean shouldAdd = false;
 
@@ -269,26 +279,26 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             for (int i = stationCodes.length - 1; i >= 0; i--) {
                 int code = stationCodes[i];
 
-                int effectiveCode = (code == 13 && destCode == 14) ? 14 : code;
+                int displayCode = code;
+                if (isViaRacecourse && code == 6) displayCode = 7;
 
-                if (effectiveCode == trip.nextStationCode) shouldAdd = true;
-
+                if (displayCode == trip.nextStationCode) shouldAdd = true;
                 if (shouldAdd) {
-                    route.add(effectiveCode);
-                    if (effectiveCode == destCode) break;
+                    route.add(displayCode);
+                    if (displayCode == destCode) break;
                 }
             }
         } else {
             for (int code : stationCodes) {
-                if (trip.currentStationCode == 14 && code == 13) continue;
-                if (trip.currentStationCode == 13 && code == 14) continue;
 
-                if (code == trip.nextStationCode) shouldAdd = true;
+                int displayCode = code;
+                if (isViaRacecourse && code == 6) displayCode = 7;
+                if (destCode == 14 && code == 13) displayCode = 14;
 
+                if (displayCode == trip.nextStationCode) shouldAdd = true;
                 if (shouldAdd) {
-                    Log.d("tagg", code + "");
-                    route.add(code);
-                    if (code == destCode) break;
+                    route.add(displayCode);
+                    if (displayCode == destCode) break;
                 }
             }
         }
@@ -431,6 +441,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
                     tvDest.setText(destName + " 行");
                 }
+
+                TextView tvCarCount = v.findViewById(R.id.tv_car_count);
+                tvCarCount.setText(lineCode.equalsIgnoreCase("eal") ? "9両" : "8両");
 
                 TextView tvSvcType = v.findViewById(R.id.tv_service_type);
                 boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
