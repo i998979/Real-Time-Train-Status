@@ -3,7 +3,7 @@
     android:layout_width="45dp"
     android:layout_height="70dp"
     android:layout_margin="8dp"
-    android:background="@drawable/badge_background_up"
+    android:background="@drawable/badge_background_dynamic_up"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:paddingTop="8dp">

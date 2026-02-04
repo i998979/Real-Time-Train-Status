@@ -3,7 +3,10 @@ package to.epac.factorycraft.realtimetrainstatus;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -148,9 +151,18 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
 
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
+            View trainIconView = badge.findViewById(isUp ? R.id.layout_train_up : R.id.layout_train_dn);
+
+            LayerDrawable layers = (LayerDrawable) trainIconView.getBackground().mutate();
+            Drawable headerLayer = layers.findDrawableByLayerId(R.id.line_color_layer);
+            headerLayer.setTint(lineColor);
+            trainIconView.setBackground(layers);
+
 
             TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
-            if (tvId != null) tvId.setText(trip.td);
+            String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
+            boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
+            tvId.setText((viaRacecourse ? "經馬場" : "普通") + " " + destName);
 
             updateBadgeLoad(badge, trip);
 
@@ -219,8 +231,11 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         TextView tvArrvTime = row.findViewById(R.id.tv_arrival_time);
         TextView tvStaName = row.findViewById(R.id.tv_row_station_name);
-        View line = row.findViewById(R.id.tv_line);
-        line.setBackgroundColor(lineColor);
+        View topHalf = row.findViewById(R.id.line_half_top);
+        View bottomHalf = row.findViewById(R.id.line_half_bottom);
+
+        topHalf.setBackgroundColor(lineColor);
+        bottomHalf.setBackgroundColor(lineColor);
 
         tvArrvTime.setText(getTime(currentTime, minutes));
         tvArrvTime.setTextColor(Color.parseColor("#4CAF50"));
@@ -228,11 +243,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         tvStaName.setText(Utils.getStationName(context, Utils.mapStation(stationCode, lineCode), true));
 
         if (isLast) {
-            line.post(() -> {
-                ViewGroup.LayoutParams params = line.getLayoutParams();
-                params.height = row.getHeight() / 2;
-                line.setLayoutParams(params);
-            });
+            bottomHalf.setVisibility(View.INVISIBLE);
+        } else {
+            bottomHalf.setVisibility(View.VISIBLE);
         }
         container.addView(row);
     }
@@ -266,6 +279,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 if (code == trip.nextStationCode) shouldAdd = true;
 
                 if (shouldAdd) {
+                    Log.d("tagg", code + "");
                     route.add(code);
                     if (code == destCode) break;
                 }
