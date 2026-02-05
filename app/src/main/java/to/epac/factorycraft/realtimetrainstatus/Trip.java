@@ -85,7 +85,7 @@ public class Trip {
         this.trainId = "API-" + destinationStationCode + "-" + seq + "-" + direction;
 
         // Initialize Roctec fields
-        this.trainSpeed = 0.0;
+        this.trainSpeed = this.ttnt > 1 ? 50.0 : 0.0;
         this.currentStationCode = -1;
         this.doorStatus = 0;
         this.targetDistance = 0;

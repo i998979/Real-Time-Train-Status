@@ -52,7 +52,12 @@ public class EastRailJRActivity extends AppCompatActivity {
         if (dataSource == null) dataSource = "OPENDATA";
         lineConfig = LineConfig.get(this, lineCode);
 
-        initStationIndices();
+        stationIdToIndexMap.clear();
+        String[] stations = getStationArray();
+        for (int i = 0; i < stations.length; i++) {
+            int id = Utils.codeToId(this, lineCode, stations[i]);
+            if (id != -1) stationIdToIndexMap.put(id, i);
+        }
 
         rv = findViewById(R.id.rv_line);
         rv.setLayoutManager(new LinearLayoutManager(this));
@@ -61,16 +66,6 @@ public class EastRailJRActivity extends AppCompatActivity {
         rv.setAdapter(adapter);
 
         startRefreshLoop();
-    }
-
-    private void initStationIndices() {
-        stationIdToIndexMap.clear();
-
-        String[] stations = getStationArray();
-        for (int i = 0; i < stations.length; i++) {
-            int id = Utils.codeToId(this, lineCode, stations[i]);
-            if (id != -1) stationIdToIndexMap.put(id, i);
-        }
     }
 
     private void startRefreshLoop() {
@@ -195,11 +190,6 @@ public class EastRailJRActivity extends AppCompatActivity {
 
             Trip t = new Trip(currentStaCode, destCode, arrivalTime, dir, 1,
                     tObj.optString("route", ""), tObj.optInt("ttnt", 0), tObj.optString("timeType", "A"));
-            t.receivedTime = System.currentTimeMillis();
-            t.isOpenData = true;
-            t.nextStationCode = currentStaCode;
-            t.trainSpeed = t.ttnt > 1 ? 50.0 : 0.0;
-
             list.add(t);
         }
         return list;

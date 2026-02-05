@@ -15,10 +15,10 @@ import java.util.Map;
 
 public class Utils {
 
-    public static String idToCode(Context context, int code, String id) {
+    public static String idToCode(Context context, int code, String line) {
         try {
-            int idRes = context.getResources().getIdentifier(id.toLowerCase() + "_station_id", "string", context.getPackageName());
-            int codeRes = context.getResources().getIdentifier(id.toLowerCase() + "_station_code", "string", context.getPackageName());
+            int idRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_id", "string", context.getPackageName());
+            int codeRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_code", "string", context.getPackageName());
 
             String[] ids = context.getString(idRes).split("\\s+");
             String[] codes = context.getString(codeRes).split("\\s+");
