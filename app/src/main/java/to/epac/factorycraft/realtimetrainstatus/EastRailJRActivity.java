@@ -4,16 +4,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,16 +19,22 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EastRailJRActivity extends AppCompatActivity {
-
-    private RecyclerView rvLine;
+    private RecyclerView rv;
     private JRLineAdapter adapter;
-    private List<Trip> activeTrips = new ArrayList<>();
+
+    private final List<Trip> activeTrips = new ArrayList<>();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    private final Map<Integer, Integer> stationIdToIndexMap = new HashMap<>();
+
     private String lineCode;
+    private String dataSource;
     private LineConfig lineConfig;
 
     @Override
@@ -43,124 +43,99 @@ public class EastRailJRActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_east_rail_jr);
 
-        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
-
-        boolean isDarkMode = (getResources().getConfiguration().uiMode &
-                android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
-                android.content.res.Configuration.UI_MODE_NIGHT_YES;
-
-        controller.setAppearanceLightStatusBars(!isDarkMode);
-        controller.setAppearanceLightNavigationBars(!isDarkMode);
-
-        rvLine = findViewById(R.id.rv_line);
-        rvLine.setLayoutManager(new LinearLayoutManager(this));
-
-        ViewCompat.setOnApplyWindowInsetsListener(rvLine, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        // 1. 取得線路代碼 (預設 eal)
-        lineCode = getIntent().getStringExtra("LINE_CODE");
-        if (lineCode == null) lineCode = "tml";
-
-        // 2. 從 Config 類別載入對應數據
-        lineConfig = LineConfig.get(lineCode);
-
-        // 3. UI 基礎設定
-        setupSystemBars();
-        setupBanner();
-
         ImageButton btnClose = findViewById(R.id.btn_close_activity);
         btnClose.setOnClickListener(v -> finish());
 
-        // 4. 初始化 Adapter (傳入載入後的數據)
-        rvLine = findViewById(R.id.rv_line);
-        rvLine.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new JRLineAdapter(this, lineCode, lineConfig.stationCodes, activeTrips,
-                lineConfig.runTimeUpMap, lineConfig.runTimeDnMap,
-                lineConfig.dwellTimeUpMap, lineConfig.dwellTimeDnMap);
-        rvLine.setAdapter(adapter);
+        lineCode = getIntent().getStringExtra("LINE_CODE");
+        if (lineCode == null) lineCode = "eal";
+        dataSource = getIntent().getStringExtra("DATA_SOURCE");
+        if (dataSource == null) dataSource = "OPENDATA";
+        lineConfig = LineConfig.get(this, lineCode);
 
-        rvLine.setClipChildren(false);
-        rvLine.setClipToPadding(false);
+        initStationIndices();
+
+        rv = findViewById(R.id.rv_line);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new JRLineAdapter(this, lineCode, lineConfig.stationIDs, activeTrips,
+                lineConfig.runTimeUpMap, lineConfig.runTimeDnMap, lineConfig.dwellTimeUpMap, lineConfig.dwellTimeDnMap);
+        rv.setAdapter(adapter);
 
         startRefreshLoop();
     }
 
-    private void setupBanner() {
-        TextView tvBannerName = findViewById(R.id.tv_banner_name);
-        tvBannerName.setText(Utils.getLineName(lineCode, true));
+    private void initStationIndices() {
+        stationIdToIndexMap.clear();
 
-        FrameLayout lineBanner = findViewById(R.id.line_banner);
-        int colorResId = getResources().getIdentifier(lineCode.toLowerCase(), "color", getPackageName());
-        int lineColor = getResources().getColor(colorResId, null);
-        lineBanner.setBackgroundColor(lineColor);
-    }
-
-    private void setupSystemBars() {
-        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
-        boolean isDarkMode = (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
-        controller.setAppearanceLightStatusBars(!isDarkMode);
-        controller.setAppearanceLightNavigationBars(!isDarkMode);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rv_line), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        String[] stations = getStationArray();
+        for (int i = 0; i < stations.length; i++) {
+            int id = Utils.codeToId(this, lineCode, stations[i]);
+            if (id != -1) stationIdToIndexMap.put(id, i);
+        }
     }
 
     private void startRefreshLoop() {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                fetchDataInBackground();
+                fetchData();
                 mainHandler.postDelayed(this, 10000);
             }
         });
     }
 
-    private void fetchDataInBackground() {
+    private void fetchData() {
         new Thread(() -> {
             try {
-                URL url = new URL(lineConfig.apiUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("x-api-key", "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
-                conn.setRequestMethod("GET");
+                List<Trip> rawList = new ArrayList<>();
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder result = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    result.append(line);
+                if (dataSource.equalsIgnoreCase("OPENDATA")) {
+                    String[] stations = getStationArray();
+                    for (String sta : stations) {
+                        String raw = download("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line="
+                                + lineCode.toUpperCase() + "&sta=" + sta, null);
+                        if (raw != null) {
+                            JSONObject root = new JSONObject(raw);
+                            JSONObject data = root.optJSONObject("data");
+                            String key = lineCode.toUpperCase() + "-" + sta;
+                            if (data != null && data.has(key)) {
+                                rawList.addAll(parseNtJson(data.getJSONObject(key), sta));
+                            }
+                        }
+                    }
+                } else {
+                    String raw = download(lineConfig.apiUrl, "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                    if (raw != null) {
+                        rawList.addAll(parseRoctecJson(raw));
+                    }
                 }
-                reader.close();
 
-                List<Trip> trips = parseJson(result.toString());
+                List<Trip> cleanList = processPhysicsBasedDedup(rawList);
+                cleanList.sort(Comparator.comparingLong(t -> t.expectedArrivalTime));
 
                 mainHandler.post(() -> {
                     activeTrips.clear();
-                    activeTrips.addAll(trips);
+                    activeTrips.addAll(cleanList);
+                    Log.d("JR_LOG", "Valid Trains: " + activeTrips.size());
                     adapter.notifyDataSetChanged();
                 });
             } catch (Exception e) {
-                Log.e("JR_LOG", "Fetch Error: " + e.getMessage());
+                e.printStackTrace();
             }
         }).start();
     }
 
-    private List<Trip> parseJson(String json) throws Exception {
+    private List<Trip> parseRoctecJson(String json) throws Exception {
         List<Trip> list = new ArrayList<>();
         JSONArray array;
 
-        // 判斷 JSON 是物件格式 (TML) 還是陣列格式 (EAL)
+        // TML format
         if (json.trim().startsWith("{")) {
             JSONObject root = new JSONObject(json);
-            array = root.getJSONArray("Items"); // 處理 TML 格式
-        } else {
-            array = new JSONArray(json); // 處理 EAL 格式
+            array = root.getJSONArray("Items");
+        }
+        // EAL format
+        else {
+            array = new JSONArray(json);
         }
 
         for (int i = 0; i < array.length(); i++) {
@@ -171,25 +146,16 @@ public class EastRailJRActivity extends AppCompatActivity {
                 JSONArray carArray = obj.getJSONArray("listCars");
                 for (int j = 0; j < carArray.length(); j++) {
                     JSONObject c = carArray.getJSONObject(j);
-                    cars.add(new Car(
-                            c.optInt("carLoad"),
-                            c.optInt("passengerCount"),
-                            c.optString("carName"),
-                            c.optInt("passengerLoad")
-                    ));
+                    cars.add(new Car(c.optInt("carLoad"), c.optInt("passengerCount"),
+                            c.optString("carName"), c.optInt("passengerLoad")));
                 }
             }
 
-            // 欄位兼容性處理
             String trainId = obj.optString("trainId");
 
-            // 方向判斷：優先使用 td，若為 "UNKNOWN" 或不存在，則回退到 trainId
             String td = obj.optString("td", "UNKNOWN");
-            if (td.equals("UNKNOWN")) {
-                td = trainId;
-            }
+            if (td.equals("UNKNOWN")) td = trainId;
 
-            // 門狀態判斷：EAL 是 String "0"，TML 是 Boolean false
             int doorStatus = 0;
             Object doorObj = obj.opt("doorStatus");
             if (doorObj instanceof Boolean) {
@@ -198,33 +164,108 @@ public class EastRailJRActivity extends AppCompatActivity {
                 doorStatus = Integer.parseInt((String) doorObj);
             }
 
-            // 距離欄位兼容
+            // TODO: TML uses distanceFromCurrentStation instead of targetDistance
             int targetDist = obj.has("targetDistance") ?
                     obj.optInt("targetDistance") :
                     obj.optInt("distanceFromCurrentStation", 0);
 
-            list.add(new Trip(
-                    trainId,
-                    "",
-                    obj.optDouble("trainSpeed", 0.0),
-                    obj.optInt("currentStationCode"),
-                    obj.optInt("nextStationCode"),
-                    obj.optInt("destinationStationCode"),
-                    cars,
-                    obj.optLong("receivedTime"),
-                    obj.optLong("ttl"),
-                    doorStatus,
-                    td,
-                    targetDist,
-                    obj.optInt("startDistance", 0)
+            list.add(new Trip(trainId, "", obj.optDouble("trainSpeed", 0.0),
+                    obj.optInt("currentStationCode"), obj.optInt("nextStationCode"), obj.optInt("destinationStationCode"),
+                    cars, obj.optLong("receivedTime"), obj.optLong("ttl"),
+                    doorStatus, td, targetDist, obj.optInt("startDistance", 0)
             ));
         }
         return list;
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mainHandler.removeCallbacksAndMessages(null);
+    private List<Trip> parseNtJson(JSONObject stationJson, String staName) throws Exception {
+        List<Trip> list = new ArrayList<>();
+
+        String[] dirs = {"UP", "DOWN"};
+        int currentStaCode = Utils.codeToId(this, lineCode, staName);
+
+        for (String dir : dirs) {
+            if (!stationJson.has(dir)) continue;
+            JSONArray trains = stationJson.getJSONArray(dir);
+            if (trains.length() == 0) continue;
+
+            JSONObject tObj = trains.getJSONObject(0);
+            long arrivalTime = Utils.convertTimestampToMillis(tObj.getString("time"));
+            int destCode = Utils.codeToId(this, lineCode, tObj.getString("dest"));
+
+            Trip t = new Trip(currentStaCode, destCode, arrivalTime, dir, 1,
+                    tObj.optString("route", ""), tObj.optInt("ttnt", 0), tObj.optString("timeType", "A"));
+            t.receivedTime = System.currentTimeMillis();
+            t.isOpenData = true;
+            t.nextStationCode = currentStaCode;
+            t.trainSpeed = t.ttnt > 1 ? 50.0 : 0.0;
+
+            list.add(t);
+        }
+        return list;
+    }
+
+    // TODO
+    private List<Trip> processPhysicsBasedDedup(List<Trip> rawList) {
+        rawList.sort(Comparator.comparingLong(t -> t.expectedArrivalTime));
+        List<Trip> acceptedTrips = new ArrayList<>();
+
+        for (Trip candidate : rawList) {
+            boolean isGhost = false;
+            Integer candIdx = stationIdToIndexMap.get(candidate.currentStationCode);
+
+            for (Trip existing : acceptedTrips) {
+                // 方向相同 (UP/DOWN) 且 目的地相同
+                if (candidate.td.equals(existing.td) && candidate.destinationStationCode == existing.destinationStationCode) {
+                    Integer existIdx = stationIdToIndexMap.get(existing.currentStationCode);
+                    if (candIdx == null || existIdx == null) continue;
+
+                    boolean isUpDirection = candidate.td.contains("UP");
+
+                    // 物理邏輯去重：
+                    // 在 UP 方向 (Index 增加)，若 Candidate 在後面的車站 (Index 較大) 卻時間較晚 -> 它是同一班車
+                    // 在 DOWN 方向 (Index 減少)，若 Candidate 在後面的車站 (Index 較小) 卻時間較晚 -> 它是同一班車
+                    if (isUpDirection) {
+                        if (candIdx > existIdx) {
+                            isGhost = true;
+                            break;
+                        }
+                    } else {
+                        if (candIdx < existIdx) {
+                            isGhost = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!isGhost) acceptedTrips.add(candidate);
+        }
+        return acceptedTrips;
+    }
+
+    private String[] getStationArray() {
+        int resId = getResources().getIdentifier(lineCode.toLowerCase() + "_station_code", "string", getPackageName());
+        return resId != 0 ? getString(resId).split("\\s+") : new String[0];
+    }
+
+    private String download(String urlStr, String apiKey) {
+        try {
+            HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+            if (apiKey != null)
+                conn.setRequestProperty("x-api-key", apiKey);
+            conn.setConnectTimeout(5000);
+
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = r.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                return sb.toString();
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
