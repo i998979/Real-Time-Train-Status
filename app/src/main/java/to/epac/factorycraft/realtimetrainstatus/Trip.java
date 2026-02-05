@@ -33,8 +33,8 @@ public class Trip {
      */
     public Trip(int nextStationCode, int destinationStationCode,
                 long expectedArrivalTime, String direction, int seq, String route, int ttnt, String timeType) {
-
         this.isOpenData = true;
+
         this.nextStationCode = nextStationCode;
         this.destinationStationCode = destinationStationCode;
         this.expectedArrivalTime = expectedArrivalTime;
@@ -46,11 +46,40 @@ public class Trip {
         this.listCars = new ArrayList<>();
         this.seq = seq;
 
-        if (this.route.equals("RAC")) {
-            this.td = "VIA_RAC";
-        } else {
-            this.td = "OD_" + direction;
+        boolean isUp = direction.equalsIgnoreCase("UP");
+        boolean isRac = this.route.equals("RAC");
+        switch (destinationStationCode) {
+            // Up train
+            case 7:
+                this.td = !isRac ? "JM000" : "JR000";
+                break;
+            case 9:
+                this.td = !isRac ? "JD000" : "JG000";
+                break;
+            case 12:
+                this.td = !isRac ? "JH000" : "JK000";
+                break;
+            case 13:
+                this.td = !isRac ? "JM000" : "JN000";
+                break;
+            case 14:
+                this.td = !isRac ? "JL000" : "JB000";
+                break;
+            // Dn train
+            case 23:
+                this.td = !isRac ? "JL000" : "JB000";
+                break;
+            case 1:
+                this.td = !isRac ? "YL000" : "YB000";
+                break;
+            case 2:
+                this.td = !isRac ? "EL000" : "EB000";
+                break;
+            // Default
+            default:
+                this.td = !isRac ? "JM000" : "JN000";
         }
+        this.td += isUp ? "1" : "2";
 
         // 產生唯一 ID
         this.trainId = "API-" + destinationStationCode + "-" + seq + "-" + direction;
