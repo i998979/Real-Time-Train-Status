@@ -1,26 +1,36 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.Context;
+
 import java.util.HashMap;
 
 public class LineConfig {
-    public int[] stationCodes;
     public String apiUrl;
+    public int[] stationIDs;
     public HashMap<Integer, Long> runTimeUpMap = new HashMap<>();
     public HashMap<Integer, Long> runTimeDnMap = new HashMap<>();
     public HashMap<Integer, Long> dwellTimeUpMap = new HashMap<>();
     public HashMap<Integer, Long> dwellTimeDnMap = new HashMap<>();
 
-    public static LineConfig get(String lineCode) {
+    public static LineConfig get(Context context, String lineCode) {
         LineConfig config = new LineConfig();
-        if (lineCode.equalsIgnoreCase("eal")) {
-            config.stationCodes = new int[]{13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 21, 22, 23};
+        String rawIDs = "";
 
+        if (lineCode.equalsIgnoreCase("eal")) {
+            rawIDs = context.getString(R.string.eal_station_id);
             setupEAL(config);
         } else if (lineCode.equalsIgnoreCase("tml")) {
-            config.stationCodes = new int[]{49, 48, 47, 46, 45, 44, 43, 42, 41, 50, 14, 1, 61, 62, 63, 64, 65, 66, 21, 22, 23, 24, 25, 26, 27, 28, 29};
-
+            rawIDs = context.getString(R.string.tml_station_id);
             setupTML(config);
         }
+
+        // 直接在方法內解析字串
+        String[] parts = rawIDs.trim().split("\\s+");
+        config.stationIDs = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            config.stationIDs[i] = Integer.parseInt(parts[i]);
+        }
+
         return config;
     }
 
