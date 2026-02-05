@@ -15,10 +15,10 @@ import java.util.List;
 
 public class MapUtils {
 
-    Context ctx;
+    Context context;
 
-    public MapUtils(Context ctx) {
-        this.ctx = ctx;
+    public MapUtils(Context context) {
+        this.context = context;
     }
 
     public void drawPolylines(GoogleMap map, List<LatLng> points, String color) {
@@ -39,10 +39,10 @@ public class MapUtils {
         // Retrieve all sector points
         List<LatLng> sectorPoints = new ArrayList<>();
         if (line.equals("EAL")) {
-            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(isSpur ? R.string.eal_lmc : R.string.eal_low)));
-            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.eal_main)));
+            sectorPoints.addAll(Utils.getLatLngs(context.getResources().getString(isSpur ? R.string.eal_lmc : R.string.eal_low)));
+            sectorPoints.addAll(Utils.getLatLngs(context.getResources().getString(R.string.eal_main)));
         } else
-            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.tml_main)));
+            sectorPoints.addAll(Utils.getLatLngs(context.getResources().getString(R.string.tml_main)));
 
 
         // Closest sector
@@ -86,10 +86,10 @@ public class MapUtils {
 
         List<LatLng> sectorPoints = new ArrayList<>();
         if (line.equals("EAL")) {
-            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(isSpur ? R.string.eal_lmc : R.string.eal_low)));
-            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.eal_main)));
+            sectorPoints.addAll(Utils.getLatLngs(context.getResources().getString(isSpur ? R.string.eal_lmc : R.string.eal_low)));
+            sectorPoints.addAll(Utils.getLatLngs(context.getResources().getString(R.string.eal_main)));
         } else
-            sectorPoints.addAll(Utils.getLatLngs(ctx.getResources().getString(R.string.tml_main)));
+            sectorPoints.addAll(Utils.getLatLngs(context.getResources().getString(R.string.tml_main)));
 
 
         LatLng[] fromSector = getClosestSector(from, line, isSpur);
@@ -188,13 +188,13 @@ public class MapUtils {
         int targetDistance = trip.targetDistance;
         int startDistance = trip.startDistance;
 
-        int currResId = ctx.getResources().getIdentifier(Utils.mapStation(currentStationCode, line).toLowerCase(), "string", ctx.getPackageName());
-        int nextResId = ctx.getResources().getIdentifier(Utils.mapStation(nextStationCode, line).toLowerCase(), "string", ctx.getPackageName());
-        int targResId = ctx.getResources().getIdentifier(Utils.mapStation(destinationStationCode, line).toLowerCase(), "string", ctx.getPackageName());
+        int currResId = context.getResources().getIdentifier(Utils.idToCode(context, currentStationCode, line).toLowerCase(), "string", context.getPackageName());
+        int nextResId = context.getResources().getIdentifier(Utils.idToCode(context, nextStationCode, line).toLowerCase(), "string", context.getPackageName());
+        int targResId = context.getResources().getIdentifier(Utils.idToCode(context, destinationStationCode, line).toLowerCase(), "string", context.getPackageName());
 
-        LatLng currLatLng = currResId > 0 ? Utils.getLatLng(ctx.getResources().getString(currResId)) : null;
-        LatLng nextLatLng = nextResId > 0 ? Utils.getLatLng(ctx.getResources().getString(nextResId)) : null;
-        LatLng targLatLng = targResId > 0 ? Utils.getLatLng(ctx.getResources().getString(targResId)) : null;
+        LatLng currLatLng = currResId > 0 ? Utils.getLatLng(context.getResources().getString(currResId)) : null;
+        LatLng nextLatLng = nextResId > 0 ? Utils.getLatLng(context.getResources().getString(nextResId)) : null;
+        LatLng targLatLng = targResId > 0 ? Utils.getLatLng(context.getResources().getString(targResId)) : null;
 
 
         // FOT->SHT->ADM will show FOT->SHT when arrived SHT
@@ -210,9 +210,9 @@ public class MapUtils {
 
         if ((currentStationCode == 0 || currentStationCode == 701) && (nextStationCode == 0 || nextStationCode == 701)) {
             if (line.equals("TML"))
-                return Utils.getLatLng(ctx.getResources().getString(R.string.phd));
+                return Utils.getLatLng(context.getResources().getString(R.string.phd));
             else
-                return Utils.getLatLng(ctx.getResources().getString(R.string.htd));
+                return Utils.getLatLng(context.getResources().getString(R.string.htd));
         }
 
         if (currLatLng == null || nextLatLng == null) {
@@ -243,10 +243,10 @@ public class MapUtils {
         int currIndex = -1;
         int nextIndex = -1;
 
-        String[] stations = ctx.getResources().getString(R.string.tml_stations).split(" ");
+        String[] stations = context.getResources().getString(R.string.tml_stations).split(" ");
         for (int i = 0; i < stations.length; i++) {
-            if (stations[i].equals(Utils.mapStation(curr, "TML").toLowerCase())) currIndex = i;
-            if (stations[i].equals(Utils.mapStation(next, "TML").toLowerCase())) nextIndex = i;
+            if (stations[i].equals(Utils.idToCode(context, curr, "TML").toLowerCase())) currIndex = i;
+            if (stations[i].equals(Utils.idToCode(context, next, "TML").toLowerCase())) nextIndex = i;
 
             if (currIndex != -1 && nextIndex != -1) break;
         }
