@@ -29,7 +29,7 @@ public class TrainNoUtils {
                 String destinationStationCode = object.getString("destinationStationCode");
                 // jsonContent
                 String trainType = object.getString("trainType");
-                String td = Utils.isInteger(object.getString("td")) ? Integer.parseInt(object.getString("td")) + "" : object.getString("td");
+                String td = object.getString("td").matches("\\d+") ? String.valueOf(Integer.parseInt(object.getString("td"))) : object.getString("td");
                 // line
                 long lambdaDateTime = object.has("lambdaDateTime") ? object.getLong("lambdaDateTime") : 0;
                 // carLoads
@@ -42,8 +42,12 @@ public class TrainNoUtils {
                 if (System.currentTimeMillis() / 1000 - lambdaDateTime > (line.equals("TCL") ? 600 : 60))
                     continue;
 
-                if (Utils.isInteger(td) && Integer.parseInt(td) > 0 || !(Utils.isInteger(td)))
+                try {
+                    int val = Integer.parseInt(td);
+                    if (val > 0) table.put(line, td, line.equals("TKL") ? trainId : trainConsist);
+                } catch (NumberFormatException e) {
                     table.put(line, td, line.equals("TKL") ? trainId : trainConsist);
+                }
             }
         } catch (JSONException e) {
         } catch (Exception e) {
