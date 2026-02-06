@@ -1,7 +1,9 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Trip {
     public String trainId;
@@ -23,26 +25,30 @@ public class Trip {
     public long ttl;
 
     // --- Next Train API ---
+    public Map<Integer, Long> stationPredictions;
     public int seq;
+    public long time;
     public int ttnt;
-    public long expectedArrivalTime;
-    public String timeType;
     public String route;
+    public String timeType;
 
     /**
      * Next Train API
      */
     public Trip(int currentStationCode, int nextStationCode, int destinationStationCode,
-                long expectedArrivalTime, String direction, int seq, String route, int ttnt, String timeType) {
+                String direction, int seq, long time, int ttnt, String route, String timeType) {
         this.isOpenData = true;
         this.currentStationCode = currentStationCode;
         this.nextStationCode = nextStationCode;
         this.destinationStationCode = destinationStationCode;
-        this.expectedArrivalTime = expectedArrivalTime;
+
+        this.stationPredictions = new HashMap<>();
+        this.stationPredictions.put(nextStationCode, time);
         isUp = direction.equalsIgnoreCase("UP");
         this.seq = seq;
-        this.route = (route != null) ? route : "";
+        this.time = time;
         this.ttnt = ttnt;
+        this.route = (route != null) ? route : "";
         this.timeType = (timeType != null) ? timeType : "A";
 
         this.receivedTime = System.currentTimeMillis();
@@ -102,7 +108,6 @@ public class Trip {
                 int nextStationCode, int destinationStationCode, List<Car> listCars,
                 long receivedTime, long ttl, int doorStatus, String td,
                 int targetDistance, int startDistance) {
-
         this.isOpenData = false;
         this.trainId = trainId;
         this.trainType = trainType;
@@ -122,10 +127,11 @@ public class Trip {
         this.startDistance = startDistance;
 
         // Initialize Next Train fields
+        this.stationPredictions = new HashMap<>();
         this.seq = 0;
+        this.time = 0;
         this.ttnt = 0;
-        this.expectedArrivalTime = 0;
-        this.timeType = "";
         this.route = "";
+        this.timeType = "";
     }
 }

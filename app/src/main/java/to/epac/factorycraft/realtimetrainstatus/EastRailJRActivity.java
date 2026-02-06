@@ -105,7 +105,7 @@ public class EastRailJRActivity extends AppCompatActivity {
                 }
 
                 List<Trip> cleanList = processPhysicsBasedDedup(rawList);
-                cleanList.sort(Comparator.comparingLong(t -> t.expectedArrivalTime));
+                cleanList.sort(Comparator.comparingLong(t -> t.time));
 
                 mainHandler.post(() -> {
                     activeTrips.clear();
@@ -208,7 +208,7 @@ public class EastRailJRActivity extends AppCompatActivity {
                 String route = tObj.optString("route", "");
                 String timeType = tObj.optString("timeType", "A");
 
-                Trip trip = new Trip(prevStaCode, targetStaCode, destCode, time, dir, i + 1, route, ttnt, timeType);
+                Trip trip = new Trip(prevStaCode, targetStaCode, destCode, dir, i + 1, time, ttnt, route, timeType);
 
                 if (ttnt <= 0) {
                     trip.currentStationCode = targetStaCode;
@@ -223,35 +223,35 @@ public class EastRailJRActivity extends AppCompatActivity {
     }
 
     private List<Trip> processPhysicsBasedDedup(List<Trip> rawList) {
-        rawList.sort(Comparator.comparingLong(t -> t.expectedArrivalTime));
+        rawList.sort(Comparator.comparingLong(t -> t.time));
         List<Trip> acceptedTrips = new ArrayList<>();
 
         for (Trip candidate : rawList) {
-            boolean isGhost = false;
+            Trip masterTrain = null;
             Integer candIdx = stationIdToIndexMap.get(candidate.currentStationCode);
 
             for (Trip existing : acceptedTrips) {
-                // 方向相同 (UP/DOWN) 且 目的地相同
                 if (candidate.isUp == existing.isUp && candidate.destinationStationCode == existing.destinationStationCode) {
                     Integer existIdx = stationIdToIndexMap.get(existing.currentStationCode);
                     if (candIdx == null || existIdx == null) continue;
 
-                    // 在 UP 方向 (Index 增加)，若 Candidate 在後面的車站 (Index 較大) 卻時間較晚 -> 它是同一班車
-                    // 在 DOWN 方向 (Index 減少)，若 Candidate 在後面的車站 (Index 較小) 卻時間較晚 -> 它是同一班車
-                    if (candidate.isUp) {
-                        if (candIdx < existIdx) {
-                            isGhost = true;
-                            break;
-                        }
-                    } else {
-                        if (candIdx > existIdx) {
-                            isGhost = true;
-                            break;
-                        }
+                    // 物理判定：判斷 candidate 是否為 existing 的影子車
+                    boolean isSameTrain = candidate.isUp ? (candIdx < existIdx) : (candIdx > existIdx);
+
+                    if (isSameTrain) {
+                        masterTrain = existing;
+                        break;
                     }
                 }
             }
-            if (!isGhost) acceptedTrips.add(candidate);
+
+            if (masterTrain != null) {
+                // 合併：將這筆數據看到的車站預測時間存入 Master 列車中
+                masterTrain.stationPredictions.putAll(candidate.stationPredictions);
+                Log.d("tagg3", "added");
+            } else {
+                acceptedTrips.add(candidate);
+            }
         }
         return acceptedTrips;
     }
