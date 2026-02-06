@@ -174,28 +174,54 @@ public class EastRailJRActivity extends AppCompatActivity {
     }
 
     private List<Trip> parseNtJson(JSONObject stationJson, String staName) throws Exception {
+        int targetStaCode = Utils.codeToId(this, lineCode, staName);
+
+        int targetIdx = -1;
+        for (int i = 0; i < lineConfig.stationIDs.length; i++) {
+            if (lineConfig.stationIDs[i] == targetStaCode) {
+                targetIdx = i;
+                break;
+            }
+        }
+
         List<Trip> list = new ArrayList<>();
-
         String[] dirs = {"UP", "DOWN"};
-        int currentStaCode = Utils.codeToId(this, lineCode, staName);
-
         for (String dir : dirs) {
             if (!stationJson.has(dir)) continue;
+
             JSONArray trains = stationJson.getJSONArray(dir);
-            if (trains.length() == 0) continue;
+            boolean isUp = dir.equalsIgnoreCase("UP");
 
-            JSONObject tObj = trains.getJSONObject(0);
-            long arrivalTime = Utils.convertTimestampToMillis(tObj.getString("time"));
-            int destCode = Utils.codeToId(this, lineCode, tObj.getString("dest"));
+            // 2. 預計算物理上的「前一站」：UP (北行) 為 index + 1，DOWN (南行) 為 index - 1
+            // 13 12 11 10 9 8 6 5 4 3 2 21 22 23
+            // LOW SHS FAN TWO TAP UNI FOT SHT TAW KOT MKK HUH EXC ADM
+            int prevIdx = isUp ? targetIdx + 1 : targetIdx - 1;
+            int prevStaCode = (targetIdx != -1 && prevIdx >= 0 && prevIdx < lineConfig.stationIDs.length)
+                    ? lineConfig.stationIDs[prevIdx] : targetStaCode;
 
-            Trip t = new Trip(currentStaCode, destCode, arrivalTime, dir, 1,
-                    tObj.optString("route", ""), tObj.optInt("ttnt", 0), tObj.optString("timeType", "A"));
-            list.add(t);
+            for (int i = 0; i < trains.length(); i++) {
+                JSONObject tObj = trains.getJSONObject(i);
+
+                int destCode = Utils.codeToId(this, lineCode, tObj.getString("dest"));
+                long time = Utils.convertTimestampToMillis(tObj.getString("time"));
+                int ttnt = tObj.optInt("ttnt", 0);
+                String route = tObj.optString("route", "");
+                String timeType = tObj.optString("timeType", "A");
+
+                Trip trip = new Trip(prevStaCode, targetStaCode, destCode, time, dir, i + 1, route, ttnt, timeType);
+
+                if (ttnt <= 0) {
+                    trip.currentStationCode = targetStaCode;
+                } else {
+                    trip.currentStationCode = prevStaCode;
+                }
+
+                list.add(trip);
+            }
         }
         return list;
     }
 
-    // TODO
     private List<Trip> processPhysicsBasedDedup(List<Trip> rawList) {
         rawList.sort(Comparator.comparingLong(t -> t.expectedArrivalTime));
         List<Trip> acceptedTrips = new ArrayList<>();
@@ -206,22 +232,19 @@ public class EastRailJRActivity extends AppCompatActivity {
 
             for (Trip existing : acceptedTrips) {
                 // 方向相同 (UP/DOWN) 且 目的地相同
-                if (candidate.td.equals(existing.td) && candidate.destinationStationCode == existing.destinationStationCode) {
+                if (candidate.isUp == existing.isUp && candidate.destinationStationCode == existing.destinationStationCode) {
                     Integer existIdx = stationIdToIndexMap.get(existing.currentStationCode);
                     if (candIdx == null || existIdx == null) continue;
 
-                    boolean isUpDirection = candidate.td.contains("UP");
-
-                    // 物理邏輯去重：
                     // 在 UP 方向 (Index 增加)，若 Candidate 在後面的車站 (Index 較大) 卻時間較晚 -> 它是同一班車
                     // 在 DOWN 方向 (Index 減少)，若 Candidate 在後面的車站 (Index 較小) 卻時間較晚 -> 它是同一班車
-                    if (isUpDirection) {
-                        if (candIdx > existIdx) {
+                    if (candidate.isUp) {
+                        if (candIdx < existIdx) {
                             isGhost = true;
                             break;
                         }
                     } else {
-                        if (candIdx < existIdx) {
+                        if (candIdx > existIdx) {
                             isGhost = true;
                             break;
                         }

@@ -83,7 +83,8 @@ public class Trip {
         this.td += isUp ? "1" : "2";
 
         // 產生唯一 ID
-        this.trainId = "API-" + destinationStationCode + "-" + seq + "-" + direction;
+        this.trainId = "API-" + currentStationCode + "-" + destinationStationCode
+                + "-" + seq + "-" + direction;
 
         // Initialize Roctec fields
         this.trainType = "N/A";
