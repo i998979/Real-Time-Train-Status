@@ -6,16 +6,16 @@ import java.util.List;
 public class Trip {
     public String trainId;
     public String td;
+    public int currentStationCode;
     public int destinationStationCode;
     public List<Car> listCars;
     public long receivedTime;
     public boolean isOpenData;
 
     // --- Roctec API ---
+    public int nextStationCode;
     public String trainType;
     public double trainSpeed;
-    public int currentStationCode;
-    public int nextStationCode;
     public int doorStatus;
     public int targetDistance;
     public int startDistance;
@@ -31,11 +31,11 @@ public class Trip {
     /**
      * Next Train API
      */
-    public Trip(int nextStationCode, int destinationStationCode,
+    public Trip(int currentStationCode, int destinationStationCode,
                 long expectedArrivalTime, String direction, int seq, String route, int ttnt, String timeType) {
         this.isOpenData = true;
 
-        this.nextStationCode = nextStationCode;
+        this.currentStationCode = currentStationCode;
         this.destinationStationCode = destinationStationCode;
         this.expectedArrivalTime = expectedArrivalTime;
         this.ttnt = ttnt;
@@ -86,7 +86,7 @@ public class Trip {
 
         // Initialize Roctec fields
         this.trainSpeed = this.ttnt > 1 ? 50.0 : 0.0;
-        this.currentStationCode = -1;
+        this.nextStationCode = -1;
         this.doorStatus = 0;
         this.targetDistance = 0;
         this.startDistance = 0;
