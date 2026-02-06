@@ -52,13 +52,20 @@
                         android:id="@+id/tv_service_type"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
                         android:background="#FF4CAF50"
                         android:paddingHorizontal="16dp"
                         android:text="普通"
                         android:textColor="#FFFFFF"
                         android:textSize="14sp"
                         android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_train_consist"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="D001/D003"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/tv_destination"
@@ -76,6 +83,7 @@
                         android:text="列車番號：JM0009"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="12sp" />
+
                 </LinearLayout>
 
                 <TextView
@@ -108,6 +116,7 @@
                 android:textStyle="bold" />
 
             <LinearLayout
+                android:id="@+id/crowd_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"

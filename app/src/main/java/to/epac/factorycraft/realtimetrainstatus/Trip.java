@@ -7,13 +7,14 @@ public class Trip {
     public String trainId;
     public String td;
     public int currentStationCode;
+    public int nextStationCode;
     public int destinationStationCode;
     public List<Car> listCars;
     public long receivedTime;
     public boolean isOpenData;
+    public boolean isUp;
 
     // --- Roctec API ---
-    public int nextStationCode;
     public String trainType;
     public double trainSpeed;
     public int doorStatus;
@@ -31,22 +32,22 @@ public class Trip {
     /**
      * Next Train API
      */
-    public Trip(int currentStationCode, int destinationStationCode,
+    public Trip(int currentStationCode, int nextStationCode, int destinationStationCode,
                 long expectedArrivalTime, String direction, int seq, String route, int ttnt, String timeType) {
         this.isOpenData = true;
-
         this.currentStationCode = currentStationCode;
+        this.nextStationCode = nextStationCode;
         this.destinationStationCode = destinationStationCode;
         this.expectedArrivalTime = expectedArrivalTime;
+        isUp = direction.equalsIgnoreCase("UP");
+        this.seq = seq;
+        this.route = (route != null) ? route : "";
         this.ttnt = ttnt;
         this.timeType = (timeType != null) ? timeType : "A";
-        this.route = (route != null) ? route : "";
 
         this.receivedTime = System.currentTimeMillis();
         this.listCars = new ArrayList<>();
-        this.seq = seq;
 
-        boolean isUp = direction.equalsIgnoreCase("UP");
         boolean isRac = this.route.equals("RAC");
         switch (destinationStationCode) {
             // Up train
@@ -85,13 +86,12 @@ public class Trip {
         this.trainId = "API-" + destinationStationCode + "-" + seq + "-" + direction;
 
         // Initialize Roctec fields
+        this.trainType = "N/A";
         this.trainSpeed = this.ttnt > 1 ? 50.0 : 0.0;
-        this.nextStationCode = -1;
         this.doorStatus = 0;
         this.targetDistance = 0;
         this.startDistance = 0;
         this.ttl = 0;
-        this.trainType = "N/A";
     }
 
     /**
@@ -110,13 +110,10 @@ public class Trip {
         this.nextStationCode = nextStationCode;
         this.destinationStationCode = destinationStationCode;
 
-        if (listCars != null) {
-            this.listCars = listCars;
-        } else {
-            this.listCars = new ArrayList<>();
-        }
+        this.listCars = new ArrayList<>();
+        if (listCars != null) this.listCars = listCars;
 
-        this.receivedTime = (receivedTime > 0) ? receivedTime : System.currentTimeMillis();
+        this.receivedTime = receivedTime;
         this.ttl = ttl;
         this.doorStatus = doorStatus;
         this.td = td;
@@ -124,9 +121,9 @@ public class Trip {
         this.startDistance = startDistance;
 
         // Initialize Next Train fields
-        this.expectedArrivalTime = 0;
         this.seq = 0;
         this.ttnt = 0;
+        this.expectedArrivalTime = 0;
         this.timeType = "";
         this.route = "";
     }
