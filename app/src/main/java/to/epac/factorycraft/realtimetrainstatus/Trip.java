@@ -89,12 +89,14 @@ public class Trip {
         this.td += isUp ? "1" : "2";
 
         // 產生唯一 ID
-        this.trainId = "API-" + currentStationCode + "-" + destinationStationCode
-                + "-" + seq + "-" + direction;
+        this.trainId = "API-at " + Utils.idToCode(EastRailJRActivity.context, currentStationCode, "eal")
+                + " next " + Utils.idToCode(EastRailJRActivity.context, nextStationCode, "eal")
+                + " to " + Utils.idToCode(EastRailJRActivity.context, destinationStationCode, "eal")
+                + " " + direction + "-" + ttnt + "-" + seq;
 
         // Initialize Roctec fields
         this.trainType = "N/A";
-        this.trainSpeed = this.ttnt > 1 ? 50.0 : 0.0;
+        this.trainSpeed = this.ttnt >= 1 ? 50.0 : 0.0;
         this.doorStatus = 0;
         this.targetDistance = 0;
         this.startDistance = 0;
