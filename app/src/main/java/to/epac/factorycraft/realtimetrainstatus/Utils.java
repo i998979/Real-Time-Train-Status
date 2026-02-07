@@ -17,8 +17,8 @@ public class Utils {
 
     public static String idToCode(Context context, int code, String line) {
         if (line.equalsIgnoreCase("eal")) {
-            if (code == 14) return "lmc";
-            if (code == 7) return "rac";
+            if (code == 14) return "LMC";
+            if (code == 7) return "RAC";
         }
         try {
             int idRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_id", "string", context.getPackageName());
@@ -39,8 +39,8 @@ public class Utils {
 
     public static int codeToId(Context context, String line, String code) {
         if (line.equalsIgnoreCase("eal")) {
-            if (code.equalsIgnoreCase("lmc")) return 14;
-            if (code.equalsIgnoreCase("rac")) return 7;
+            if (code.equalsIgnoreCase("LMC")) return 14;
+            if (code.equalsIgnoreCase("RAC")) return 7;
         }
         try {
             int idRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_id", "string", context.getPackageName());
