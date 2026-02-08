@@ -25,7 +25,7 @@ public class Trip {
     public long ttl;
 
     // --- Next Train API ---
-    public Map<Integer, Long> stationPredictions;
+    public Map<Integer, Integer> stationPredictions;
     public int seq;
     public long time;
     public int ttnt;
@@ -43,7 +43,7 @@ public class Trip {
         this.destinationStationCode = destinationStationCode;
 
         this.stationPredictions = new HashMap<>();
-        this.stationPredictions.put(nextStationCode, time);
+        this.stationPredictions.put(nextStationCode, ttnt);
         isUp = direction.equalsIgnoreCase("UP");
         this.seq = seq;
         this.time = time;

@@ -1,5 +1,6 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,12 +20,17 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class EastRailJRActivity extends AppCompatActivity {
+    public static Context context;
+
+
     private RecyclerView rv;
     private JRLineAdapter adapter;
 
@@ -42,6 +48,8 @@ public class EastRailJRActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_east_rail_jr);
+
+        EastRailJRActivity.context = this;
 
         ImageButton btnClose = findViewById(R.id.btn_close_activity);
         btnClose.setOnClickListener(v -> finish());
@@ -111,6 +119,13 @@ public class EastRailJRActivity extends AppCompatActivity {
                     activeTrips.clear();
                     activeTrips.addAll(cleanList);
                     Log.d("JR_LOG", "Valid Trains: " + activeTrips.size());
+                    for (Trip trip : activeTrips) {
+                        Log.d("JR_LOG", (trip.isUp ? "UP" : "DN") + " from "
+                                + Utils.idToCode(this, trip.currentStationCode, lineCode) + " to "
+                                + Utils.idToCode(this, trip.nextStationCode, lineCode) + " towards "
+                                + Utils.idToCode(this, trip.destinationStationCode, lineCode) + " "
+                                + trip.ttnt + " ");
+                    }
                     adapter.notifyDataSetChanged();
                 });
             } catch (Exception e) {
@@ -173,12 +188,12 @@ public class EastRailJRActivity extends AppCompatActivity {
         return list;
     }
 
-    private List<Trip> parseNtJson(JSONObject stationJson, String staName) throws Exception {
-        int targetStaCode = Utils.codeToId(this, lineCode, staName);
+    private List<Trip> parseNtJson(JSONObject stationJson, String station) throws Exception {
+        int stationCode = Utils.codeToId(this, lineCode, station);
 
         int targetIdx = -1;
         for (int i = 0; i < lineConfig.stationIDs.length; i++) {
-            if (lineConfig.stationIDs[i] == targetStaCode) {
+            if (lineConfig.stationIDs[i] == stationCode) {
                 targetIdx = i;
                 break;
             }
@@ -197,7 +212,7 @@ public class EastRailJRActivity extends AppCompatActivity {
             // LOW SHS FAN TWO TAP UNI FOT SHT TAW KOT MKK HUH EXC ADM
             int prevIdx = isUp ? targetIdx + 1 : targetIdx - 1;
             int prevStaCode = (targetIdx != -1 && prevIdx >= 0 && prevIdx < lineConfig.stationIDs.length)
-                    ? lineConfig.stationIDs[prevIdx] : targetStaCode;
+                    ? lineConfig.stationIDs[prevIdx] : stationCode;
 
             for (int i = 0; i < trains.length(); i++) {
                 JSONObject tObj = trains.getJSONObject(i);
@@ -208,56 +223,164 @@ public class EastRailJRActivity extends AppCompatActivity {
                 String route = tObj.optString("route", "");
                 String timeType = tObj.optString("timeType", "A");
 
-                Trip trip = new Trip(prevStaCode, targetStaCode, destCode, dir, i + 1, time, ttnt, route, timeType);
+                Trip trip = new Trip(stationCode, stationCode, destCode, dir, i + 1, time, ttnt, route, timeType);
+                // Trip trip = new Trip(prevStaCode, stationCode, destCode, dir, i + 1, time, ttnt, route, timeType);
 
-                if (ttnt <= 0) {
-                    trip.currentStationCode = targetStaCode;
-                } else {
-                    trip.currentStationCode = prevStaCode;
-                }
+                // If ttnt <= 0, means the train has already arrived at the station
+                // if (ttnt <= 0) trip.currentStationCode = stationCode;
 
+                trip.stationPredictions.put(stationCode, ttnt);
                 list.add(trip);
             }
         }
+        Log.d("parseNtJson", station + ": " + list.size());
         return list;
     }
 
     private List<Trip> processPhysicsBasedDedup(List<Trip> rawList) {
-        rawList.sort(Comparator.comparingLong(t -> t.time));
-        List<Trip> acceptedTrips = new ArrayList<>();
+        List<String> stationOrder = Arrays.asList(getStationIdArray());
 
-        for (Trip candidate : rawList) {
-            Trip masterTrain = null;
-            Integer candIdx = stationIdToIndexMap.get(candidate.currentStationCode);
+        List<Trip> upList = rawList.stream().filter(trip -> trip.isUp).collect(Collectors.toList());
+        List<Trip> upSaved = new ArrayList<>();
+        List<Trip> dnList = rawList.stream().filter(trip -> !trip.isUp).collect(Collectors.toList());
+        List<Trip> dnSaved = new ArrayList<>();
 
-            for (Trip existing : acceptedTrips) {
-                if (candidate.isUp == existing.isUp && candidate.destinationStationCode == existing.destinationStationCode) {
-                    Integer existIdx = stationIdToIndexMap.get(existing.currentStationCode);
-                    if (candIdx == null || existIdx == null) continue;
+        upList.sort(Comparator
+                .comparing((Trip t) -> stationOrder.indexOf(t.currentStationCode + ""))
+                .thenComparing((Trip t) -> t.seq)
+        );
+        dnList.sort(Comparator
+                .comparing((Trip t) -> -stationOrder.indexOf(t.currentStationCode + ""))
+                .thenComparing((Trip t) -> t.seq)
+        );
 
-                    // 物理判定：判斷 candidate 是否為 existing 的影子車
-                    boolean isSameTrain = candidate.isUp ? (candIdx < existIdx) : (candIdx > existIdx);
+        for (Trip trip : upList) {
+            Log.d("upList", (trip.isUp ? "UP" : "DN") + " "
+                    + Utils.idToCode(this, trip.currentStationCode, lineCode) + " to "
+                    + Utils.idToCode(this, trip.nextStationCode, lineCode) + " towards "
+                    + Utils.idToCode(this, trip.destinationStationCode, lineCode) + " "
+                    + trip.ttnt);
+        }
+        for (Trip trip : dnList) {
+            Log.d("dnList", (trip.isUp ? "UP" : "DN") + " "
+                    + Utils.idToCode(this, trip.currentStationCode, lineCode) + " to "
+                    + Utils.idToCode(this, trip.nextStationCode, lineCode) + " towards "
+                    + Utils.idToCode(this, trip.destinationStationCode, lineCode) + " "
+                    + trip.ttnt);
+        }
 
-                    if (isSameTrain) {
-                        masterTrain = existing;
-                        break;
+
+        for (int i = 0; i < upList.size(); i++) {
+            Trip current = upList.get(i);
+            int currentIdx = stationIdToIndexMap.get(current.currentStationCode);
+
+            Trip pending = current;
+            int pendingIdx = currentIdx;
+            for (int k = i + 1; k < upList.size(); k++) {
+                Trip below = upList.get(k);
+                int belowIdx = stationIdToIndexMap.get(below.currentStationCode);
+
+
+                // -- If all conditions met, we use Pending to trace the next shadow -- //
+                if (pending.currentStationCode != below.currentStationCode) {
+                    if (pending.destinationStationCode == below.destinationStationCode) {
+                        if (pending.route.equals(below.route)) {
+                            if (Math.abs(pendingIdx - belowIdx) <= 1) {
+                                if (pending.ttnt >= below.ttnt) {
+                                    pending = below;
+                                    pendingIdx = stationIdToIndexMap.get(pending.currentStationCode);
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            if (masterTrain != null) {
-                // 合併：將這筆數據看到的車站預測時間存入 Master 列車中
-                masterTrain.stationPredictions.putAll(candidate.stationPredictions);
-                Log.d("tagg3", "added");
+            if (!upSaved.contains(pending))
+                upSaved.add(pending);
+        }
+
+        for (int i = 0; i < dnList.size(); i++) {
+            Trip current = dnList.get(i);
+            int currentIdx = stationIdToIndexMap.get(current.currentStationCode);
+
+            Trip pending = current;
+            int pendingIdx = currentIdx;
+            for (int k = i + 1; k < dnList.size(); k++) {
+                Trip below = dnList.get(k);
+                int belowIdx = stationIdToIndexMap.get(below.currentStationCode);
+
+
+                // -- If all conditions met, we use Pending to trace the next shadow -- //
+                if (pending.currentStationCode != below.currentStationCode) {
+                    if (pending.destinationStationCode == below.destinationStationCode) {
+                        if (pending.route.equals(below.route)) {
+                            if (Math.abs(pendingIdx - belowIdx) <= 1) {
+                                if (pending.ttnt >= below.ttnt) {
+                                    pending = below;
+                                    pendingIdx = stationIdToIndexMap.get(pending.currentStationCode);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!dnSaved.contains(pending))
+                dnSaved.add(pending);
+        }
+
+
+        for (Trip trip : upSaved) {
+            Log.d("upSaved", (trip.isUp ? "UP" : "DN") + " "
+                    + Utils.idToCode(this, trip.currentStationCode, lineCode) + " to "
+                    + Utils.idToCode(this, trip.nextStationCode, lineCode) + " towards "
+                    + Utils.idToCode(this, trip.destinationStationCode, lineCode) + " "
+                    + trip.ttnt);
+        }
+        for (Trip trip : dnSaved) {
+            Log.d("dnSaved", (trip.isUp ? "UP" : "DN") + " "
+                    + Utils.idToCode(this, trip.currentStationCode, lineCode) + " to "
+                    + Utils.idToCode(this, trip.nextStationCode, lineCode) + " towards "
+                    + Utils.idToCode(this, trip.destinationStationCode, lineCode) + " "
+                    + trip.ttnt);
+        }
+
+        List<Trip> savedTrips = new ArrayList<>();
+        savedTrips.addAll(upSaved);
+        savedTrips.addAll(dnSaved);
+
+        return savedTrips;
+    }
+
+    private long getRunTimeOnlyBetween(int startCode, int endCode, boolean isUp) {
+        int startIdx = stationIdToIndexMap.getOrDefault(startCode, -1);
+        int endIdx = stationIdToIndexMap.getOrDefault(endCode, -1);
+        if (startIdx == -1 || endIdx == -1) return 0;
+
+        int minIdx = Math.min(startIdx, endIdx);
+        int maxIdx = Math.max(startIdx, endIdx);
+        long totalRunSeconds = 0;
+
+        for (int i = minIdx; i < maxIdx; i++) {
+            int code = lineConfig.stationIDs[i];
+            int nextCode = lineConfig.stationIDs[i + 1];
+            if (isUp) {
+                totalRunSeconds += lineConfig.runTimeUpMap.getOrDefault(nextCode, 120L);
             } else {
-                acceptedTrips.add(candidate);
+                totalRunSeconds += lineConfig.runTimeDnMap.getOrDefault(code, 120L);
             }
         }
-        return acceptedTrips;
+        return totalRunSeconds;
     }
 
     private String[] getStationArray() {
         int resId = getResources().getIdentifier(lineCode.toLowerCase() + "_station_code", "string", getPackageName());
+        return resId != 0 ? getString(resId).split("\\s+") : new String[0];
+    }
+
+    private String[] getStationIdArray() {
+        int resId = getResources().getIdentifier(lineCode.toLowerCase() + "_station_id", "string", getPackageName());
         return resId != 0 ? getString(resId).split("\\s+") : new String[0];
     }
 
