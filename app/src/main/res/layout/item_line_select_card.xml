@@ -9,17 +9,20 @@
 
     <FrameLayout
         android:id="@+id/line_color_badge"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:background="#5DE2FF">
 
         <TextView
             android:id="@+id/tv_line_code_badge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:layout_gravity="center"
+            android:background="#FFFFFF"
+            android:gravity="center"
             android:text="EAL"
-            android:textColor="#FFFFFF"
+            android:textColor="#000000"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </FrameLayout>
 

@@ -8,10 +8,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,10 +26,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 public class EastRailJRActivity extends AppCompatActivity {
@@ -72,9 +76,6 @@ public class EastRailJRActivity extends AppCompatActivity {
 
         ViewGroup lineBanner = findViewById(R.id.line_banner);
         TextView bannerName = lineBanner.findViewById(R.id.tv_banner_name);
-        int colorResId = context.getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
-        int lineColor = context.getResources().getColor(colorResId, null);
-        lineBanner.setBackgroundColor(lineColor);
         bannerName.setText(Utils.getLineName(lineCode, true));
 
         rv = findViewById(R.id.rv_line);
@@ -82,6 +83,27 @@ public class EastRailJRActivity extends AppCompatActivity {
         adapter = new JRLineAdapter(this, lineCode, lineConfig.stationIDs, activeTrips,
                 lineConfig.runTimeUpMap, lineConfig.runTimeDnMap, lineConfig.dwellTimeUpMap, lineConfig.dwellTimeDnMap);
         rv.setAdapter(adapter);
+
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+        int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+
+        int startTime = 1 * 60 + 30; // 01:30
+        int endTime = 5 * 60;        // 05:00
+
+        boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
+
+        LinearLayout nthMessage = findViewById(R.id.nth_message);
+        if (isMaintenanceTime)
+            nthMessage.setVisibility(View.VISIBLE);
+        else
+            nthMessage.setVisibility(View.INVISIBLE);
+
+
+        NestedScrollView scrollView = findViewById(R.id.nested_scroll_view);
+        scrollView.post(() -> {
+            scrollView.scrollTo(0, rv.getTop());
+            rv.requestFocus();
+        });
 
         startRefreshLoop();
     }
