@@ -8,6 +8,30 @@
     <!-- TUM -> WKS -->
     <string name="tml_station_id">49 48 47 46 45 44 43 42 41 50 14 1 61 62 63 64 65 66 21 22 23 24 25 26 27 28 29</string>
     <string name="tml_station_code">TUM SIH TIS LOP YUL KSR TWW MEF NAC AUS ETS HUH HOM TKW SUW KAT DIH HIK TAW CKT STW CIO SHM TSH HEO MOS WKS</string>
+    <!-- TIK -> WHA -->
+    <string name="ktl_station_id">71 72 73 74 85 76 77 78 79 80 81 82 83 84 85 86 87</string>
+    <string name="ktl_station_code">TIK YAT LAT KWT NTK KOB CHH DIH WTS LOF KOT SKM PRE MOK YMT HOM WHA</string>
+    <!-- AWE -> HOK -->
+    <string name="ael_station_id">93 94 95 96 97</string>
+    <string name="ael_station_code">AWE AIR TSY KOW HOK</string>
+    <!-- SUN -> DIS -->
+    <string name="drl_station_id">101 102</string>
+    <string name="drl_station_code">SUN DIS</string>
+    <!-- CHW -> KET -->
+    <string name="isl_station_id">111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127</string>
+    <string name="isl_station_code">CHW HFC SKW SWH TAK QUB NOP FOH TIH CAB WAC CEN ADM SHW SYP HKU KET</string>
+    <!-- TUC -> HOK -->
+    <string name="tcl_station_id">121 122 123 124 125 126 127 128</string>
+    <string name="tcl_station_code">TUC SUN TSY LAK NAC OLY KOW HOK</string>
+    <!-- LHP -> NOP -->
+    <string name="tkl_station_id">131 132 133 134 135 136 137 138</string>
+    <string name="tkl_station_code">LHP POA HAH TKO TIK YAT QUB NOP</string>
+    <!-- TSW -> CEN -->
+    <string name="twl_station_id">141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156</string>
+    <string name="twl_station_code">TSW TWH KWH KWF LAK MEF LCK CSW SSP PRE MOK YMT JOR TST ADM CEN</string>
+    <!-- SOH -> ADM -->
+    <string name="sil_station_id">100 99 98 97 96</string>
+    <string name="sil_station_code">SOH LET WCH OCP ADM</string>
 
 
     <!-- East Rail Line -->
