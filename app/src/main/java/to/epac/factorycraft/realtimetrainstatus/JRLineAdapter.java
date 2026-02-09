@@ -179,7 +179,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
 
             TextView tvCar = badge.findViewById(isUp ? R.id.tv_car_up : R.id.tv_car_dn);
-            tvCar.setText(lineCode.equalsIgnoreCase("eal") ? "9両" : "8両");
+            tvCar.setText(lineCode.equalsIgnoreCase("eal") ? "9両"
+                    : lineCode.equalsIgnoreCase("drl") ? "4両"
+                    : lineCode.equalsIgnoreCase("sil") ? "3両" : "8両");
 
             updateBadgeCrowd(badge, trip);
 
@@ -432,7 +434,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
 
                 TextView tvCarCount = v.findViewById(R.id.tv_car_count);
-                tvCarCount.setText(lineCode.equalsIgnoreCase("eal") ? "9両" : "8両");
+                tvCarCount.setText(lineCode.equalsIgnoreCase("eal") ? "9両"
+                        : lineCode.equalsIgnoreCase("drl") ? "4両"
+                        : lineCode.equalsIgnoreCase("sil") ? "3両" : "8両");
 
                 TextView tvSvcType = v.findViewById(R.id.tv_service_type);
                 boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
