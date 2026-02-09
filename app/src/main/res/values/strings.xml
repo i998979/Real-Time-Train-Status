@@ -9,7 +9,7 @@
     <string name="tml_station_id">49 48 47 46 45 44 43 42 41 50 14 1 61 62 63 64 65 66 21 22 23 24 25 26 27 28 29</string>
     <string name="tml_station_code">TUM SIH TIS LOP YUL KSR TWW MEF NAC AUS ETS HUH HOM TKW SUW KAT DIH HIK TAW CKT STW CIO SHM TSH HEO MOS WKS</string>
     <!-- TIK -> WHA -->
-    <string name="ktl_station_id">71 72 73 74 85 76 77 78 79 80 81 82 83 84 85 86 87</string>
+    <string name="ktl_station_id">71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87</string>
     <string name="ktl_station_code">TIK YAT LAT KWT NTK KOB CHH DIH WTS LOF KOT SKM PRE MOK YMT HOM WHA</string>
     <!-- AWE -> HOK -->
     <string name="ael_station_id">93 94 95 96 97</string>
