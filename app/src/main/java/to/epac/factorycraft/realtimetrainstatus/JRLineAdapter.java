@@ -2,11 +2,9 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,12 +22,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.Map;
 
 public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int TYPE_STATION = 0;
@@ -44,10 +44,10 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private final int lineColor;
     private final List<Trip> trips;
 
-    private HashMap<Integer, Long> runTimeUpMap;
-    private HashMap<Integer, Long> runTimeDnMap;
-    private HashMap<Integer, Long> dwellTimeUpMap;
-    private HashMap<Integer, Long> dwellTimeDnMap;
+    private final HashMap<Integer, Long> runTimeUpMap;
+    private final HashMap<Integer, Long> runTimeDnMap;
+    private final HashMap<Integer, Long> dwellTimeUpMap;
+    private final HashMap<Integer, Long> dwellTimeDnMap;
 
     public JRLineAdapter(Context context, String lineCode, int[] stationCodes, List<Trip> trips,
                          HashMap<Integer, Long> runTimeUpMap, HashMap<Integer, Long> runTimeDnMap,
@@ -134,7 +134,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
 
-    private void updateTrainUI(List<Trip> tripsAtLocation, ViewGroup container, boolean isUp) {
+    private void showTrainBadge(List<Trip> tripsAtLocation, ViewGroup container, boolean isUp) {
         container.removeAllViews();
 
         if (tripsAtLocation.isEmpty()) {
@@ -170,7 +170,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                 tvId.setText("不載客");
             } else {
-                String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
+                String destName = Utils.getStationName(context, Utils.idToCode(context, trip.destinationStationCode, lineCode), true);
                 boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
                 tvId.setText((viaRacecourse ? "經馬場" : "普通") + " " + destName);
             }
@@ -178,7 +178,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             TextView tvCar = badge.findViewById(isUp ? R.id.tv_car_up : R.id.tv_car_dn);
             tvCar.setText(lineCode.equalsIgnoreCase("eal") ? "9両" : "8両");
 
-            updateBadgeLoad(badge, trip);
+            updateBadgeCrowd(badge, trip);
 
             if (container instanceof FrameLayout) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) badge.getLayoutParams();
@@ -200,7 +200,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-    private void updateBadgeLoad(View badgeView, Trip trip) {
+    private void updateBadgeCrowd(View badgeView, Trip trip) {
         double totalPercent = 0;
         int carCount = trip.listCars.size();
 
@@ -240,7 +240,75 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-    private void addStationRow(LinearLayout container, int stationCode, long currentTime, int minutes, boolean isLast) {
+    // TODO: If DN does not terminate at ADM, it still show time to ADM
+    private int updateTimeline(LinearLayout container, Trip trip) {
+        container.removeAllViews();
+
+        boolean isViaRacecourse = lineCode.equalsIgnoreCase("eal") &&
+                (trip.td.matches(".*[BGKN].*") || trip.destinationStationCode == 7);
+
+        List<Integer> route = new ArrayList<>();
+        boolean shouldAdd = false;
+
+        if (isUp(trip)) {
+            for (int i = stationCodes.length - 1; i >= 0; i--) {
+                int code = stationCodes[i];
+
+                int displayCode = code;
+                if (isViaRacecourse && code == 6) displayCode = 7;
+                if (trip.destinationStationCode == 14 && code == 13) displayCode = 14;
+
+                if (displayCode == trip.nextStationCode) shouldAdd = true;
+                if (shouldAdd) {
+                    route.add(displayCode);
+                    if (displayCode == trip.destinationStationCode) break;
+                }
+            }
+        } else {
+            for (int code : stationCodes) {
+                int displayCode = code;
+                if (isViaRacecourse && code == 6) displayCode = 7;
+
+                if (displayCode == trip.nextStationCode) shouldAdd = true;
+                if (shouldAdd) {
+                    route.add(displayCode);
+                    if (displayCode == trip.destinationStationCode) break;
+                }
+            }
+        }
+
+        if (route.isEmpty()) return 0;
+
+
+        long nowMillis = !trip.isOpenData ? System.currentTimeMillis() : trip.time;
+        long totalSec;
+
+        if (trip.trainSpeed <= 3.0) {
+            totalSec = isUp(trip) ? runTimeUpMap.getOrDefault(trip.nextStationCode, 120L)
+                    : runTimeDnMap.getOrDefault(trip.currentStationCode, 120L);
+        } else {
+            totalSec = (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
+        }
+
+        for (int k = 0; k < route.size(); k++) {
+            int currentCode = route.get(k);
+            addTimelineStation(container, currentCode, nowMillis, (int) (totalSec / 60), k == route.size() - 1);
+
+            if (k < route.size() - 1) {
+                int nextCode = route.get(k + 1);
+
+                totalSec += isUp(trip) ? dwellTimeUpMap.getOrDefault(currentCode, 35L)
+                        : dwellTimeDnMap.getOrDefault(currentCode, 35L);
+
+                totalSec += isUp(trip) ? runTimeUpMap.getOrDefault(nextCode, 120L)
+                        : runTimeDnMap.getOrDefault(currentCode, 120L);
+            }
+        }
+
+        return route.size();
+    }
+
+    private void addTimelineStation(LinearLayout container, int stationCode, long currentTime, int minutes, boolean isLast) {
         View row = LayoutInflater.from(context).inflate(R.layout.item_station_row, container, false);
 
         TextView tvArrvTime = row.findViewById(R.id.tv_arrival_time);
@@ -251,10 +319,12 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         topHalf.setBackgroundColor(lineColor);
         bottomHalf.setBackgroundColor(lineColor);
 
-        tvArrvTime.setText(getTime(currentTime, minutes));
-        tvArrvTime.setTextColor(Color.parseColor("#4CAF50"));
+        tvArrvTime.setText(Instant.ofEpochMilli(currentTime + minutes * 60000L)
+                .atZone(ZoneId.of("GMT+8"))
+                .format(DateTimeFormatter.ofPattern("HH:mm")));
+        tvArrvTime.setTextColor(0xFF4CAF50);
 
-        tvStaName.setText(Utils.getStationName(context, Utils.mapStation(stationCode, lineCode), true));
+        tvStaName.setText(Utils.getStationName(context, Utils.idToCode(context, stationCode, lineCode), true));
 
         if (isLast) {
             bottomHalf.setVisibility(View.INVISIBLE);
@@ -264,142 +334,53 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         container.addView(row);
     }
 
-    private int populateTimeline(LinearLayout container, Trip trip) {
-        container.removeAllViews();
-        boolean isUp = isUp(trip);
-        int destCode = trip.destinationStationCode;
+    private void updateTrainCrowd(LinearLayout layout, Trip trip, View itemView) {
+        LinearLayout crowdContainer = layout.findViewById(R.id.crowd_container);
+        crowdContainer.removeAllViews();
 
-        boolean isViaRacecourse = lineCode.equalsIgnoreCase("eal") &&
-                ((trip.td != null && trip.td.matches(".*[BGKN].*")) || destCode == 7);
-
-        List<Integer> route = new ArrayList<>();
-        boolean shouldAdd = false;
-
-        if (isUp) {
-            for (int i = stationCodes.length - 1; i >= 0; i--) {
-                int code = stationCodes[i];
-
-                int displayCode = code;
-                if (isViaRacecourse && code == 6) displayCode = 7;
-
-                if (displayCode == trip.nextStationCode) shouldAdd = true;
-                if (shouldAdd) {
-                    route.add(displayCode);
-                    if (displayCode == destCode) break;
-                }
-            }
-        } else {
-            for (int code : stationCodes) {
-
-                int displayCode = code;
-                if (isViaRacecourse && code == 6) displayCode = 7;
-                if (destCode == 14 && code == 13) displayCode = 14;
-
-                if (displayCode == trip.nextStationCode) shouldAdd = true;
-                if (shouldAdd) {
-                    route.add(displayCode);
-                    if (displayCode == destCode) break;
-                }
-            }
-        }
-
-        if (route.isEmpty()) return 0;
-
-
-        long nowMillis = System.currentTimeMillis();
-        long totalSec;
-
-        if (trip.trainSpeed <= 3.0) {
-            totalSec = isUp ? runTimeUpMap.getOrDefault(trip.nextStationCode, 120L)
-                    : runTimeDnMap.getOrDefault(trip.currentStationCode, 120L);
-        } else {
-            totalSec = (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
-        }
-
-        for (int k = 0; k < route.size(); k++) {
-            int currentCode = route.get(k);
-            addStationRow(container, currentCode, nowMillis, (int) (totalSec / 60), k == route.size() - 1);
-
-            if (k < route.size() - 1) {
-                int nextCode = route.get(k + 1);
-
-                totalSec += isUp ? dwellTimeUpMap.getOrDefault(currentCode, 35L)
-                        : dwellTimeDnMap.getOrDefault(currentCode, 35L);
-
-                totalSec += isUp ? runTimeUpMap.getOrDefault(nextCode, 120L)
-                        : runTimeDnMap.getOrDefault(currentCode, 120L);
-            }
-        }
-
-        return route.size();
-    }
-
-    private void updateTrainDetailsCrowd(LinearLayout container, Trip trip, View itemView) {
-        container.removeAllViews();
+        TextView tvCrowdLvl = itemView.findViewById(R.id.tv_crowd_level);
 
         float density = context.getResources().getDisplayMetrics().density;
         int totalLoad = 0;
         int carCount = trip.listCars.size();
 
-        for (int i = 0; i < carCount; i++) {
-            int idx = isUp(trip) ? i : (carCount - 1 - i);
-            Car car = trip.listCars.get(idx);
-            totalLoad += car.passengerCount;
+        if (carCount == 0) {
+            tvCrowdLvl.setGravity(Gravity.CENTER);
+            tvCrowdLvl.setText("未能提供混雜情報");
+            TextView tvCrowdMsg = new TextView(context);
+            tvCrowdMsg.setGravity(Gravity.CENTER);
+            tvCrowdMsg.setTextSize(12);
+            tvCrowdMsg.setText("※本班車未提供混雜情報");
+            layout.addView(tvCrowdMsg);
+        } else {
+            for (int i = 0; i < carCount; i++) {
+                int idx = isUp(trip) ? i : (carCount - 1 - i);
+                Car car = trip.listCars.get(idx);
+                totalLoad += car.passengerCount;
 
-            View carView = new View(context);
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams((int) (24 * density), (int) (26 * density));
-            p.setMargins((int) (2 * density), 0, (int) (2 * density), 0);
-            carView.setLayoutParams(p);
+                View carView = new View(context);
+                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams((int) (24 * density), (int) (26 * density));
+                p.setMargins((int) (2 * density), 0, (int) (2 * density), 0);
+                carView.setLayoutParams(p);
 
-            GradientDrawable gd = new GradientDrawable();
-            gd.setCornerRadius(4 * density);
+                GradientDrawable gd = new GradientDrawable();
+                gd.setCornerRadius(4 * density);
 
-            boolean isFirstClass = lineCode.equalsIgnoreCase("eal") && idx == 3;
-            int color;
-            if (isFirstClass) {
-                color = (car.passengerCount < 70) ? 0xFF00FF00 : (car.passengerCount < 150) ? 0xFFFFFF00 : 0xFFFF0000;
-                gd.setStroke((int) (3 * density), 0xFFFFA500);
-            } else {
-                color = (car.passengerCount < 110) ? 0xFF00FF00 : (car.passengerCount < 250) ? 0xFFFFFF00 : 0xFFFF0000;
+                boolean isFirstClass = lineCode.equalsIgnoreCase("eal") && idx == 3;
+                int color;
+                if (isFirstClass) {
+                    color = (car.passengerCount < 70) ? 0xFF00FF00 : (car.passengerCount < 150) ? 0xFFFFFF00 : 0xFFFF0000;
+                    gd.setStroke((int) (3 * density), 0xFFFFA500);
+                } else {
+                    color = (car.passengerCount < 110) ? 0xFF00FF00 : (car.passengerCount < 250) ? 0xFFFFFF00 : 0xFFFF0000;
+                }
+                gd.setColor(color);
+                carView.setBackground(gd);
+
+                layout.addView(carView);
             }
-            gd.setColor(color);
-            carView.setBackground(gd);
-
-            container.addView(carView);
-        }
-
-        int avg = totalLoad / carCount;
-        TextView tvCrowdLvl = itemView.findViewById(R.id.tv_crowd_level);
-        tvCrowdLvl.setText(avg < 100 ? "尚有座位" : avg < 200 ? "稍微擁擠" : "非常擁擠");
-    }
-
-    private void setupFullHeightBottomSheet(BottomSheetDialog dialog, View dialogView) {
-        View bottomSheet = (View) dialogView.getParent();
-        if (bottomSheet != null) {
-            BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
-
-            ViewGroup.LayoutParams layoutParams = bottomSheet.getLayoutParams();
-            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            bottomSheet.setLayoutParams(layoutParams);
-
-            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            behavior.setSkipCollapsed(true);
-
-            ImageButton btnClose = dialogView.findViewById(R.id.btn_close);
-            btnClose.setOnClickListener(v -> dialog.dismiss());
-
-            behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-                @Override
-                public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        dialog.dismiss();
-                    }
-                }
-
-                @Override
-                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                }
-            });
+            int avg = totalLoad / carCount;
+            tvCrowdLvl.setText(avg < 100 ? "尚有座位" : avg < 200 ? "稍微擁擠" : "非常擁擠");
         }
     }
 
@@ -426,19 +407,21 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 tvLine.setBackgroundColor(lineColor);
                 tvLine.setText(Utils.getLineName(lineCode, true));
 
-                ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
-                if (lineCode.equalsIgnoreCase("tml")) {
+                ImageView trainIcon = v.findViewById(R.id.img_train_icon);
+                if (lineCode.equalsIgnoreCase("eal")) {
+                    trainIcon.setImageResource(R.drawable.r_train);
+                } else if (lineCode.equalsIgnoreCase("tml")) {
                     if (Integer.parseInt(trip.trainId) < 397)
-                        ((ImageView) v.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.sp1900);
+                        trainIcon.setImageResource(R.drawable.sp1900);
                     else
-                        ((ImageView) v.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.t1141a);
+                        trainIcon.setImageResource(R.drawable.t1141a);
                 }
 
                 TextView tvDest = v.findViewById(R.id.tv_destination);
                 if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                     tvDest.setText("不載客列車");
                 } else {
-                    String destName = Utils.getStationName(context, Utils.mapStation(trip.destinationStationCode, lineCode), true);
+                    String destName = Utils.getStationName(context, Utils.idToCode(context, trip.destinationStationCode, lineCode), true);
                     tvDest.setText(destName + " 行");
                 }
 
@@ -453,8 +436,24 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 typeBg.setColor(viaRacecourse ? 0xCD5DE2FF : 0xFF4CAF50);
                 tvSvcType.setBackground(typeBg);
 
-                LinearLayout crowdContainer = v.findViewById(R.id.crowd_container);
-                updateTrainDetailsCrowd(crowdContainer, trip, v);
+                if (trip.isOpenData) {
+                    v.findViewById(R.id.tv_train_consist).setVisibility(View.GONE);
+                    v.findViewById(R.id.tv_train_number).setVisibility(View.GONE);
+                } else {
+                    if (lineCode.equalsIgnoreCase("eal")) {
+                        int ts = Integer.parseInt(trip.trainId);
+                        ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts, ts + 2));
+                    } else if (lineCode.equalsIgnoreCase("tml")) {
+                        int ts = Integer.parseInt(trip.trainId);
+                        if (ts % 2 == 0)
+                            ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts - 1, ts));
+                        else
+                            ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts, ts + 1));
+                    }
+                    ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
+                }
+                LinearLayout crowdLayout = v.findViewById(R.id.crowd_layout);
+                updateTrainCrowd(crowdLayout, trip, v);
 
 
                 View header = v.findViewById(R.id.station_header);
@@ -463,7 +462,11 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 LinearLayout stationRows = v.findViewById(R.id.station_rows);
                 View timeLine = v.findViewById(R.id.station_timeline);
 
-                int stationCount = populateTimeline(stationRows, trip);
+                // 將預測時間按時間排序 (由近到遠)
+                List<Map.Entry<Integer, Integer>> sortedPredictions = new ArrayList<>(trip.stationPredictions.entrySet());
+                sortedPredictions.sort(Map.Entry.comparingByValue());
+
+                int stationCount = updateTimeline(stationRows, trip);
                 if (stationCount == 0) {
                     header.setVisibility(View.GONE);
                     timeLine.setVisibility(View.GONE);
@@ -494,56 +497,179 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         });
 
         dialog.setContentView(dialogView);
-        setupFullHeightBottomSheet(dialog, dialogView);
+        setupDialog(dialog, dialogView);
         dialog.show();
+    }
+
+    private void setupDialog(BottomSheetDialog dialog, View dialogView) {
+        View bottomSheet = (View) dialogView.getParent();
+        if (bottomSheet != null) {
+            BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
+
+            ViewGroup.LayoutParams layoutParams = bottomSheet.getLayoutParams();
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            bottomSheet.setLayoutParams(layoutParams);
+
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            behavior.setSkipCollapsed(true);
+
+            ImageButton btnClose = dialogView.findViewById(R.id.btn_close);
+            btnClose.setOnClickListener(v -> dialog.dismiss());
+
+            behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                @Override
+                public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                        dialog.dismiss();
+                    }
+                }
+
+                @Override
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                }
+            });
+        }
     }
 
 
     private boolean isUp(Trip trip) {
-        boolean b = false;
+        if (trip.isOpenData) return trip.isUp;
+
         if (lineCode.equalsIgnoreCase("eal")) {
-            if (Character.getNumericValue(trip.td.charAt(trip.td.length() - 1)) % 2 != 0) b = true;
-        } else if (lineCode.equalsIgnoreCase("tml")) {
-            if (Utils.covertStationOrder(trip.currentStationCode) < Utils.covertStationOrder(trip.destinationStationCode))
-                return true;
+            char lastChar = trip.td.charAt(trip.td.length() - 1);
+            if (Character.isDigit(lastChar)) {
+                return (lastChar - '0') % 2 != 0;
+            }
         }
 
-        return b;
+        return false;
     }
 
-    private String getTime(long baseTimeMillis, int minutesToAdd) {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-        cal.setTimeInMillis(baseTimeMillis + (minutesToAdd * 60 * 1000L));
+    private boolean isOutdated(Trip trip) {
+        if (!trip.isOpenData) return (System.currentTimeMillis() - trip.receivedTime) > 60000;
 
-        return String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
+        return false;
     }
-
 
     private void bindStation(StationViewHolder h, int stationIdx) {
-        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-
         int code = stationCodes[stationIdx];
-        h.tvStationName.setText(Utils.getStationName(context, Utils.mapStation(code, lineCode), true));
+        /*FrameLayout container = (FrameLayout) h.railLine.getParent();
+
+        // 1. 移除舊有的轉乘線以利 ViewHolder 重用
+        View oldInterchange = container.findViewWithTag("dynamic_interchange");
+        if (oldInterchange != null) container.removeView(oldInterchange);
+
+        // 2. 判斷轉乘顏色（紅磡站）
+        int interchangeColor = -1;
+        if (lineCode.equalsIgnoreCase("eal") && code == 21) {
+            interchangeColor = Color.parseColor("#9A3820"); // 屯馬綫棕色
+        }
+
+        // 3. 動態插入與精確對齊
+        if (interchangeColor != -1) {
+            float density = context.getResources().getDisplayMetrics().density;
+
+            ImageView iv = new ImageView(context);
+            iv.setTag("dynamic_interchange");
+
+            Drawable curve = ContextCompat.getDrawable(context, R.drawable.interchange_tml_up).mutate();
+            curve.setTint(interchangeColor);
+            iv.setImageDrawable(curve);
+
+            // 寬度設為 320dp 以確保水平長度足夠
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    (int) (320 * density),
+                    (int) (100 * density)
+            );
+
+            // 關鍵對齊步驟：
+            // Gravity.END 讓 ImageView 的右側貼齊容器右側
+            // rightMargin = 10dp 讓 ImageView 向左移 10dp，使其右邊界剛好落在 20dp 容器的中心線 (即主線中心)
+            params.gravity = Gravity.END;
+            params.rightMargin = (int) (10 * density);
+
+            // 插入到 index 0，確保它在主線 rail_line 和車站圓點的下方
+            container.addView(iv, 0, params);
+        }*/
+
+        h.tvStationName.setText(Utils.getStationName(context, Utils.idToCode(context, code, lineCode), true));
+
+        List<Trip> upTrips = new ArrayList<>();
+        List<Trip> dnTrips = new ArrayList<>();
+        for (Trip trip : trips) {
+            // Next Train
+            if (trip.isOpenData) {
+                if (trip.ttnt > 0) continue;
+
+                if (trip.nextStationCode == code) {
+                    if (isUp(trip))
+                        upTrips.add(trip);
+                    else
+                        dnTrips.add(trip);
+                }
+            }
+            // Roctec
+            else {
+                if (isOutdated(trip)) continue;
+                if (trip.trainSpeed != 0) continue;
+
+                if (trip.currentStationCode == code) {
+                    if (isUp(trip))
+                        upTrips.add(trip);
+                    else
+                        dnTrips.add(trip);
+                }
+            }
+        }
+        upTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
+        showTrainBadge(upTrips, h.layoutUp, true);
+        showTrainBadge(dnTrips, h.layoutDn, false);
+    }
+
+    private void bindBetween(BetweenViewHolder h, int stationIdx) {
+        int currentCode = stationCodes[stationIdx];
+        int nextNodeCode = stationCodes[stationIdx + 1];
+
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
 
         for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
+            if (trip.isOpenData) {
+                if (trip.ttnt <= 0) continue;
 
-            if (trip.trainSpeed == 0 && trip.currentStationCode == code) {
-                if (isUp(trip))
+                boolean isMatch = false;
+                if (isUp(trip)) {
+                    if (trip.nextStationCode == currentCode) isMatch = true;
+                } else {
+                    if (trip.nextStationCode == nextNodeCode) isMatch = true;
+                }
+
+                if (isMatch) {
+                    if (isUp(trip))
+                        upTrips.add(trip);
+                    else
+                        dnTrips.add(trip);
+                }
+            } else {
+                if (isOutdated(trip)) continue;
+                if (!(trip.trainSpeed > 0)) continue;
+
+                if (isUp(trip) && trip.nextStationCode == currentCode && trip.currentStationCode == nextNodeCode)
                     upTrips.add(trip);
-                else
+                else if (!isUp(trip) && trip.nextStationCode == nextNodeCode && trip.currentStationCode == currentCode)
                     dnTrips.add(trip);
             }
         }
 
-        upTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
-        dnTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        upTrips.sort((t1, t2) -> t1.isOpenData ? Integer.compare(t1.ttnt, t2.ttnt) : Double.compare(t1.targetDistance, t2.targetDistance));
+        dnTrips.sort((t1, t2) -> t1.isOpenData ? Integer.compare(t1.ttnt, t2.ttnt) : Double.compare(t1.targetDistance, t2.targetDistance));
 
-        updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips, h.layoutDn, false);
+        showTrainBadge(upTrips, h.layoutUp, true);
+        showTrainBadge(dnTrips, h.layoutDn, false);
     }
 
     private void bindBranch(BranchViewHolder h, int stationIdx) {
@@ -564,48 +690,61 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
 
         for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
-            if (trip.trainSpeed <= 0) continue;
-
-            boolean isUp = isUp(trip);
             boolean isAtThisSegment = false;
 
-            if (isUp) {
-                if (currentSector == 13 && nextSector == 12) {
-                    if (trip.nextStationCode == 13 || trip.nextStationCode == 14)
+            if (trip.isOpenData) {
+                if (trip.ttnt <= 0) continue;
+
+                if (isUp(trip)) {
+                    // UP (北行往羅湖/落馬洲): 進入分叉前，目標是 currentSector
+                    if (trip.nextStationCode == currentSector)
                         isAtThisSegment = true;
-                } else if (currentSector == 8 && nextSector == 6) {
-                    if (trip.nextStationCode == 8) isAtThisSegment = true;
-                } else if (currentSector == 6 && nextSector == 5) {
-                    if (trip.nextStationCode == 6 || trip.nextStationCode == 7)
+                } else {
+                    // DN (南行往金鐘): 進入匯合區間，目標應該是 nextSector (南方的車站)
+                    if (trip.nextStationCode == nextSector)
                         isAtThisSegment = true;
                 }
             } else {
-                if (currentSector == 13 && nextSector == 12) {
-                    if ((trip.currentStationCode == 13 || trip.currentStationCode == 14) && trip.nextStationCode == 12) {
-                        isAtThisSegment = true;
+                if (isOutdated(trip)) continue;
+                if (!(trip.trainSpeed > 0)) continue;
+
+                if (isUp(trip)) {
+                    if (currentSector == 13 && nextSector == 12) {
+                        if (trip.nextStationCode == 13 || trip.nextStationCode == 14)
+                            isAtThisSegment = true;
+                    } else if (currentSector == 8 && nextSector == 6) {
+                        if (trip.nextStationCode == 8) isAtThisSegment = true;
+                    } else if (currentSector == 6 && nextSector == 5) {
+                        if (trip.nextStationCode == 6 || trip.nextStationCode == 7)
+                            isAtThisSegment = true;
                     }
-                } else if (currentSector == 8 && nextSector == 6) {
-                    if (trip.currentStationCode == 8 && (trip.nextStationCode == 6 || trip.nextStationCode == 7)) {
-                        isAtThisSegment = true;
-                    }
-                } else if (currentSector == 6 && nextSector == 5) {
-                    if ((trip.currentStationCode == 6 || trip.currentStationCode == 7) && trip.nextStationCode == 5) {
-                        isAtThisSegment = true;
+                } else {
+                    if (currentSector == 13 && nextSector == 12) {
+                        if ((trip.currentStationCode == 13 || trip.currentStationCode == 14) && trip.nextStationCode == 12) {
+                            isAtThisSegment = true;
+                        }
+                    } else if (currentSector == 8 && nextSector == 6) {
+                        if (trip.currentStationCode == 8 && (trip.nextStationCode == 6 || trip.nextStationCode == 7)) {
+                            isAtThisSegment = true;
+                        }
+                    } else if (currentSector == 6 && nextSector == 5) {
+                        if ((trip.currentStationCode == 6 || trip.currentStationCode == 7) && trip.nextStationCode == 5) {
+                            isAtThisSegment = true;
+                        }
                     }
                 }
             }
 
+
             if (isAtThisSegment) {
-                boolean isMain = (trip.nextStationCode == 13 || trip.currentStationCode == 13 ||
-                        trip.nextStationCode == 6 || trip.currentStationCode == 6);
-                if (isMain) {
-                    if (isUp)
+                boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
+                if (!viaRacecourse) {
+                    if (isUp(trip))
                         upMain.add(trip);
                     else
                         dnMain.add(trip);
                 } else {
-                    if (isUp)
+                    if (isUp(trip))
                         upSpur.add(trip);
                     else
                         dnSpur.add(trip);
@@ -618,81 +757,75 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         upSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
         dnSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
 
-        updateTrainUI(upMain, h.upMain, true);
-        updateTrainUI(dnMain, h.dnMain, false);
-        updateTrainUI(upSpur, h.upSpur, true);
-        updateTrainUI(dnSpur, h.dnSpur, false);
+        showTrainBadge(upMain, h.upMain, true);
+        showTrainBadge(dnMain, h.dnMain, false);
+        showTrainBadge(upSpur, h.upSpur, true);
+        showTrainBadge(dnSpur, h.dnSpur, false);
     }
 
     private void bindParallel(ParallelViewHolder h, int stationIdx) {
-        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-        h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-
         int code = stationCodes[stationIdx];
         int mainCode = (code == 6 || code == 7) ? 6 : 13;
         int spurCode = (code == 6 || code == 7) ? 7 : 14;
 
-        h.tvMain.setText(Utils.getStationName(context, Utils.mapStation(mainCode, lineCode), true));
-        h.tvSpur.setText(Utils.getStationName(context, Utils.mapStation(spurCode, lineCode), true));
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+        h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
+        h.tvMain.setText(Utils.getStationName(context, Utils.idToCode(context, mainCode, lineCode), true));
+        h.tvSpur.setText(Utils.getStationName(context, Utils.idToCode(context, spurCode, lineCode), true));
+
 
         List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
         List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
-
         for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
+            boolean isAtMain = false;
+            boolean isAtSpur = false;
 
-            if (trip.trainSpeed == 0) {
+            // Next Train
+            if (trip.isOpenData) {
+                if (trip.ttnt > 0) continue;
+
+                if (trip.nextStationCode == mainCode) {
+                    isAtMain = true;
+                } else if (trip.nextStationCode == spurCode) {
+                    isAtSpur = true;
+                }
+            }
+            // Roctec
+            else {
+                if (isOutdated(trip)) continue;
+                if (trip.trainSpeed != 0) continue;
+
                 if (trip.currentStationCode == mainCode) {
-                    if (isUp(trip))
-                        upMain.add(trip);
-                    else
-                        dnMain.add(trip);
+                    isAtMain = true;
+                } else if (trip.currentStationCode == spurCode) {
+                    isAtSpur = true;
                 }
-                if (trip.currentStationCode == spurCode) {
-                    if (isUp(trip))
-                        upSpur.add(trip);
-                    else
-                        dnSpur.add(trip);
-                }
+            }
+
+            if (isAtMain) {
+                if (isUp(trip))
+                    upMain.add(trip);
+                else
+                    dnMain.add(trip);
+            } else if (isAtSpur) {
+                if (isUp(trip))
+                    upSpur.add(trip);
+                else
+                    dnSpur.add(trip);
             }
         }
 
+        // TODO: Sort by ttnt for isOpenData, by targetDistance for not isOpenData
         upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
         upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
         upSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
         dnSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
 
-        updateTrainUI(upMain, h.upMain, true);
-        updateTrainUI(dnMain, h.dnMain, false);
-        updateTrainUI(upSpur, h.upSpur, true);
-        updateTrainUI(dnSpur, h.dnSpur, false);
-    }
-
-    private void bindBetween(BetweenViewHolder h, int stationIdx) {
-        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-
-        int currentStation = stationCodes[stationIdx];
-        int nextStation = stationCodes[stationIdx + 1];
-
-        List<Trip> upTrips = new ArrayList<>();
-        List<Trip> dnTrips = new ArrayList<>();
-
-        for (Trip trip : trips) {
-            if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
-
-            if (trip.trainSpeed > 0) {
-                if (isUp(trip) && trip.nextStationCode == currentStation)
-                    upTrips.add(trip);
-                else if (!isUp(trip) && trip.nextStationCode == nextStation)
-                    dnTrips.add(trip);
-            }
-        }
-
-        upTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
-        dnTrips.sort(Comparator.comparingDouble(t -> t.targetDistance));
-
-        updateTrainUI(upTrips, h.layoutUp, true);
-        updateTrainUI(dnTrips, h.layoutDn, false);
+        showTrainBadge(upMain, h.upMain, true);
+        showTrainBadge(dnMain, h.dnMain, false);
+        showTrainBadge(upSpur, h.upSpur, true);
+        showTrainBadge(dnSpur, h.dnSpur, false);
     }
 
 
