@@ -2,6 +2,8 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Switch;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,6 +20,8 @@ public class LineSelectorActivity extends AppCompatActivity {
         RecyclerView rv = findViewById(R.id.rv_line_selector);
         rv.setLayoutManager(new LinearLayoutManager(this));
 
+        Switch openData = findViewById(R.id.openData);
+
         List<LineItem> lines = new ArrayList<>();
         // 添加東鐵綫
         lines.add(new LineItem("EAL", "東鐵綫", "#5DE2FF"));
@@ -27,6 +31,7 @@ public class LineSelectorActivity extends AppCompatActivity {
         LineSelectorAdapter adapter = new LineSelectorAdapter(lines, line -> {
             Intent intent = new Intent(this, EastRailJRActivity.class);
             intent.putExtra("LINE_CODE", line.code.toLowerCase());
+            intent.putExtra("DATA_SOURCE", openData.isChecked() ? "OPENDATA" : "ROCTEC");
             startActivity(intent);
         });
 

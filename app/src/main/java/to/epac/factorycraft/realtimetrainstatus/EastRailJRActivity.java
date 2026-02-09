@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,6 +69,13 @@ public class EastRailJRActivity extends AppCompatActivity {
             int id = Utils.codeToId(this, lineCode, stations[i]);
             if (id != -1) stationIdToIndexMap.put(id, i);
         }
+
+        ViewGroup lineBanner = findViewById(R.id.line_banner);
+        TextView bannerName = lineBanner.findViewById(R.id.tv_banner_name);
+        int colorResId = context.getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
+        int lineColor = context.getResources().getColor(colorResId, null);
+        lineBanner.setBackgroundColor(lineColor);
+        bannerName.setText(Utils.getLineName(lineCode, true));
 
         rv = findViewById(R.id.rv_line);
         rv.setLayoutManager(new LinearLayoutManager(this));
@@ -303,14 +313,15 @@ public class EastRailJRActivity extends AppCompatActivity {
 
         for (int i = 0; i < dnList.size(); i++) {
             Trip current = dnList.get(i);
-            int currentIdx = stationIdToIndexMap.get(current.currentStationCode);
+            Integer currentIdx = stationIdToIndexMap.get(current.currentStationCode);
+            if (currentIdx == null) continue;
 
             Trip pending = current;
             int pendingIdx = currentIdx;
             for (int k = i + 1; k < dnList.size(); k++) {
                 Trip below = dnList.get(k);
-                int belowIdx = stationIdToIndexMap.get(below.currentStationCode);
-
+                Integer belowIdx = stationIdToIndexMap.get(below.currentStationCode);
+                if (belowIdx == null) continue;
 
                 // -- If all conditions met, we use Pending to trace the next shadow -- //
                 if (pending.currentStationCode != below.currentStationCode) {

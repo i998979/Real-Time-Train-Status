@@ -159,10 +159,13 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             trainIconView.setBackground(layers);
 
             if (lineCode.equalsIgnoreCase("tml")) {
-                if (Integer.parseInt(trip.trainId) < 397)
-                    ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.sp1900);
-                else
-                    ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.t1141a);
+                ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.sp1900);
+                try {
+                    if (Integer.parseInt(trip.trainId) >= 397)
+                        ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.t1141a);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
             }
 
 
@@ -377,7 +380,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 gd.setColor(color);
                 carView.setBackground(gd);
 
-                layout.addView(carView);
+                crowdContainer.addView(carView);
             }
             int avg = totalLoad / carCount;
             tvCrowdLvl.setText(avg < 100 ? "尚有座位" : avg < 200 ? "稍微擁擠" : "非常擁擠");
@@ -411,10 +414,13 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 if (lineCode.equalsIgnoreCase("eal")) {
                     trainIcon.setImageResource(R.drawable.r_train);
                 } else if (lineCode.equalsIgnoreCase("tml")) {
-                    if (Integer.parseInt(trip.trainId) < 397)
-                        trainIcon.setImageResource(R.drawable.sp1900);
-                    else
-                        trainIcon.setImageResource(R.drawable.t1141a);
+                    trainIcon.setImageResource(R.drawable.sp1900);
+                    try {
+                        if (Integer.parseInt(trip.trainId) >= 397)
+                            trainIcon.setImageResource(R.drawable.t1141a);
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 TextView tvDest = v.findViewById(R.id.tv_destination);
@@ -593,6 +599,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }*/
 
         h.tvStationName.setText(Utils.getStationName(context, Utils.idToCode(context, code, lineCode), true));
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
