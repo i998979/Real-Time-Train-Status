@@ -1,12 +1,14 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -76,7 +78,14 @@ public class EastRailJRActivity extends AppCompatActivity {
 
         ViewGroup lineBanner = findViewById(R.id.line_banner);
         TextView bannerName = lineBanner.findViewById(R.id.tv_banner_name);
+        FrameLayout codeBadge = lineBanner.findViewById(R.id.line_color_badge);
+        TextView tvCode = lineBanner.findViewById(R.id.tv_line_code_badge);
+
         bannerName.setText(Utils.getLineName(lineCode, true));
+        int colorResId = context.getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
+        int color = context.getResources().getColor(colorResId, null);
+        codeBadge.setBackgroundColor(color);
+        tvCode.setText(lineCode.toUpperCase());
 
         rv = findViewById(R.id.rv_line);
         rv.setLayoutManager(new LinearLayoutManager(this));
