@@ -11,13 +11,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class LineSelectorAdapter extends RecyclerView.Adapter<LineSelectorAdapter.ViewHolder> {
-    private List<LineSelectorActivity.LineItem> items;
+    private List<LineSelectorFragment.LineItem> items;
     private OnItemClickListener listener;
 
-    public interface OnItemClickListener { void onItemClick(LineSelectorActivity.LineItem item); }
+    public interface OnItemClickListener {
+        void onItemClick(LineSelectorFragment.LineItem item);
+    }
 
-    public LineSelectorAdapter(List<LineSelectorActivity.LineItem> items, OnItemClickListener listener) {
-        this.items = items; this.listener = listener;
+    public LineSelectorAdapter(List<LineSelectorFragment.LineItem> items, OnItemClickListener listener) {
+        this.items = items;
+        this.listener = listener;
     }
 
     @Override
@@ -28,18 +31,22 @@ public class LineSelectorAdapter extends RecyclerView.Adapter<LineSelectorAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder h, int p) {
-        LineSelectorActivity.LineItem item = items.get(p);
+        LineSelectorFragment.LineItem item = items.get(p);
         h.tvName.setText(item.name);
         h.tvCode.setText(item.code);
         h.codeBadge.setBackgroundColor(Color.parseColor(item.color));
         h.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
-    @Override public int getItemCount() { return items.size(); }
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvCode, tvName;
         View codeBadge;
+
         ViewHolder(View v) {
             super(v);
             tvCode = v.findViewById(R.id.tv_line_code_badge);
