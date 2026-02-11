@@ -14,11 +14,13 @@ public class MainPagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         switch (position) {
-            case 1: // 位置圖
+            case 0: // Route Search
+                return new RouteSearchFragment();
+            case 1: // Location Map
                 return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/layouts/adm.pdf");
-            case 2: // 街道圖
+            case 2: // Street Map
                 return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/maps/hok.pdf");
-            case 3: // 列車走行位置
+            case 3: // Realtime Train Location
                 return new LineSelectorFragment();
             default:
                 return new Fragment();
