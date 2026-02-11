@@ -1,36 +1,69 @@
+// MainActivity.java
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.fragment.app.Fragment;
 
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
-
-import java.util.Arrays;
-import java.util.List;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
-    private ViewPager2 pagerContent;
-    private TabLayout tabLayout;
-    private List<String> titles = Arrays.asList("時刻表", "位置圖", "街道圖", "列車走行位置");
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        pagerContent = findViewById(R.id.pager_content);
-        tabLayout = findViewById(R.id.tab_layout);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        pagerContent.setAdapter(new MainPagerAdapter(this));
-        pagerContent.setUserInputEnabled(false);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_fragment_container, new RouteSearchFragment())
+                    .commit();
 
-        new TabLayoutMediator(tabLayout, pagerContent, (tab, position) -> {
-            tab.setText(titles.get(position));
-        }).attach();
+            bottomNavigationView.setSelectedItemId(R.id.nav_search);
+        }
 
-        pagerContent.setCurrentItem(3, false);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            Fragment selected = getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
+
+            if (itemId == R.id.nav_search && selected instanceof RouteSearchFragment) return true;
+            if (itemId == R.id.nav_status && selected instanceof OperationInfoFragment) return true;
+
+            if (itemId == R.id.nav_search) {
+                selected = new RouteSearchFragment();
+            } else if (itemId == R.id.nav_status) {
+                selected = new OperationInfoFragment();
+            } else if (itemId == R.id.nav_info) {
+                selected = null;
+            } else if (itemId == R.id.nav_more) {
+                selected = null;
+            }
+
+            if (selected != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main_fragment_container, selected)
+                        .commit();
+                return true;
+            }
+            return false;
+        });
+
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                } else {
+                    setEnabled(false);
+                    onBackPressed();
+                }
+            }
+        });
     }
 }
