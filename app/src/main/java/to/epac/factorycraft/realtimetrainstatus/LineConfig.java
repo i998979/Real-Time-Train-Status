@@ -32,6 +32,7 @@ public class LineConfig {
             rawIDs = context.getString(R.string.tml_station_id);
             setupTML(config);
         } else if (lineCode.equalsIgnoreCase("ktl")) {
+            rawIDs = context.getString(R.string.ktl_station_id);
         } else if (lineCode.equalsIgnoreCase("ael")) {
             rawIDs = context.getString(R.string.ael_station_id);
         } else if (lineCode.equalsIgnoreCase("drl")) {
