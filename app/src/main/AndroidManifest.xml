@@ -31,7 +31,7 @@
         </activity>
 
         <activity
-            android:name=".EastRailJRActivity"
+            android:name=".TrainLocationActivity"
             android:exported="true" />
 
         <activity

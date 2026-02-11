@@ -1,7 +1,6 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,7 +35,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-public class EastRailJRActivity extends AppCompatActivity {
+public class TrainLocationActivity extends AppCompatActivity {
     public static Context context;
 
 
@@ -56,9 +55,9 @@ public class EastRailJRActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_east_rail_jr);
+        setContentView(R.layout.activity_train_location);
 
-        EastRailJRActivity.context = this;
+        TrainLocationActivity.context = this;
 
         ImageButton btnClose = findViewById(R.id.btn_close_activity);
         btnClose.setOnClickListener(v -> finish());
