@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_search"
+        android:icon="@drawable/outline_clear_all_24"
+        android:title="經路檢索" />
+
+    <item
+        android:id="@+id/nav_status"
+        android:icon="@drawable/outline_train_24"
+        android:title="運行狀況" />
+
+    <item
+        android:id="@+id/nav_info"
+        android:icon="@drawable/outline_house_siding_24"
+        android:title="站情報" />
+
+    <item
+        android:id="@+id/nav_more"
+        android:icon="@drawable/outline_more_horiz_24"
+        android:title="更多" />
+</menu>
