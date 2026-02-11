@@ -6,8 +6,17 @@ import java.util.HashMap;
 
 public class LineConfig {
     public String apiUrl;
+    public String apiKey = "";
+
     public int[] stationIDs;
+
+    /**
+     * 以 Non-peak 數據為準，Key 為「下一站」代碼
+     */
     public HashMap<Integer, Long> runTimeUpMap = new HashMap<>();
+    /**
+     * 以 Non-peak 數據為準，Key 為「當前站」代碼
+     */
     public HashMap<Integer, Long> runTimeDnMap = new HashMap<>();
     public HashMap<Integer, Long> dwellTimeUpMap = new HashMap<>();
     public HashMap<Integer, Long> dwellTimeDnMap = new HashMap<>();
@@ -22,9 +31,23 @@ public class LineConfig {
         } else if (lineCode.equalsIgnoreCase("tml")) {
             rawIDs = context.getString(R.string.tml_station_id);
             setupTML(config);
+        } else if (lineCode.equalsIgnoreCase("ktl")) {
+        } else if (lineCode.equalsIgnoreCase("ael")) {
+            rawIDs = context.getString(R.string.ael_station_id);
+        } else if (lineCode.equalsIgnoreCase("drl")) {
+            rawIDs = context.getString(R.string.drl_station_id);
+        } else if (lineCode.equalsIgnoreCase("isl")) {
+            rawIDs = context.getString(R.string.isl_station_id);
+        } else if (lineCode.equalsIgnoreCase("tcl")) {
+            rawIDs = context.getString(R.string.tcl_station_id);
+        } else if (lineCode.equalsIgnoreCase("tkl")) {
+            rawIDs = context.getString(R.string.tkl_station_id);
+        } else if (lineCode.equalsIgnoreCase("twl")) {
+            rawIDs = context.getString(R.string.twl_station_id);
+        } else if (lineCode.equalsIgnoreCase("sil")) {
+            rawIDs = context.getString(R.string.sil_station_id);
         }
 
-        // 直接在方法內解析字串
         String[] parts = rawIDs.trim().split("\\s+");
         config.stationIDs = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {
@@ -103,7 +126,6 @@ public class LineConfig {
 
     private static void setupTML(LineConfig config) {
         // --- 北行 (Up Track: 往烏溪沙 WKS) ---
-        // 以 Non-peak 數據為準，Key 為「下一站」代碼
         config.runTimeUpMap.put(30, 118L); // WKS -> MOS
         config.runTimeUpMap.put(29, 108L); // MOS -> HEO
         config.runTimeUpMap.put(28, 107L); // HEO -> TSH
@@ -159,7 +181,6 @@ public class LineConfig {
         config.dwellTimeUpMap.put(48, 28L); // SIH
 
         // --- 南行 (Down Track: 往屯門 TUM) ---
-        // 以 Non-peak 數據為準，Key 為「當前站」代碼
         config.runTimeDnMap.put(49, 142L); // TUM -> SIH
         config.runTimeDnMap.put(48, 237L); // SIH -> TIS
         config.runTimeDnMap.put(47, 153L); // TIS -> LOP
