@@ -37,7 +37,7 @@ public class LineSelectorFragment extends Fragment {
         lines.add(new LineItem("SIL", "南港島綫", "#cbd300"));
 
         LineSelectorAdapter adapter = new LineSelectorAdapter(lines, line -> {
-            Intent intent = new Intent(getContext(), EastRailJRActivity.class);
+            Intent intent = new Intent(getContext(), TrainLocationActivity.class);
             intent.putExtra("LINE_CODE", line.code.toLowerCase());
             intent.putExtra("DATA_SOURCE", openData.isChecked() ? "OPENDATA" : "ROCTEC");
             startActivity(intent);
