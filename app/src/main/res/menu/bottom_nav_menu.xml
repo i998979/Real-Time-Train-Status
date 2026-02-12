@@ -12,9 +12,9 @@
         android:title="運行狀況" />
 
     <item
-        android:id="@+id/nav_info"
+        android:id="@+id/nav_station"
         android:icon="@drawable/outline_house_siding_24"
-        android:title="站情報" />
+        android:title="車站情報" />
 
     <item
         android:id="@+id/nav_more"

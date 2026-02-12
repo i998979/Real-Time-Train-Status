@@ -17,12 +17,12 @@ import java.util.List;
 public class LineSelectorFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_line_selector, container, false);
+        View view = inflater.inflate(R.layout.fragment_line_selector, container, false);
 
         RecyclerView rv = view.findViewById(R.id.rv_line_selector);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        Switch openData = view.findViewById(R.id.openData);
+        Switch openData = view.findViewById(R.id.open_data);
 
         List<LineItem> lines = new ArrayList<>();
         lines.add(new LineItem("EAL", "東鐵綫", "#5eb7e8"));

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -39,7 +40,15 @@ public class WebViewFragment extends Fragment {
 
         if (getArguments() != null) {
             String url = getArguments().getString(ARG_URL);
-            webView.loadUrl("https://docs.google.com/viewer?embedded=true&url=" + url);
+
+            webView.post(() -> {
+                if (url != null) {
+                    if (url.endsWith(".pdf"))
+                        webView.loadUrl("https://docs.google.com/viewer?embedded=true&url=" + url);
+                    else
+                        webView.loadUrl(url);
+                }
+            });
         }
 
         return webView;
