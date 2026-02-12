@@ -35,6 +35,10 @@
             android:exported="true" />
 
         <activity
+            android:name=".DeleteHistoryActivity"
+            android:exported="true" />
+
+        <activity
             android:name=".MapsActivity"
             android:exported="true" />
     </application>
