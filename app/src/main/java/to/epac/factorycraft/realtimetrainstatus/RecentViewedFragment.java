@@ -46,7 +46,7 @@ public class RecentViewedFragment extends Fragment {
 
         TextView tvDelete = view.findViewById(R.id.tv_delete);
         tvDelete.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), DeleteHistoryActivity.class);
+            Intent intent = new Intent(requireContext(), HistoryDeleteActivity.class);
             startActivity(intent);
         });
 
@@ -105,7 +105,7 @@ public class RecentViewedFragment extends Fragment {
         @NonNull
         @Override
         public RecentViewedHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recent_viewed, parent, false);
             return new RecentViewedHolder(view);
         }
 
@@ -138,9 +138,9 @@ public class RecentViewedFragment extends Fragment {
 
             private RecentViewedHolder(View itemView) {
                 super(itemView);
-                tvRouteName = itemView.findViewById(R.id.tvRouteName);
-                tvDepartureTime = itemView.findViewById(R.id.tvDepartureTime);
-                btnGo = itemView.findViewById(R.id.btnGo);
+                tvRouteName = itemView.findViewById(R.id.tv_name);
+                tvDepartureTime = itemView.findViewById(R.id.tv_time);
+                btnGo = itemView.findViewById(R.id.btn_go);
             }
         }
     }

@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.Executors;
 
-public class DeleteHistoryActivity extends AppCompatActivity {
+public class HistoryDeleteActivity extends AppCompatActivity {
 
     private AppDatabase db;
 
@@ -122,7 +122,7 @@ public class DeleteHistoryActivity extends AppCompatActivity {
         @NonNull
         @Override
         public DeleteHistoryHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new DeleteHistoryHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_delete_history, parent, false));
+            return new DeleteHistoryHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history_delete, parent, false));
         }
 
         @Override

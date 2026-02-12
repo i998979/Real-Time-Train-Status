@@ -35,7 +35,7 @@
             android:exported="true" />
 
         <activity
-            android:name=".DeleteHistoryActivity"
+            android:name=".HistoryDeleteActivity"
             android:exported="true" />
 
         <activity
