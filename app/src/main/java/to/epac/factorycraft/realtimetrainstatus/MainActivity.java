@@ -32,16 +32,18 @@ public class MainActivity extends AppCompatActivity {
             Fragment selected = getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
 
             if (itemId == R.id.nav_search && selected instanceof RouteSearchFragment) return true;
-            if (itemId == R.id.nav_status && selected instanceof OperationInfoFragment) return true;
+            if (itemId == R.id.nav_operation && selected instanceof OperationInfoFragment) return true;
+            if (itemId == R.id.nav_station && selected instanceof StationInfoFragment) return true;
+            if (itemId == R.id.nav_more && selected instanceof MoreFragment) return true;
 
             if (itemId == R.id.nav_search) {
                 selected = new RouteSearchFragment();
-            } else if (itemId == R.id.nav_status) {
+            } else if (itemId == R.id.nav_operation) {
                 selected = new OperationInfoFragment();
-            } else if (itemId == R.id.nav_info) {
-                selected = null;
+            } else if (itemId == R.id.nav_station) {
+                selected = new StationInfoFragment();
             } else if (itemId == R.id.nav_more) {
-                selected = null;
+                selected = new MoreFragment();
             }
 
             if (selected != null) {
