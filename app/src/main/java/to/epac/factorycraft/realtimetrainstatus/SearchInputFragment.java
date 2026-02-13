@@ -1,0 +1,143 @@
+package to.epac.factorycraft.realtimetrainstatus;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.button.MaterialButton;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class SearchInputFragment extends Fragment {
+
+    private List<Integer> stationIDs = new ArrayList<>();
+
+    private View layoutOrigin;
+    private TextView tvOrigin;
+
+    private MaterialButton btnSwap;
+
+    private View layoutDest;
+    private TextView tvDest;
+
+    private Button btnGo;
+
+    private String selectedOriginID = "1";
+    private String selectedDestID = "1";
+    private boolean isSelectingOrigin = true;
+
+    private final ActivityResultLauncher<Intent> searchLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    int id = result.getData().getIntExtra("selected_station_id", 1);
+                    String name = result.getData().getStringExtra("selected_station_name");
+
+                    if (isSelectingOrigin) {
+                        selectedOriginID = String.valueOf(id);
+                        tvOrigin.setText(name);
+                    } else {
+                        selectedDestID = String.valueOf(id);
+                        tvDest.setText(name);
+                    }
+                }
+            }
+    );
+
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_search_input, container, false);
+
+        layoutOrigin = view.findViewById(R.id.layout_origin);
+        layoutOrigin.setOnClickListener(v -> {
+            isSelectingOrigin = true;
+            openSearch();
+        });
+        tvOrigin = view.findViewById(R.id.tv_origin_name);
+
+        layoutDest = view.findViewById(R.id.layout_dest);
+        layoutDest.setOnClickListener(v -> {
+            isSelectingOrigin = false;
+            openSearch();
+        });
+        tvDest = view.findViewById(R.id.tv_dest_name);
+
+        btnSwap = view.findViewById(R.id.btn_swap);
+        btnSwap.setOnClickListener(v -> {
+            String tempOrigin = tvOrigin.getText().toString();
+            String tempID = selectedOriginID;
+
+            tvOrigin.setText(tvDest.getText().toString());
+            selectedOriginID = selectedDestID;
+
+            tvDest.setText(tempOrigin);
+            selectedDestID = tempID;
+        });
+
+        btnGo = view.findViewById(R.id.btn_go);
+        btnGo.setOnClickListener(v -> {
+            String oID = selectedOriginID;
+            String dID = selectedDestID;
+            String oName = tvOrigin.getText().toString();
+            String dName = tvDest.getText().toString();
+
+            HistoryManager.getInstance(requireContext()).saveRouteSearch(oID, dID, oName, dName);
+
+            RouteListFragment listFragment = new RouteListFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("o", oID);
+            bundle.putString("d", dID);
+            listFragment.setArguments(bundle);
+
+            View fullContainer = requireActivity().findViewById(R.id.fragment_full_container);
+            if (fullContainer != null) {
+                fullContainer.setVisibility(View.VISIBLE);
+            }
+
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
+                            android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+                    .replace(R.id.fragment_full_container, listFragment)
+                    .addToBackStack("LIST_PAGE")
+                    .commit();
+        });
+
+        List<String> stationNames = new ArrayList<>();
+        try {
+            String rawMapping = "{\"lines\":[{\"ID\":10,\"alias\":\"AEL\",\"nameEN\":\"Airport Express\",\"name\":\"\\u6a5f\\u5834\\u5feb\\u7dab\",\"color\":\"1C7670\",\"stationIDs\":[44,45,46,47,56]},{\"ID\":16,\"alias\":\"DRL\",\"nameEN\":\"Disneyland Resort Line\",\"name\":\"\\u8fea\\u58eb\\u5c3c\\u7dab\",\"color\":\"F550A6\",\"stationIDs\":[55,54]},{\"ID\":17,\"alias\":\"EAL\",\"nameEN\":\"East Rail Line\",\"name\":\"\\u6771\\u9435\\u7dab\",\"color\":\"5EB6E4\",\"stationIDs\":[2,94,64,65,8,67,68,69,71,70,72,73,74,75,76,78]},{\"ID\":91,\"alias\":\"HSR\",\"nameEN\":\"High Speed Rail\",\"name\":\"\\u9ad8\\u901f\\u9435\\u8def\",\"color\":\"F6821F\",\"stationIDs\":[888]},{\"ID\":13,\"alias\":\"ISL\",\"nameEN\":\"Island Line\",\"name\":\"\\u6e2f\\u5cf6\\u7dab\",\"color\":\"0860A8\",\"stationIDs\":[83,82,81,26,1,2,27,28,29,30,31,32,33,34,35,36,37]},{\"ID\":12,\"alias\":\"KTL\",\"nameEN\":\"Kwun Tong Line\",\"name\":\"\\u89c0\\u5858\\u7dab\",\"color\":\"1A9431\",\"stationIDs\":[85,84,5,6,16,7,8,9,10,11,12,13,14,15,38,48,49]},{\"ID\":27,\"alias\":\"SIL\",\"nameEN\":\"South Island Line\",\"name\":\"\\u5357\\u6e2f\\u5cf6\\u7dab\",\"color\":\"B5BD00\",\"stationIDs\":[2,86,87,88,89]},{\"ID\":14,\"alias\":\"TCL\",\"nameEN\":\"Tung Chung Line\",\"name\":\"\\u6771\\u6d8c\\u7dab\",\"color\":\"FE7F1D\",\"stationIDs\":[39,40,41,53,21,42,54,43]},{\"ID\":15,\"alias\":\"TKL\",\"nameEN\":\"Tseung Kwan O Line\",\"name\":\"\\u5c07\\u8ecd\\u6fb3\\u7dab\",\"color\":\"6B208B\",\"stationIDs\":[31,32,48,49,50,51,52,57]},{\"ID\":28,\"alias\":\"TML\",\"nameEN\":\"Tuen Ma Line\",\"name\":\"\\u5c6f\\u99ac\\u7dab\",\"color\":\"923011\",\"stationIDs\":[103,102,101,100,99,98,97,96,67,90,11,91,92,93,84,64,80,111,53,20,114,115,116,117,118,119,120]},{\"ID\":11,\"alias\":\"TWL\",\"nameEN\":\"Tsuen Wan Line\",\"name\":\"\\u8343\\u7063\\u7dab\",\"color\":\"FF0000\",\"stationIDs\":[1,2,3,4,5,6,16,17,18,19,20,21,22,23,24,25]}],\"stations\":[{\"ID\":2,\"alias\":\"ADM\",\"nameEN\":\"Admiralty\",\"name\":\"\\u91d1\\u9418\",\"nameSC\":\"\\u91d1\\u949f\",\"lineIDs\":[17,13,11,27],\"coordinate\":\"22.2787520,114.1648260\"},{\"ID\":47,\"alias\":\"AIR\",\"nameEN\":\"Airport\",\"name\":\"\\u6a5f\\u5834\",\"nameSC\":\"\\u673a\\u573a\",\"lineIDs\":[10],\"coordinate\":\"22.3164530,113.9364950\"},{\"ID\":111,\"alias\":\"AUS\",\"nameEN\":\"Austin\",\"name\":\"\\u67ef\\u58eb\\u7538\",\"nameSC\":\"\\u67ef\\u58eb\\u7538\",\"lineIDs\":[28],\"coordinate\":\"22.3033310,114.1688600\"},{\"ID\":56,\"alias\":\"AWE\",\"nameEN\":\"AsiaWorld-Expo\",\"name\":\"\\u535a\\u89bd\\u9928\",\"nameSC\":\"\\u535a\\u89c8\\u9986\",\"lineIDs\":[10],\"coordinate\":\"22.3217130,113.9427170\"},{\"ID\":28,\"alias\":\"CAB\",\"nameEN\":\"Causeway Bay\",\"name\":\"\\u9285\\u947c\\u7063\",\"nameSC\":\"\\u94dc\\u9523\\u6e7e\",\"lineIDs\":[13],\"coordinate\":\"22.2797000,114.1834290\"},{\"ID\":1,\"alias\":\"CEN\",\"nameEN\":\"Central\",\"name\":\"\\u4e2d\\u74b0\",\"nameSC\":\"\\u4e2d\\u73af\",\"lineIDs\":[11,13],\"coordinate\":\"22.2830410,114.1587530\"},{\"ID\":12,\"alias\":\"CHH\",\"nameEN\":\"Choi Hung\",\"name\":\"\\u5f69\\u8679\",\"nameSC\":\"\\u5f69\\u8679\",\"lineIDs\":[12],\"coordinate\":\"22.3348980,114.2085460\"},{\"ID\":37,\"alias\":\"CHW\",\"nameEN\":\"Chai Wan\",\"name\":\"\\u67f4\\u7063\",\"nameSC\":\"\\u67f4\\u6e7e\",\"lineIDs\":[13],\"coordinate\":\"22.2644150,114.2372780\"},{\"ID\":98,\"alias\":\"CIO\",\"nameEN\":\"City One\",\"name\":\"\\u7b2c\\u4e00\\u57ce\",\"nameSC\":\"\\u7b2c\\u4e00\\u57ce\",\"lineIDs\":[28],\"coordinate\":\"22.3828770,114.2033530\"},{\"ID\":96,\"alias\":\"CKT\",\"nameEN\":\"Che Kung Temple\",\"name\":\"\\u8eca\\u516c\\u5edf\",\"nameSC\":\"\\u8f66\\u516c\\u5e99\",\"lineIDs\":[28],\"coordinate\":\"22.3748460,114.1862620\"},{\"ID\":18,\"alias\":\"CSW\",\"nameEN\":\"Cheung Sha Wan\",\"name\":\"\\u9577\\u6c99\\u7063\",\"nameSC\":\"\\u957f\\u6c99\\u6e7e\",\"lineIDs\":[11],\"coordinate\":\"22.3357070,114.1570900\"},{\"ID\":11,\"alias\":\"DIH\",\"nameEN\":\"Diamond Hill\",\"name\":\"\\u947d\\u77f3\\u5c71\",\"nameSC\":\"\\u94bb\\u77f3\\u5c71\",\"lineIDs\":[12,28],\"coordinate\":\"22.3401670,114.2004830\"},{\"ID\":55,\"alias\":\"DIS\",\"nameEN\":\"Disneyland Resort\",\"name\":\"\\u8fea\\u58eb\\u5c3c\",\"nameSC\":\"\\u8fea\\u65af\\u5c3c\",\"lineIDs\":[16],\"coordinate\":\"22.3151030,114.0446360\"},{\"ID\":80,\"alias\":\"ETS\",\"nameEN\":\"East Tsim Sha Tsui\",\"name\":\"\\u5c16\\u6771\",\"nameSC\":\"\\u5c16\\u4e1c\",\"lineIDs\":[28],\"coordinate\":\"22.2964820,114.1735050\"},{\"ID\":94,\"alias\":\"EXC\",\"nameEN\":\"Exhibition Centre\",\"name\":\"\\u6703\\u5c55\",\"nameSC\":\"\\u4f1a\\u5c55\",\"lineIDs\":[17],\"coordinate\":\"22.2816670,114.1752780\"},{\"ID\":74,\"alias\":\"FAN\",\"nameEN\":\"Fanling\",\"name\":\"\\u7c89\\u5dba\",\"nameSC\":\"\\u7c89\\u5cad\",\"lineIDs\":[17],\"coordinate\":\"22.4919500,114.1388300\"},{\"ID\":30,\"alias\":\"FOH\",\"nameEN\":\"Fortress Hill\",\"name\":\"\\u70ae\\u53f0\\u5c71\",\"nameSC\":\"\\u70ae\\u53f0\\u5c71\",\"lineIDs\":[13],\"coordinate\":\"22.2884110,114.1937080\"},{\"ID\":69,\"alias\":\"FOT\",\"nameEN\":\"Fo Tan\",\"name\":\"\\u706b\\u70ad\",\"nameSC\":\"\\u706b\\u70ad\",\"lineIDs\":[17],\"coordinate\":\"22.3951330,114.1980690\"},{\"ID\":51,\"alias\":\"HAH\",\"nameEN\":\"Hang Hau\",\"name\":\"\\u5751\\u53e3\",\"nameSC\":\"\\u5751\\u53e3\",\"lineIDs\":[15],\"coordinate\":\"22.3158080,114.2644970\"},{\"ID\":101,\"alias\":\"HEO\",\"nameEN\":\"Heng On\",\"name\":\"\\u6046\\u5b89\",\"nameSC\":\"\\u6052\\u5b89\",\"lineIDs\":[28],\"coordinate\":\"22.4182040,114.2258570\"},{\"ID\":36,\"alias\":\"HFC\",\"nameEN\":\"Heng Fa Chuen\",\"name\":\"\\u674f\\u82b1\\u90a8\",\"nameSC\":\"\\u674f\\u82b1\\u90a8\",\"lineIDs\":[13],\"coordinate\":\"22.2769950,114.2401100\"},{\"ID\":90,\"alias\":\"HIK\",\"nameEN\":\"Hin Keng\",\"name\":\"\\u986f\\u5f91\",\"nameSC\":\"\\u663e\\u5f84\",\"lineIDs\":[28],\"coordinate\":\"22.3639720,114.1707740\"},{\"ID\":82,\"alias\":\"HKU\",\"nameEN\":\"HKU\",\"name\":\"\\u9999\\u6e2f\\u5927\\u5b78\",\"nameSC\":\"\\u9999\\u6e2f\\u5927\\u5b66\",\"lineIDs\":[13],\"coordinate\":\"22.2836650,114.1357160\"},{\"ID\":39,\"alias\":\"HOK\",\"nameEN\":\"Hong Kong\",\"name\":\"\\u9999\\u6e2f\",\"nameSC\":\"\\u9999\\u6e2f\",\"lineIDs\":[10,14],\"coordinate\":\"22.2847530,114.1581420\"},{\"ID\":44,\"alias\":\"HOK\",\"nameEN\":\"Hong Kong\",\"name\":\"\\u9999\\u6e2f\",\"nameSC\":\"\\u9999\\u6e2f\",\"lineIDs\":[10,14],\"coordinate\":\"22.2847530,114.1581420\"},{\"ID\":84,\"alias\":\"HOM\",\"nameEN\":\"Ho Man Tin\",\"name\":\"\\u4f55\\u6587\\u7530\",\"nameSC\":\"\\u4f55\\u6587\\u7530\",\"lineIDs\":[12,28],\"coordinate\":\"22.3095210,114.1828390\"},{\"ID\":64,\"alias\":\"HUH\",\"nameEN\":\"Hung Hom\",\"name\":\"\\u7d05\\u78e1\",\"nameSC\":\"\\u7ea2\\u78e1\",\"lineIDs\":[17,28],\"coordinate\":\"22.3025170,114.1810910\"},{\"ID\":4,\"alias\":\"JOR\",\"nameEN\":\"Jordan\",\"name\":\"\\u4f50\\u6566\",\"nameSC\":\"\\u4f50\\u6566\",\"lineIDs\":[11],\"coordinate\":\"22.3046510,114.1716330\"},{\"ID\":91,\"alias\":\"KAT\",\"nameEN\":\"Kai Tak\",\"name\":\"\\u555f\\u5fb7\",\"nameSC\":\"\\u542f\\u5fb7\",\"lineIDs\":[28],\"coordinate\":\"22.3304980,114.1993680\"},{\"ID\":83,\"alias\":\"KET\",\"nameEN\":\"Kennedy Town\",\"name\":\"\\u5805\\u5c3c\\u5730\\u57ce\",\"nameSC\":\"\\u575a\\u5c3c\\u5730\\u57ce\",\"lineIDs\":[13],\"coordinate\":\"22.2811190,114.1288170\"},{\"ID\":13,\"alias\":\"KOB\",\"nameEN\":\"Kowloon Bay\",\"name\":\"\\u4e5d\\u9f8d\\u7063\",\"nameSC\":\"\\u4e5d\\u9f99\\u6e7e\",\"lineIDs\":[12],\"coordinate\":\"22.3232670,114.2142480\"},{\"ID\":8,\"alias\":\"KOT\",\"nameEN\":\"Kowloon Tong\",\"name\":\"\\u4e5d\\u9f8d\\u5858\",\"nameSC\":\"\\u4e5d\\u9f99\\u5858\",\"lineIDs\":[17,12],\"coordinate\":\"22.3368180,114.1754690\"},{\"ID\":40,\"alias\":\"KOW\",\"nameEN\":\"Kowloon\",\"name\":\"\\u4e5d\\u9f8d\",\"nameSC\":\"\\u4e5d\\u9f99\",\"lineIDs\":[10,14],\"coordinate\":\"22.3044030,114.1615690\"},{\"ID\":45,\"alias\":\"KOW\",\"nameEN\":\"Kowloon\",\"name\":\"\\u4e5d\\u9f8d\",\"nameSC\":\"\\u4e5d\\u9f99\",\"lineIDs\":[10,14],\"coordinate\":\"22.3044030,114.1615690\"},{\"ID\":115,\"alias\":\"KSR\",\"nameEN\":\"Kam Sheung Road\",\"name\":\"\\u9326\\u4e0a\\u8def\",\"nameSC\":\"\\u9526\\u4e0a\\u8def\",\"lineIDs\":[28],\"coordinate\":\"22.4344740,114.0633420\"},{\"ID\":22,\"alias\":\"KWF\",\"nameEN\":\"Kwai Fong\",\"name\":\"\\u8475\\u82b3\",\"nameSC\":\"\\u8475\\u82b3\",\"lineIDs\":[11],\"coordinate\":\"22.3567540,114.1274680\"},{\"ID\":23,\"alias\":\"KWH\",\"nameEN\":\"Kwai Hing\",\"name\":\"\\u8475\\u8208\",\"nameSC\":\"\\u8475\\u5174\",\"lineIDs\":[11],\"coordinate\":\"22.3632430,114.1310780\"},{\"ID\":15,\"alias\":\"KWT\",\"nameEN\":\"Kwun Tong\",\"name\":\"\\u89c0\\u5858\",\"nameSC\":\"\\u89c2\\u5858\",\"lineIDs\":[12],\"coordinate\":\"22.3123190,114.2265700\"},{\"ID\":21,\"alias\":\"LAK\",\"nameEN\":\"Lai King\",\"name\":\"\\u8354\\u666f\",\"nameSC\":\"\\u8354\\u666f\",\"lineIDs\":[14,11],\"coordinate\":\"22.3481900,114.1261910\"},{\"ID\":38,\"alias\":\"LAT\",\"nameEN\":\"Lam Tin\",\"name\":\"\\u85cd\\u7530\",\"nameSC\":\"\\u84dd\\u7530\",\"lineIDs\":[12],\"coordinate\":\"22.3071580,114.2331680\"},{\"ID\":19,\"alias\":\"LCK\",\"nameEN\":\"Lai Chi Kok\",\"name\":\"\\u8354\\u679d\\u89d2\",\"nameSC\":\"\\u8354\\u679d\\u89d2\",\"lineIDs\":[11],\"coordinate\":\"22.3372250,114.1483620\"},{\"ID\":88,\"alias\":\"LET\",\"nameEN\":\"Lei Tung\",\"name\":\"\\u5229\\u6771\",\"nameSC\":\"\\u5229\\u4e1c\",\"lineIDs\":[27],\"coordinate\":\"22.2418980,114.1561720\"},{\"ID\":57,\"alias\":\"LHP\",\"nameEN\":\"LOHAS Park\",\"name\":\"\\u5eb7\\u57ce\",\"nameSC\":\"\\u5eb7\\u57ce\",\"lineIDs\":[15],\"coordinate\":\"22.2952510,114.2703870\"},{\"ID\":78,\"alias\":\"LMC\",\"nameEN\":\"Lok Ma Chau\",\"name\":\"\\u843d\\u99ac\\u6d32\",\"nameSC\":\"\\u843d\\u9a6c\\u6d32\",\"lineIDs\":[17],\"coordinate\":\"22.5159660,114.0697360\"},{\"ID\":9,\"alias\":\"LOF\",\"nameEN\":\"Lok Fu\",\"name\":\"\\u6a02\\u5bcc\",\"nameSC\":\"\\u4e50\\u5bcc\",\"lineIDs\":[12],\"coordinate\":\"22.3380090,114.1876970\"},{\"ID\":117,\"alias\":\"LOP\",\"nameEN\":\"Long Ping\",\"name\":\"\\u6717\\u5c4f\",\"nameSC\":\"\\u6717\\u5c4f\",\"lineIDs\":[28],\"coordinate\":\"22.4476920,114.0253240\"},{\"ID\":76,\"alias\":\"LOW\",\"nameEN\":\"Lo Wu\",\"name\":\"\\u7f85\\u6e56\",\"nameSC\":\"\\u7f57\\u6e56\",\"lineIDs\":[17],\"coordinate\":\"22.5282850,114.1139920\"},{\"ID\":20,\"alias\":\"MEF\",\"nameEN\":\"Mei Foo\",\"name\":\"\\u7f8e\\u5b5a\",\"nameSC\":\"\\u7f8e\\u5b5a\",\"lineIDs\":[11,28],\"coordinate\":\"22.3384360,114.1384330\"},{\"ID\":65,\"alias\":\"MKK\",\"nameEN\":\"Mong Kok East\",\"name\":\"\\u65fa\\u89d2\\u6771\",\"nameSC\":\"\\u65fa\\u89d2\\u4e1c\",\"lineIDs\":[17],\"coordinate\":\"22.3221950,114.1718850\"},{\"ID\":6,\"alias\":\"MOK\",\"nameEN\":\"Mong Kok\",\"name\":\"\\u65fa\\u89d2\",\"nameSC\":\"\\u65fa\\u89d2\",\"lineIDs\":[11,12],\"coordinate\":\"22.3193360,114.1692460\"},{\"ID\":102,\"alias\":\"MOS\",\"nameEN\":\"Ma On Shan\",\"name\":\"\\u99ac\\u978d\\u5c71\",\"nameSC\":\"\\u9a6c\\u978d\\u5c71\",\"lineIDs\":[28],\"coordinate\":\"22.4248940,114.2319240\"},{\"ID\":53,\"alias\":\"NAC\",\"nameEN\":\"Nam Cheong\",\"name\":\"\\u5357\\u660c\",\"nameSC\":\"\\u5357\\u660c\",\"lineIDs\":[14,28],\"coordinate\":\"22.3264330,114.1537000\"},{\"ID\":31,\"alias\":\"NOP\",\"nameEN\":\"North Point\",\"name\":\"\\u5317\\u89d2\",\"nameSC\":\"\\u5317\\u89d2\",\"lineIDs\":[15,13],\"coordinate\":\"22.2914690,114.2004880\"},{\"ID\":14,\"alias\":\"NTK\",\"nameEN\":\"Ngau Tau Kok\",\"name\":\"\\u725b\\u982d\\u89d2\",\"nameSC\":\"\\u725b\\u5934\\u89d2\",\"lineIDs\":[12],\"coordinate\":\"22.3156690,114.2188190\"},{\"ID\":86,\"alias\":\"OCP\",\"nameEN\":\"Ocean Park\",\"name\":\"\\u6d77\\u6d0b\\u516c\\u5712\",\"nameSC\":\"\\u6d77\\u6d0b\\u516c\\u56ed\",\"lineIDs\":[27],\"coordinate\":\"22.2486690,114.1745560\"},{\"ID\":41,\"alias\":\"OLY\",\"nameEN\":\"Olympic\",\"name\":\"\\u5967\\u904b\",\"nameSC\":\"\\u5965\\u8fd0\",\"lineIDs\":[14],\"coordinate\":\"22.3183590,114.1599870\"},{\"ID\":52,\"alias\":\"POA\",\"nameEN\":\"Po Lam\",\"name\":\"\\u5bf6\\u7433\",\"nameSC\":\"\\u5b9d\\u7433\",\"lineIDs\":[15],\"coordinate\":\"22.3226020,114.2579730\"},{\"ID\":16,\"alias\":\"PRE\",\"nameEN\":\"Prince Edward\",\"name\":\"\\u592a\\u5b50\",\"nameSC\":\"\\u592a\\u5b50\",\"lineIDs\":[11,12],\"coordinate\":\"22.3244330,114.1683340\"},{\"ID\":32,\"alias\":\"QUB\",\"nameEN\":\"Quarry Bay\",\"name\":\"\\u9c02\\u9b5a\\u6d8c\",\"nameSC\":\"\\u9c97\\u9c7c\\u6d8c\",\"lineIDs\":[15,13],\"coordinate\":\"22.2895830,114.2082350\"},{\"ID\":70,\"alias\":\"RAC\",\"nameEN\":\"Racecourse\",\"name\":\"\\u99ac\\u5834\",\"nameSC\":\"\\u9a6c\\u573a\",\"lineIDs\":[17],\"coordinate\":\"22.3998400,114.2027090\"},{\"ID\":99,\"alias\":\"SHM\",\"nameEN\":\"Shek Mun\",\"name\":\"\\u77f3\\u9580\",\"nameSC\":\"\\u77f3\\u95e8\",\"lineIDs\":[28],\"coordinate\":\"22.3876780,114.2086530\"},{\"ID\":75,\"alias\":\"SHS\",\"nameEN\":\"Sheung Shui\",\"name\":\"\\u4e0a\\u6c34\",\"nameSC\":\"\\u4e0a\\u6c34\",\"lineIDs\":[17],\"coordinate\":\"22.5013570,114.1280500\"},{\"ID\":68,\"alias\":\"SHT\",\"nameEN\":\"Sha Tin\",\"name\":\"\\u6c99\\u7530\",\"nameSC\":\"\\u6c99\\u7530\",\"lineIDs\":[17],\"coordinate\":\"22.3822120,114.1879090\"},{\"ID\":26,\"alias\":\"SHW\",\"nameEN\":\"Sheung Wan\",\"name\":\"\\u4e0a\\u74b0\",\"nameSC\":\"\\u4e0a\\u73af\",\"lineIDs\":[13],\"coordinate\":\"22.2868630,114.1528310\"},{\"ID\":119,\"alias\":\"SIH\",\"nameEN\":\"Siu Hong\",\"name\":\"\\u5146\\u5eb7\",\"nameSC\":\"\\u5146\\u5eb7\",\"lineIDs\":[28],\"coordinate\":\"22.4118570,113.9789540\"},{\"ID\":7,\"alias\":\"SKM\",\"nameEN\":\"Shek Kip Mei\",\"name\":\"\\u77f3\\u7864\\u5c3e\",\"nameSC\":\"\\u77f3\\u7856\\u5c3e\",\"lineIDs\":[12],\"coordinate\":\"22.3319980,114.1695710\"},{\"ID\":35,\"alias\":\"SKW\",\"nameEN\":\"Shau Kei Wan\",\"name\":\"\\u7b72\\u7b95\\u7063\",\"nameSC\":\"\\u7b72\\u7b95\\u6e7e\",\"lineIDs\":[13],\"coordinate\":\"22.2795160,114.2291070\"},{\"ID\":89,\"alias\":\"SOH\",\"nameEN\":\"South Horizons\",\"name\":\"\\u6d77\\u6021\\u534a\\u5cf6\",\"nameSC\":\"\\u6d77\\u6021\\u534a\\u5c9b\",\"lineIDs\":[27],\"coordinate\":\"22.2427500,114.1489120\"},{\"ID\":17,\"alias\":\"SSP\",\"nameEN\":\"Sham Shui Po\",\"name\":\"\\u6df1\\u6c34\\u57d7\",\"nameSC\":\"\\u6df1\\u6c34\\u57d7\",\"lineIDs\":[11],\"coordinate\":\"22.3307350,114.1623150\"},{\"ID\":97,\"alias\":\"STW\",\"nameEN\":\"Sha Tin Wai\",\"name\":\"\\u6c99\\u7530\\u570d\",\"nameSC\":\"\\u6c99\\u7530\\u56f4\",\"lineIDs\":[28],\"coordinate\":\"22.3770730,114.1948560\"},{\"ID\":54,\"alias\":\"SUN\",\"nameEN\":\"Sunny Bay\",\"name\":\"\\u6b23\\u6fb3\",\"nameSC\":\"\\u6b23\\u6fb3\",\"lineIDs\":[16,14],\"coordinate\":\"22.3318860,114.0289070\"},{\"ID\":92,\"alias\":\"SUW\",\"nameEN\":\"Sung Wong Toi\",\"name\":\"\\u5b8b\\u7687\\u81fa\",\"nameSC\":\"\\u5b8b\\u7687\\u53f0\",\"lineIDs\":[28],\"coordinate\":\"22.3259500,114.1911750\"},{\"ID\":34,\"alias\":\"SWH\",\"nameEN\":\"Sai Wan Ho\",\"name\":\"\\u897f\\u7063\\u6cb3\",\"nameSC\":\"\\u897f\\u6e7e\\u6cb3\",\"lineIDs\":[13],\"coordinate\":\"22.2821120,114.2220750\"},{\"ID\":81,\"alias\":\"SYP\",\"nameEN\":\"Sai Ying Pun\",\"name\":\"\\u897f\\u71df\\u76e4\",\"nameSC\":\"\\u897f\\u8425\\u76d8\",\"lineIDs\":[13],\"coordinate\":\"22.2856520,114.1427040\"},{\"ID\":33,\"alias\":\"TAK\",\"nameEN\":\"Tai Koo\",\"name\":\"\\u592a\\u53e4\",\"nameSC\":\"\\u592a\\u53e4\",\"lineIDs\":[13],\"coordinate\":\"22.2854480,114.2159490\"},{\"ID\":72,\"alias\":\"TAP\",\"nameEN\":\"Tai Po Market\",\"name\":\"\\u5927\\u57d4\\u589f\",\"nameSC\":\"\\u5927\\u57d4\\u589f\",\"lineIDs\":[17],\"coordinate\":\"22.4440090,114.1701950\"},{\"ID\":67,\"alias\":\"TAW\",\"nameEN\":\"Tai Wai\",\"name\":\"\\u5927\\u570d\",\"nameSC\":\"\\u5927\\u56f4\",\"lineIDs\":[17,28],\"coordinate\":\"22.3728620,114.1778020\"},{\"ID\":29,\"alias\":\"TIH\",\"nameEN\":\"Tin Hau\",\"name\":\"\\u5929\\u540e\",\"nameSC\":\"\\u5929\\u540e\",\"lineIDs\":[13],\"coordinate\":\"22.2826630,114.1917770\"},{\"ID\":49,\"alias\":\"TIK\",\"nameEN\":\"Tiu Keng Leng\",\"name\":\"\\u8abf\\u666f\\u5dba\",\"nameSC\":\"\\u8c03\\u666f\\u5cad\",\"lineIDs\":[15,12],\"coordinate\":\"22.3042250,114.2523890\"},{\"ID\":118,\"alias\":\"TIS\",\"nameEN\":\"Tin Shui Wai\",\"name\":\"\\u5929\\u6c34\\u570d\",\"nameSC\":\"\\u5929\\u6c34\\u56f4\",\"lineIDs\":[28],\"coordinate\":\"22.4476630,114.0040110\"},{\"ID\":50,\"alias\":\"TKO\",\"nameEN\":\"Tseung Kwan O\",\"name\":\"\\u5c07\\u8ecd\\u6fb3\",\"nameSC\":\"\\u5c06\\u519b\\u6fb3\",\"lineIDs\":[15],\"coordinate\":\"22.3077090,114.2601300\"},{\"ID\":93,\"alias\":\"TKW\",\"nameEN\":\"To Kwa Wan\",\"name\":\"\\u571f\\u74dc\\u7063\",\"nameSC\":\"\\u571f\\u74dc\\u6e7e\",\"lineIDs\":[28],\"coordinate\":\"22.3171740,114.1875730\"},{\"ID\":100,\"alias\":\"TSH\",\"nameEN\":\"Tai Shui Hang\",\"name\":\"\\u5927\\u6c34\\u5751\",\"nameSC\":\"\\u5927\\u6c34\\u5751\",\"lineIDs\":[28],\"coordinate\":\"22.4084450,114.2226140\"},{\"ID\":3,\"alias\":\"TST\",\"nameEN\":\"Tsim Sha Tsui\",\"name\":\"\\u5c16\\u6c99\\u5480\",\"nameSC\":\"\\u5c16\\u6c99\\u5480\",\"lineIDs\":[11],\"coordinate\":\"22.2970480,114.1736880\"},{\"ID\":25,\"alias\":\"TSW\",\"nameEN\":\"Tsuen Wan\",\"name\":\"\\u8343\\u7063\",\"nameSC\":\"\\u8343\\u6e7e\",\"lineIDs\":[11],\"coordinate\":\"22.3736210,114.1172860\"},{\"ID\":46,\"alias\":\"TSY\",\"nameEN\":\"Tsing Yi\",\"name\":\"\\u9752\\u8863\",\"nameSC\":\"\\u9752\\u8863\",\"lineIDs\":[10,14],\"coordinate\":\"22.3587430,114.1077380\"},{\"ID\":42,\"alias\":\"TSY\",\"nameEN\":\"Tsing Yi\",\"name\":\"\\u9752\\u8863\",\"nameSC\":\"\\u9752\\u8863\",\"lineIDs\":[10,14],\"coordinate\":\"22.3587430,114.1077380\"},{\"ID\":43,\"alias\":\"TUC\",\"nameEN\":\"Tung Chung\",\"name\":\"\\u6771\\u6d8c\",\"nameSC\":\"\\u4e1c\\u6d8c\",\"lineIDs\":[14],\"coordinate\":\"22.2895230,113.9415590\"},{\"ID\":120,\"alias\":\"TUM\",\"nameEN\":\"Tuen Mun\",\"name\":\"\\u5c6f\\u9580\",\"nameSC\":\"\\u5c6f\\u95e8\",\"lineIDs\":[28],\"coordinate\":\"22.3942350,113.9733800\"},{\"ID\":24,\"alias\":\"TWH\",\"nameEN\":\"Tai Wo Hau\",\"name\":\"\\u5927\\u7aa9\\u53e3\",\"nameSC\":\"\\u5927\\u7a9d\\u53e3\",\"lineIDs\":[11],\"coordinate\":\"22.3709720,114.1254880\"},{\"ID\":73,\"alias\":\"TWO\",\"nameEN\":\"Tai Wo\",\"name\":\"\\u592a\\u548c\",\"nameSC\":\"\\u592a\\u548c\",\"lineIDs\":[17],\"coordinate\":\"22.4510890,114.1615910\"},{\"ID\":114,\"alias\":\"TWW\",\"nameEN\":\"Tsuen Wan West\",\"name\":\"\\u8343\\u7063\\u897f\",\"nameSC\":\"\\u8343\\u6e7e\\u897f\",\"lineIDs\":[28],\"coordinate\":\"22.3680550,114.1095400\"},{\"ID\":71,\"alias\":\"UNI\",\"nameEN\":\"University\",\"name\":\"\\u5927\\u5b78\",\"nameSC\":\"\\u5927\\u5b66\",\"lineIDs\":[17],\"coordinate\":\"22.4138210,114.2094250\"},{\"ID\":27,\"alias\":\"WAC\",\"nameEN\":\"Wan Chai\",\"name\":\"\\u7063\\u4ed4\",\"nameSC\":\"\\u6e7e\\u4ed4\",\"lineIDs\":[13],\"coordinate\":\"22.2774410,114.1722070\"},{\"ID\":87,\"alias\":\"WCH\",\"nameEN\":\"Wong Chuk Hang\",\"name\":\"\\u9ec3\\u7af9\\u5751\",\"nameSC\":\"\\u9ec4\\u7af9\\u5751\",\"lineIDs\":[27],\"coordinate\":\"22.2480180,114.1678960\"},{\"ID\":888,\"alias\":\"WEK\",\"nameEN\":\"Hong Kong West Kowloon\",\"name\":\"\\u9999\\u6e2f\\u897f\\u4e5d\\u9f8d\",\"nameSC\":\"\\u9999\\u6e2f\\u897f\\u4e5d\\u9f99\",\"lineIDs\":[91],\"coordinate\":\"22.3045600,114.1646270\"},{\"ID\":85,\"alias\":\"WHA\",\"nameEN\":\"Whampoa\",\"name\":\"\\u9ec3\\u57d4\",\"nameSC\":\"\\u9ec4\\u57d4\",\"lineIDs\":[12],\"coordinate\":\"22.3050790,114.1894380\"},{\"ID\":103,\"alias\":\"WKS\",\"nameEN\":\"Wu Kai Sha\",\"name\":\"\\u70cf\\u6eaa\\u6c99\",\"nameSC\":\"\\u4e4c\\u6eaa\\u6c99\",\"lineIDs\":[28],\"coordinate\":\"22.4294730,114.2436640\"},{\"ID\":10,\"alias\":\"WTS\",\"nameEN\":\"Wong Tai Sin\",\"name\":\"\\u9ec3\\u5927\\u4ed9\",\"nameSC\":\"\\u9ec4\\u5927\\u4ed9\",\"lineIDs\":[12],\"coordinate\":\"22.3416510,114.1925970\"},{\"ID\":48,\"alias\":\"YAT\",\"nameEN\":\"Yau Tong\",\"name\":\"\\u6cb9\\u5858\",\"nameSC\":\"\\u6cb9\\u5858\",\"lineIDs\":[15,12],\"coordinate\":\"22.2980900,114.2370630\"},{\"ID\":5,\"alias\":\"YMT\",\"nameEN\":\"Yau Ma Tei\",\"name\":\"\\u6cb9\\u9ebb\\u5730\",\"nameSC\":\"\\u6cb9\\u9ebb\\u5730\",\"lineIDs\":[11,12],\"coordinate\":\"22.3128200,114.1709630\"},{\"ID\":116,\"alias\":\"YUL\",\"nameEN\":\"Yuen Long\",\"name\":\"\\u5143\\u6717\",\"nameSC\":\"\\u5143\\u6717\",\"lineIDs\":[28],\"coordinate\":\"22.4460910,114.0348730\"}],\"errorCode\":\"0\",\"errorMsg\":\"success\"}";
+            JSONObject jsonObject = new JSONObject(rawMapping);
+            JSONArray stationsArray = jsonObject.getJSONArray("stations");
+            for (int i = 0; i < stationsArray.length(); i++) {
+                JSONObject station = stationsArray.getJSONObject(i);
+                stationNames.add(station.getString("name"));
+                stationIDs.add(station.getInt("ID"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return view;
+    }
+
+    private void openSearch() {
+        Intent intent = new Intent(requireContext(), StationSearchActivity.class);
+        searchLauncher.launch(intent);
+    }
+}
