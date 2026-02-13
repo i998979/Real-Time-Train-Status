@@ -31,13 +31,14 @@
         </activity>
 
         <activity
+            android:name=".StationSearchActivity"
+            android:exported="true" />
+        <activity
             android:name=".TrainLocationActivity"
             android:exported="true" />
-
         <activity
             android:name=".HistoryDeleteActivity"
             android:exported="true" />
-
         <activity
             android:name=".MapsActivity"
             android:exported="true" />
