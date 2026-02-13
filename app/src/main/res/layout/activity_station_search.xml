@@ -23,7 +23,11 @@
             android:hint="請輸入車站"
             android:inputType="text"
             android:maxLines="1"
-            android:textSize="18sp" />
+            android:textSize="18sp">
+
+            <requestFocus />
+
+        </EditText>
 
         <ImageButton
             android:id="@+id/btn_close"
