@@ -129,15 +129,15 @@ public class HistoryDeleteActivity extends AppCompatActivity {
                 Color.parseColor("#2C2C2C") : Color.parseColor("#4CAF50"));
     }
 
-    private class DeleteAdapter extends RecyclerView.Adapter<DeleteAdapter.DeleteHistoryHolder> {
+    private class DeleteAdapter extends RecyclerView.Adapter<DeleteAdapter.ViewHolder> {
         @NonNull
         @Override
-        public DeleteHistoryHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new DeleteHistoryHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history_delete, parent, false));
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history_delete, parent, false));
         }
 
         @Override
-        public void onBindViewHolder(@NonNull DeleteHistoryHolder holder, int position) {
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Object item = historyList.get(position);
             int id = getIdFromItem(item);
 
@@ -178,11 +178,11 @@ public class HistoryDeleteActivity extends AppCompatActivity {
             tv.setText(sdf.format(cal.getTime()));
         }
 
-        private class DeleteHistoryHolder extends RecyclerView.ViewHolder {
+        private class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvName, tvTime;
             CheckBox cbItem;
 
-            private DeleteHistoryHolder(View v) {
+            private ViewHolder(View v) {
                 super(v);
                 tvName = v.findViewById(R.id.tv_name);
                 tvTime = v.findViewById(R.id.tv_time);

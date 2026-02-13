@@ -43,7 +43,7 @@ public class LineSelectorAdapter extends RecyclerView.Adapter<LineSelectorAdapte
         return items.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    protected static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvCode, tvName;
         View codeBadge;
 

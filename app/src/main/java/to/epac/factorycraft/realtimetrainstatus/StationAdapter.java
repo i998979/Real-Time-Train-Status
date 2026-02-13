@@ -56,7 +56,7 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
         return stationNames.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    protected static class ViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
 
         ViewHolder(View itemView) {
