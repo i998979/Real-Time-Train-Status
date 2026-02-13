@@ -2,21 +2,29 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+
 import java.util.List;
 
 @Dao
 public interface SearchHistoryDao {
-    @Insert
-    void insert(SearchHistory history);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertRoutes(SearchHistory history);
 
-    @Query("SELECT * FROM search_history ORDER BY timestamp DESC LIMIT 10")
-    List<SearchHistory> getRecentHistories();
+    @Query("SELECT * FROM search_history ORDER BY timestamp DESC")
+    List<SearchHistory> getRecentRoutes();
 
-    @Query("DELETE FROM search_history WHERE id NOT IN (SELECT id FROM search_history ORDER BY timestamp DESC LIMIT 10)")
-    void deleteOldHistories();
+    @Query("DELETE FROM search_history WHERE routeId = :routeId")
+    void deleteRouteById(int routeId);
 
-    @Query("DELETE FROM search_history WHERE id = :id")
-    void deleteById(int id);
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertStation(StationHistory history);
+
+    @Query("SELECT * FROM station_history ORDER BY timestamp DESC")
+    List<StationHistory> getRecentStations();
+
+    @Query("DELETE FROM station_history WHERE stationId = :stationId")
+    int deleteStationById(int stationId);
 }
