@@ -26,7 +26,6 @@
             android:textSize="18sp">
 
             <requestFocus />
-
         </EditText>
 
         <ImageButton
