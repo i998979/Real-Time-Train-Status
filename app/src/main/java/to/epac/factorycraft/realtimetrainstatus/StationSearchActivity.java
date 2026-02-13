@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,13 +24,19 @@ public class StationSearchActivity extends AppCompatActivity {
 
     private HistoryManager historyManager;
 
-    private List<Integer> allStationIds = new ArrayList<>();
-    private List<String> allStationNames = new ArrayList<>();
-    private List<String> allStationEngNames = new ArrayList<>();
+    private final List<Integer> allStationIds = new ArrayList<>();
+    private final List<String> allStationNames = new ArrayList<>();
+    private final List<String> allStationEngNames = new ArrayList<>();
 
     private List<Integer> filteredIds = new ArrayList<>();
     private List<String> filteredNames = new ArrayList<>();
 
+    private EditText etSearch;
+    private ImageButton btnClose;
+    private View layoutHistoryHeader;
+
+    private TextView tvDelete;
+    private RecyclerView rv;
     private StationAdapter adapter;
 
     @Override
@@ -41,12 +48,41 @@ public class StationSearchActivity extends AppCompatActivity {
 
         loadStationsFromJson();
 
-        RecyclerView rv = findViewById(R.id.rv_station_results);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        etSearch = findViewById(R.id.et_station_search);
+        etSearch.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
-        ImageButton btnClose = findViewById(R.id.btn_close_activity);
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim();
+
+                if (query.isEmpty()) {
+                    layoutHistoryHeader.setVisibility(View.VISIBLE);
+                    showHistoryIfEmpty(query);
+                } else {
+                    layoutHistoryHeader.setVisibility(View.GONE);
+                    filterStations(query);
+                }
+            }
+
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        btnClose = findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> finish());
 
+        layoutHistoryHeader = findViewById(R.id.layout_history_header);
+
+        tvDelete = findViewById(R.id.tv_delete);
+        tvDelete.setOnClickListener(v -> {
+            Intent intent = new Intent(this, HistoryDeleteActivity.class);
+            intent.putExtra(HistoryDeleteActivity.EXTRA_HISTORY_TYPE, HistoryDeleteActivity.TYPE_STATION);
+            startActivity(intent);
+        });
+
+        rv = findViewById(R.id.rv_station_results);
+        rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new StationAdapter((stationId, stationName) -> {
             historyManager.saveStationSearch(stationId, stationName);
 
@@ -59,29 +95,16 @@ public class StationSearchActivity extends AppCompatActivity {
         rv.setAdapter(adapter);
 
         showHistoryIfEmpty("");
-
-        EditText etSearch = findViewById(R.id.et_station_search);
-        View layoutHistoryHeader = findViewById(R.id.layout_history_header);
-        etSearch.addTextChangedListener(new TextWatcher() {
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String query = s.toString().trim();
-
-                if (query.isEmpty()) {
-                    layoutHistoryHeader.setVisibility(android.view.View.VISIBLE);
-                    showHistoryIfEmpty(query);
-                } else {
-                    layoutHistoryHeader.setVisibility(android.view.View.GONE);
-                    filterStations(query);
-                }
-            }
-
-            public void afterTextChanged(Editable s) {
-            }
-        });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (etSearch.getText().toString().trim().isEmpty()) {
+            showHistoryIfEmpty("");
+        }
+    }
+
 
     private void showHistoryIfEmpty(String query) {
         if (query.isEmpty()) {
@@ -136,7 +159,6 @@ public class StationSearchActivity extends AppCompatActivity {
                 allStationEngNames.add(stationObj.getString("nameEN"));
             }
 
-            // 初始化篩選列表為全部
             filteredIds.addAll(allStationIds);
             filteredNames.addAll(allStationNames);
 

@@ -26,7 +26,7 @@
             android:textSize="18sp" />
 
         <ImageButton
-            android:id="@+id/btn_close_activity"
+            android:id="@+id/btn_close"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_gravity="end|center_vertical"
@@ -55,7 +55,7 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/tv_delete_history"
+            android:id="@+id/tv_delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
