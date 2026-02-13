@@ -57,7 +57,7 @@ public class RecentViewedFragment extends Fragment {
             routeListFragment.setArguments(args);
 
             if (isAdded()) {
-                getParentFragmentManager().beginTransaction()
+                requireActivity().getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
                                 android.R.anim.slide_in_left, android.R.anim.slide_out_right)
                         .replace(R.id.main_fragment_container, routeListFragment)
