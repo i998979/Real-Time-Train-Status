@@ -22,7 +22,7 @@ public class StationInfoFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_operation_info, container, false);
+        View view = inflater.inflate(R.layout.fragment_station_info, container, false);
 
         ViewPager2 pagerContent = view.findViewById(R.id.pager_content);
         TabLayout tabLayout = view.findViewById(R.id.tab_layout);

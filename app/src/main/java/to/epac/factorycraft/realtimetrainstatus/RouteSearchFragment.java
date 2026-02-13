@@ -34,7 +34,7 @@ public class RouteSearchFragment extends Fragment {
         viewPager.setAdapter(new RoutePagerAdapter(this));
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            View tabView = LayoutInflater.from(getContext()).inflate(R.layout.custom_tab_search, null);
+            View tabView = LayoutInflater.from(getContext()).inflate(R.layout.tab_search, null);
 
             ((TextView) tabView.findViewById(R.id.tab_text)).setText(subTitles.get(position));
             tabView.findViewById(R.id.tab_icon).setVisibility(position == 1 ? View.VISIBLE : View.GONE);

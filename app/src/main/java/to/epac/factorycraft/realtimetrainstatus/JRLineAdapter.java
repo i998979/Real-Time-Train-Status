@@ -391,7 +391,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private void showTrainsDetailDialog(List<Trip> tripsAtLocation) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
-        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_bottom_sheet_container, null);
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_train_detail, null);
         RecyclerView trainsList = dialogView.findViewById(R.id.rv_trains_list);
 
         trainsList.setLayoutManager(new LinearLayoutManager(context));
