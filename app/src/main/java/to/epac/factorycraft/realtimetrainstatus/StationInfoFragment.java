@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StationInfoFragment extends Fragment {
-    private List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車走行位置", "車站商店");
+    private final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車走行位置", "車站商店");
 
     @Nullable
     @Override
@@ -33,6 +33,19 @@ public class StationInfoFragment extends Fragment {
         new TabLayoutMediator(tabLayout, pagerContent, (tab, position) -> {
             tab.setText(subTitles.get(position));
         }).attach();
+
+        pagerContent.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                    Fragment fragment = getChildFragmentManager().findFragmentByTag("f" + pagerContent.getCurrentItem());
+
+                    if (fragment instanceof WebViewFragment) {
+                        ((WebViewFragment) fragment).loadContent();
+                    }
+                }
+            }
+        });
 
         pagerContent.post(() -> {
             pagerContent.setCurrentItem(2, false);
