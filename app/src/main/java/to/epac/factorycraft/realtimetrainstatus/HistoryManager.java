@@ -49,6 +49,18 @@ public class HistoryManager {
         });
     }
 
+    public void deleteRoutes(List<Integer> ids, OnTaskCompleteListener listener) {
+        executor.execute(() -> {
+            for (Integer id : ids) {
+                db.searchHistoryDao().deleteRouteById(id);
+            }
+            handler.post(() -> {
+                listener.onComplete();
+            });
+        });
+    }
+
+
     public void saveStationSearch(int stationId, String stationName) {
         executor.execute(() -> {
             SearchHistoryDao dao = db.searchHistoryDao();
@@ -66,11 +78,27 @@ public class HistoryManager {
         });
     }
 
+    public void deleteStations(List<Integer> ids, OnTaskCompleteListener listener) {
+        executor.execute(() -> {
+            for (Integer id : ids) {
+                db.searchHistoryDao().deleteStationById(id);
+            }
+            handler.post(() -> {
+                listener.onComplete();
+            });
+        });
+    }
+
+
     public interface OnHistoryLoadedListener {
         void onLoaded(List<SearchHistory> history);
     }
 
     public interface OnStationHistoryLoadedListener {
         void onLoaded(List<StationHistory> history);
+    }
+
+    public interface OnTaskCompleteListener {
+        void onComplete();
     }
 }

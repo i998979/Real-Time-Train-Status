@@ -49,7 +49,7 @@
         </LinearLayout>
 
         <ImageButton
-            android:id="@+id/btn_close_activity"
+            android:id="@+id/btn_close"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_gravity="end|center_vertical"

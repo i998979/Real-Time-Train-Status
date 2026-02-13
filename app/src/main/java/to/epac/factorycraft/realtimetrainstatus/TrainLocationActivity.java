@@ -59,7 +59,7 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         TrainLocationActivity.context = this;
 
-        ImageButton btnClose = findViewById(R.id.btn_close_activity);
+        ImageButton btnClose = findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> finish());
 
         lineCode = getIntent().getStringExtra("LINE_CODE");
