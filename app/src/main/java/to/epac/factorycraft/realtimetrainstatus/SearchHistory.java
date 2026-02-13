@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "search_history")
 public class SearchHistory {
     @PrimaryKey(autoGenerate = true)
-    public int id;
+    public int routeId;
 
     public String originId;
     public String destinationId;
