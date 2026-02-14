@@ -13,8 +13,8 @@ public class OperationInfoPagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         switch (position) {
-            case 0: // Recently Viewed Route
-                return new RecentViewedFragment();
+            case 0: // Frequently Viewed Route
+                return new Fragment();
             case 1: // Traffic News
                 return new Fragment();
             case 2: // Realtime Train Location
