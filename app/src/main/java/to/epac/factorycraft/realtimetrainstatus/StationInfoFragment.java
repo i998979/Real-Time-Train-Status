@@ -2,6 +2,7 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,8 +27,11 @@ public class StationInfoFragment extends Fragment {
 
     private View searchBar;
     private TextView tvSearchStation;
+    private View btnRefresh;
     private TabLayout tabLayout;
     private ViewPager2 pagerContent;
+
+    private static final SparseArray<Fragment> activeFragments = new SparseArray<>();
 
     private final ActivityResultLauncher<Intent> searchLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -50,6 +54,20 @@ public class StationInfoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         searchBar = view.findViewById(R.id.search_bar);
         tvSearchStation = view.findViewById(R.id.tv_search_station);
+        btnRefresh = view.findViewById(R.id.btn_refresh);
+        btnRefresh.setOnClickListener(v -> {
+            int currentTab = pagerContent.getCurrentItem();
+
+            if (pagerContent.getAdapter() instanceof StationInfoPagerAdapter) {
+                StationInfoPagerAdapter adapter = (StationInfoPagerAdapter) pagerContent.getAdapter();
+
+                Fragment currentFragment = adapter.getFragmentAt(currentTab);
+
+                if (currentFragment instanceof WebViewFragment) {
+                    ((WebViewFragment) currentFragment).refresh();
+                }
+            }
+        });
         tabLayout = view.findViewById(R.id.tab_layout);
         pagerContent = view.findViewById(R.id.pager_content);
         pagerContent.setUserInputEnabled(false);
@@ -90,18 +108,29 @@ public class StationInfoFragment extends Fragment {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
+            Fragment fragment;
             switch (position) {
                 case 0:
-                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/layouts/" + code + ".pdf");
+                    fragment = WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/layouts/" + code + ".pdf");
+                    break;
                 case 1:
-                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/maps/" + code + ".pdf");
+                    fragment = WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/maps/" + code + ".pdf");
+                    break;
                 case 2:
-                    return new LineSelectorFragment();
+                    fragment = new LineSelectorFragment();
+                    break;
                 case 3:
-                    return WebViewFragment.newInstance("https://www.mtr.com.hk/ch/customer/shops/shop_search.php?query_type=search&start=" + id);
+                    fragment = WebViewFragment.newInstance("https://www.mtr.com.hk/ch/customer/shops/shop_search.php?query_type=search&start=" + id);
+                    break;
                 default:
-                    return new Fragment();
+                    fragment = new Fragment();
             }
+            activeFragments.put(position, fragment);
+            return fragment;
+        }
+
+        public Fragment getFragmentAt(int position) {
+            return activeFragments.get(position);
         }
 
         @Override

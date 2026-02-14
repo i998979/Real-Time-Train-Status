@@ -77,6 +77,12 @@ public class WebViewFragment extends Fragment {
         }
     }
 
+    public void refresh() {
+        if (webView != null) {
+            webView.reload();
+        }
+    }
+
     @Override
     public void onDestroyView() {
         if (webViewLayout != null && webView != null) {
