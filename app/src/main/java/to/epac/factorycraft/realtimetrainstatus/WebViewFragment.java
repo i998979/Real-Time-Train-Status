@@ -1,5 +1,6 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +18,7 @@ import androidx.fragment.app.Fragment;
 public class WebViewFragment extends Fragment {
     private FrameLayout webViewLayout;
     private WebView webView;
+    private ProgressBar progressBar;
 
     public static WebViewFragment newInstance(String url) {
         WebViewFragment fragment = new WebViewFragment();
@@ -32,6 +35,7 @@ public class WebViewFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         webViewLayout = new FrameLayout(requireContext());
         webViewLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        webViewLayout.setBackgroundColor(Color.WHITE);
 
         return webViewLayout;
     }
@@ -48,8 +52,29 @@ public class WebViewFragment extends Fragment {
         if (!isAdded() || getContext() == null) return;
 
         if (webView == null) {
+            progressBar = new ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(120, 120);
+            lp.gravity = android.view.Gravity.CENTER;
+            progressBar.setLayoutParams(lp);
+
             webView = new WebView(requireContext());
             webView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            webView.setBackgroundColor(Color.WHITE);
+            webView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                    super.onPageStarted(view, url, favicon);
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    super.onPageFinished(view, url);
+                    progressBar.setVisibility(View.GONE);
+                }
+            });
+            webViewLayout.addView(webView);
+            webViewLayout.addView(progressBar);
 
             WebSettings s = webView.getSettings();
             s.setJavaScriptEnabled(true);
@@ -59,9 +84,6 @@ public class WebViewFragment extends Fragment {
             s.setBuiltInZoomControls(true);
             s.setDisplayZoomControls(false);
             s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-
-            webView.setWebViewClient(new WebViewClient());
-            webViewLayout.addView(webView);
         }
 
         if (getArguments() != null) {
