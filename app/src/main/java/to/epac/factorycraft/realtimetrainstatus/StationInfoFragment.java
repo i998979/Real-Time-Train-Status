@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StationInfoFragment extends Fragment {
-    private static final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車位置", "車站商店");
+    private static final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車走行位置", "車站商店");
 
     private View searchBar;
     private TextView tvSearchStation;
