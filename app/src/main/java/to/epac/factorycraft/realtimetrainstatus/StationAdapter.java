@@ -13,21 +13,24 @@ import java.util.List;
 
 public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHolder> {
 
-    private List<Integer> stationIds = new ArrayList<>();
-    private List<String> stationNames = new ArrayList<>();
-    private OnStationSelectedListener listener;
+    private List<Integer> ids = new ArrayList<>();
+    private List<String> names = new ArrayList<>();
+    private List<String> codes = new ArrayList<>();
 
-    public interface OnStationSelectedListener {
-        void onStationSelected(int stationId, String stationName);
+    private final OnStationClickListener listener;
+
+    public interface OnStationClickListener {
+        void onStationClick(int id, String name, String code);
     }
 
-    public StationAdapter(OnStationSelectedListener listener) {
+    public StationAdapter(OnStationClickListener listener) {
         this.listener = listener;
     }
 
-    public void updateData(List<Integer> ids, List<String> names) {
-        this.stationIds = new ArrayList<>(ids);
-        this.stationNames = new ArrayList<>(names);
+    public void updateData(List<Integer> newIds, List<String> newNames, List<String> newCodes) {
+        this.ids = newIds;
+        this.names = newNames;
+        this.codes = newCodes;
 
         notifyDataSetChanged();
     }
@@ -41,27 +44,28 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String name = stationNames.get(position);
-        int id = stationIds.get(position);
+        int id = ids.get(position);
+        String name = names.get(position);
+        String code = codes.get(position);
 
-        holder.textView.setText(name);
-
+        holder.tvStation.setText(name);
         holder.itemView.setOnClickListener(v -> {
-            listener.onStationSelected(id, name);
+            listener.onStationClick(id, name, code);
         });
     }
 
     @Override
     public int getItemCount() {
-        return stationNames.size();
+        return names.size();
     }
 
-    protected static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView textView;
 
-        ViewHolder(View itemView) {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvStation;
+
+        private ViewHolder(View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.tv_station_name);
+            tvStation = itemView.findViewById(R.id.tv_station);
         }
     }
 }
