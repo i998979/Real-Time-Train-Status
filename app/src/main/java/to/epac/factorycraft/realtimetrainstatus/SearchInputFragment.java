@@ -42,8 +42,7 @@ public class SearchInputFragment extends Fragment {
     private boolean isSelectingOrigin = true;
 
     private final ActivityResultLauncher<Intent> searchLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
+            new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     int id = result.getData().getIntExtra("selected_station_id", 1);
                     String name = result.getData().getStringExtra("selected_station_name");

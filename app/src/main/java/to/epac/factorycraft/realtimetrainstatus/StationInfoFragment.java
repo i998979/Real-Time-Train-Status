@@ -1,10 +1,14 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -18,61 +22,83 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StationInfoFragment extends Fragment {
-    private static final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車走行位置", "車站商店");
+    private static final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車位置", "車站商店");
+
+    private View searchBar;
+    private TextView tvSearchStation;
+    private TabLayout tabLayout;
+    private ViewPager2 pagerContent;
+
+    private final ActivityResultLauncher<Intent> searchLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    String name = result.getData().getStringExtra("selected_station_name");
+                    String code = result.getData().getStringExtra("selected_station_code");
+                    int id = result.getData().getIntExtra("selected_station_id", 1);
+
+                    updateStationInfo(name, code, id);
+                }
+            });
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_station_info, container, false);
-
-        ViewPager2 pagerContent = view.findViewById(R.id.pager_content);
-        TabLayout tabLayout = view.findViewById(R.id.tab_layout);
-
-        pagerContent.setAdapter(new StationInfoPagerAdapter(this));
-        pagerContent.setUserInputEnabled(false);
-
-        new TabLayoutMediator(tabLayout, pagerContent, (tab, position) -> {
-            tab.setText(subTitles.get(position));
-        }).attach();
-
-        pagerContent.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                if (state == ViewPager2.SCROLL_STATE_IDLE) {
-                    Fragment fragment = getChildFragmentManager().findFragmentByTag("f" + pagerContent.getCurrentItem());
-
-                    if (fragment instanceof WebViewFragment) {
-                        ((WebViewFragment) fragment).loadContent();
-                    }
-                }
-            }
-        });
-
-        pagerContent.post(() -> {
-            pagerContent.setCurrentItem(2, false);
-        });
-
-        return view;
+        return inflater.inflate(R.layout.fragment_station_info, container, false);
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        searchBar = view.findViewById(R.id.search_bar);
+        tvSearchStation = view.findViewById(R.id.tv_search_station);
+        tabLayout = view.findViewById(R.id.tab_layout);
+        pagerContent = view.findViewById(R.id.pager_content);
+        pagerContent.setUserInputEnabled(false);
 
-    private static class StationInfoPagerAdapter extends FragmentStateAdapter {
-        private StationInfoPagerAdapter(@NonNull Fragment fragment) {
+        View.OnClickListener searchClickListener = v -> {
+            searchLauncher.launch(new Intent(requireContext(), StationSearchActivity.class));
+        };
+        searchBar.setOnClickListener(searchClickListener);
+        tvSearchStation.setOnClickListener(searchClickListener);
+
+        Bundle args = getArguments();
+        String initName = args != null ? args.getString("station_name", "中環") : "中環";
+        String initCode = args != null ? args.getString("station_code", "CEN") : "CEN";
+        int initId = args != null ? args.getInt("station_id", 1) : 1;
+
+        updateStationInfo(initName, initCode, initId);
+    }
+
+    private void updateStationInfo(String name, String code, int id) {
+        tvSearchStation.setText(name);
+
+        pagerContent.setAdapter(new StationInfoPagerAdapter(this, code, id));
+        new TabLayoutMediator(tabLayout, pagerContent, (tab, pos) -> {
+            tab.setText(subTitles.get(pos));
+        }).attach();
+    }
+
+    public static class StationInfoPagerAdapter extends FragmentStateAdapter {
+        private final String code;
+        private final int id;
+
+        private StationInfoPagerAdapter(Fragment fragment, String code, int id) {
             super(fragment);
+            this.code = code.toLowerCase();
+            this.id = id;
         }
 
         @NonNull
         @Override
         public Fragment createFragment(int position) {
             switch (position) {
-                case 0: // Location Map
-                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/layouts/adm.pdf");
-                case 1: // Street Map
-                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/maps/hok.pdf");
-                case 2: // Realtime Train Location
+                case 0:
+                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/layouts/" + code + ".pdf");
+                case 1:
+                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/maps/" + code + ".pdf");
+                case 2:
                     return new LineSelectorFragment();
-                case 3: // Station Stores
-                    return WebViewFragment.newInstance("https://www.mtr.com.hk/ch/customer/shops/shop_search.php?query_type=search&start=39");
+                case 3:
+                    return WebViewFragment.newInstance("https://www.mtr.com.hk/ch/customer/shops/shop_search.php?query_type=search&start=" + id);
                 default:
                     return new Fragment();
             }
@@ -81,6 +107,16 @@ public class StationInfoFragment extends Fragment {
         @Override
         public int getItemCount() {
             return subTitles.size();
+        }
+
+        @Override
+        public long getItemId(int pos) {
+            return (code + pos).hashCode();
+        }
+
+        @Override
+        public boolean containsItem(long id) {
+            return true;
         }
     }
 }

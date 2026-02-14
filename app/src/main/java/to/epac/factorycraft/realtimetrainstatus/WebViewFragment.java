@@ -14,43 +14,59 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class WebViewFragment extends Fragment {
-    private static final String ARG_URL = "url";
-
-    private FrameLayout rootContainer;
+    private FrameLayout webViewLayout;
     private WebView webView;
 
     public static WebViewFragment newInstance(String url) {
         WebViewFragment fragment = new WebViewFragment();
 
         Bundle args = new Bundle();
-        args.putString(ARG_URL, url);
+        args.putString("url", url);
         fragment.setArguments(args);
+
         return fragment;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        rootContainer = new FrameLayout(requireContext());
-        rootContainer.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        webViewLayout = new FrameLayout(requireContext());
+        webViewLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        return rootContainer;
+        return webViewLayout;
     }
 
-    public void loadContent() {
-        rootContainer.post(() -> {
-            if (webView == null) {
-                webView = new WebView(requireContext().getApplicationContext());
-                webView.setLayoutParams(new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        view.postDelayed(() -> {
+            initAndLoad();
+        }, 250);
+    }
 
-                setupWebViewSettings();
-                webView.setWebViewClient(new WebViewClient());
-                rootContainer.addView(webView);
-            }
+    private void initAndLoad() {
+        if (!isAdded() || getContext() == null) return;
 
-            String url = getArguments().getString(ARG_URL);
+        if (webView == null) {
+            webView = new WebView(requireContext());
+            webView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+            WebSettings s = webView.getSettings();
+            s.setJavaScriptEnabled(true);
+            s.setDomStorageEnabled(true);
+            s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+            s.setSupportZoom(true);
+            s.setBuiltInZoomControls(true);
+            s.setDisplayZoomControls(false);
+            s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+
+            webView.setWebViewClient(new WebViewClient());
+            webViewLayout.addView(webView);
+        }
+
+        if (getArguments() != null) {
+            String url = getArguments().getString("url");
+
             if (url != null) {
                 if (url.endsWith(".pdf")) {
                     webView.loadUrl("https://docs.google.com/viewer?embedded=true&url=" + url);
@@ -58,17 +74,17 @@ public class WebViewFragment extends Fragment {
                     webView.loadUrl(url);
                 }
             }
-        });
+        }
     }
 
-    private void setupWebViewSettings() {
-        WebSettings settings = webView.getSettings();
-
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setSupportZoom(true);
-        settings.setBuiltInZoomControls(true);
-        settings.setDisplayZoomControls(false);
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+    @Override
+    public void onDestroyView() {
+        if (webViewLayout != null && webView != null) {
+            webViewLayout.removeView(webView);
+            webView.stopLoading();
+            webView.destroy();
+            webView = null;
+        }
+        super.onDestroyView();
     }
 }
