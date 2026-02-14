@@ -23,13 +23,16 @@ import java.util.List;
 public class RouteSearchFragment extends Fragment {
     private final List<String> subTitles = Arrays.asList("檢索履歷", "檢索", "常用檢索");
 
+    TabLayout tabLayout;
+    ViewPager2 viewPager;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_route_search, container, false);
 
-        TabLayout tabLayout = view.findViewById(R.id.tab_layout);
-        ViewPager2 viewPager = view.findViewById(R.id.view_pager);
+        tabLayout = view.findViewById(R.id.tab_layout);
+        viewPager = view.findViewById(R.id.view_pager);
 
         viewPager.setAdapter(new RoutePagerAdapter(this));
 
@@ -102,4 +105,5 @@ public class RouteSearchFragment extends Fragment {
         icon.setColorFilter(color);
         text.setTextColor(color);
     }
+
 }

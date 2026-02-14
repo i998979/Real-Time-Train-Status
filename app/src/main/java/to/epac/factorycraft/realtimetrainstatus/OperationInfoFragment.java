@@ -28,7 +28,6 @@ public class OperationInfoFragment extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.tab_layout);
 
         pagerContent.setAdapter(new OperationInfoPagerAdapter(this));
-        pagerContent.setUserInputEnabled(false);
 
         new TabLayoutMediator(tabLayout, pagerContent, (tab, position) -> {
             tab.setText(subTitles.get(position));
