@@ -5,27 +5,11 @@
     android:background="?attr/colorSurface"
     android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="列車走行位置"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <Switch
-            android:id="@+id/open_data"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:text="" />
-    </RelativeLayout>
+    <Switch
+        android:id="@+id/open_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_line_selector"

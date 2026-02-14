@@ -87,8 +87,8 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_go"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_marginTop="50dp"
         android:background="@drawable/bg_circle_go"
         android:text="GO!"

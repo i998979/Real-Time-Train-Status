@@ -327,7 +327,7 @@ public class TrainLocationActivity extends AppCompatActivity {
                         if (pending.route.equals(below.route)) {
                             if (Math.abs(pendingIdx - belowIdx) <= 1) {
                                 // TODO: Consider travelling time
-                                if (pending.ttnt > 0 && below.ttnt > 0 && pending.ttnt >= below.ttnt) {
+                                if (pending.ttnt > 0 && below.ttnt > 0 && pending.ttnt > below.ttnt) {
                                     pending = below;
                                     pendingIdx = stationIdToIndexMap.get(pending.currentStationCode);
                                 }
@@ -359,7 +359,7 @@ public class TrainLocationActivity extends AppCompatActivity {
                         if (pending.route.equals(below.route)) {
                             if (Math.abs(pendingIdx - belowIdx) <= 1) {
                                 // TODO: Consider travelling time
-                                if (pending.ttnt > 0 && below.ttnt > 0 && pending.ttnt >= below.ttnt) {
+                                if (pending.ttnt > 0 && below.ttnt > 0 && pending.ttnt > below.ttnt) {
                                     pending = below;
                                     pendingIdx = stationIdToIndexMap.get(pending.currentStationCode);
                                 }
