@@ -848,7 +848,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         StationViewHolder(View v) {
             super(v);
             railLine = v.findViewById(R.id.rail_line);
-            tvStationName = v.findViewById(R.id.tv_station_name);
+            tvStationName = v.findViewById(R.id.tv_station);
             layoutUp = v.findViewById(R.id.layout_train_up);
             layoutDn = v.findViewById(R.id.layout_train_dn);
         }
