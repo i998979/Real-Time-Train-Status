@@ -48,8 +48,6 @@ public class RecentViewedFragment extends Fragment {
         rvHistory = view.findViewById(R.id.rv_history);
         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new RecentViewedAdapter(historyList, item -> {
-            HistoryManager.getInstance(requireContext()).saveRouteSearch(item.originId, item.destinationId, item.originName, item.destinationName);
-
             RouteListFragment routeListFragment = new RouteListFragment();
             Bundle args = new Bundle();
             args.putString("o", item.originId);
