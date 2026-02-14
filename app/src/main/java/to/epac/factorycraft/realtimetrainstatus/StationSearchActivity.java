@@ -27,12 +27,15 @@ public class StationSearchActivity extends AppCompatActivity {
     private final List<Integer> allStationIds = new ArrayList<>();
     private final List<String> allStationNames = new ArrayList<>();
     private final List<String> allStationEngNames = new ArrayList<>();
+    private final List<String> allStationCodes = new ArrayList<>();
 
     private List<Integer> filteredIds = new ArrayList<>();
     private List<String> filteredNames = new ArrayList<>();
+    private List<String> filteredCodes = new ArrayList<>();
 
     private EditText etSearch;
     private ImageButton btnClose;
+
     private View layoutHistoryHeader;
 
     private TextView tvDelete;
@@ -58,7 +61,7 @@ public class StationSearchActivity extends AppCompatActivity {
 
                 if (query.isEmpty()) {
                     layoutHistoryHeader.setVisibility(View.VISIBLE);
-                    showHistoryIfEmpty(query);
+                    showHistory();
                 } else {
                     layoutHistoryHeader.setVisibility(View.GONE);
                     filterStations(query);
@@ -83,60 +86,82 @@ public class StationSearchActivity extends AppCompatActivity {
 
         rv = findViewById(R.id.rv_station_results);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new StationAdapter((stationId, stationName) -> {
+        adapter = new StationAdapter((stationId, stationName, stationCode) -> {
             historyManager.saveStationSearch(stationId, stationName);
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra("selected_station_id", stationId);
             resultIntent.putExtra("selected_station_name", stationName);
+            resultIntent.putExtra("selected_station_code", stationCode);
             setResult(Activity.RESULT_OK, resultIntent);
+
             finish();
         });
         rv.setAdapter(adapter);
 
-        showHistoryIfEmpty("");
+        showHistory();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         if (etSearch.getText().toString().trim().isEmpty()) {
-            showHistoryIfEmpty("");
+            showHistory();
         }
     }
 
 
-    private void showHistoryIfEmpty(String query) {
-        if (query.isEmpty()) {
-            historyManager.loadStationHistory(history -> {
-                List<Integer> historyIds = new ArrayList<>();
-                List<String> historyNames = new ArrayList<>();
+    private void showHistory() {
+        historyManager.loadStationHistory(history -> {
+            List<Integer> historyIds = new ArrayList<>();
+            List<String> historyNames = new ArrayList<>();
+            List<String> historyCodes = new ArrayList<>();
 
-                for (StationHistory h : history) {
-                    historyIds.add(h.stationId);
-                    historyNames.add(h.stationName);
+            for (StationHistory h : history) {
+                historyIds.add(h.stationId);
+                historyNames.add(h.stationName);
+
+                String code = "CEN";
+                for (int i = 0; i < allStationIds.size(); i++) {
+                    if (allStationIds.get(i).equals(h.stationId)) {
+                        code = allStationCodes.get(i);
+                        break;
+                    }
                 }
+                historyCodes.add(code);
+            }
 
-                adapter.updateData(historyIds, historyNames);
-            });
-        }
+            adapter.updateData(historyIds, historyNames, historyCodes);
+        });
     }
 
     private void filterStations(String query) {
         filteredIds.clear();
         filteredNames.clear();
+        filteredCodes.clear();
+
         String lowerQuery = query.toLowerCase().trim();
 
+        if (lowerQuery.isEmpty()) {
+            showHistory();
+            return;
+        }
+
         for (int i = 0; i < allStationNames.size(); i++) {
-            if (allStationNames.get(i).contains(query) ||
-                    allStationEngNames.get(i).toLowerCase().contains(lowerQuery)) {
+            String name = allStationNames.get(i).toLowerCase();
+            String enName = allStationEngNames.get(i).toLowerCase();
+            String code = allStationCodes.get(i).toLowerCase();
+
+            if (name.contains(lowerQuery) || enName.contains(lowerQuery) || code.contains(lowerQuery)) {
 
                 filteredIds.add(allStationIds.get(i));
                 filteredNames.add(allStationNames.get(i));
+                filteredCodes.add(allStationCodes.get(i));
             }
         }
 
-        adapter.updateData(filteredIds, filteredNames);
+        adapter.updateData(filteredIds, filteredNames, filteredCodes);
     }
 
 
@@ -150,18 +175,15 @@ public class StationSearchActivity extends AppCompatActivity {
             allStationIds.clear();
             allStationNames.clear();
             allStationEngNames.clear();
+            allStationCodes.clear();
 
             for (int i = 0; i < stationsArray.length(); i++) {
                 JSONObject stationObj = stationsArray.getJSONObject(i);
-
                 allStationIds.add(stationObj.getInt("ID"));
                 allStationNames.add(stationObj.getString("name"));
                 allStationEngNames.add(stationObj.getString("nameEN"));
+                allStationCodes.add(stationObj.getString("alias"));
             }
-
-            filteredIds.addAll(allStationIds);
-            filteredNames.addAll(allStationNames);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
