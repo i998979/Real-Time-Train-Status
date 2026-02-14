@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
@@ -21,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RouteSearchFragment extends Fragment {
-    private final List<String> subTitles = Arrays.asList("檢索履歷", "檢索", "常用檢索");
+    private static final List<String> subTitles = Arrays.asList("檢索履歷", "檢索", "常用檢索");
 
     TabLayout tabLayout;
     ViewPager2 viewPager;
@@ -106,4 +107,30 @@ public class RouteSearchFragment extends Fragment {
         text.setTextColor(color);
     }
 
+
+    private static class RoutePagerAdapter extends FragmentStateAdapter {
+        private RoutePagerAdapter(@NonNull Fragment fragment) {
+            super(fragment);
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            switch (position) {
+                case 0: // Recent Viewed
+                    return new RecentViewedFragment();
+                case 1: // Route Search
+                    return new SearchInputFragment();
+                case 2: // Saved Route
+                    return new Fragment();
+                default:
+                    return new Fragment();
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return subTitles.size();
+        }
+    }
 }

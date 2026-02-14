@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
@@ -17,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StationInfoFragment extends Fragment {
-    private final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車走行位置", "車站商店");
+    private static final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車走行位置", "車站商店");
 
     @Nullable
     @Override
@@ -52,5 +53,34 @@ public class StationInfoFragment extends Fragment {
         });
 
         return view;
+    }
+
+
+    private static class StationInfoPagerAdapter extends FragmentStateAdapter {
+        private StationInfoPagerAdapter(@NonNull Fragment fragment) {
+            super(fragment);
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            switch (position) {
+                case 0: // Location Map
+                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/layouts/adm.pdf");
+                case 1: // Street Map
+                    return WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/maps/hok.pdf");
+                case 2: // Realtime Train Location
+                    return new LineSelectorFragment();
+                case 3: // Station Stores
+                    return WebViewFragment.newInstance("https://www.mtr.com.hk/ch/customer/shops/shop_search.php?query_type=search&start=39");
+                default:
+                    return new Fragment();
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return subTitles.size();
+        }
     }
 }
