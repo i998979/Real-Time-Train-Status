@@ -78,11 +78,16 @@ public class RouteSearchFragment extends Fragment {
         for (int i = 0; i < 3; i++) {
             dots[i] = new View(getContext());
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(20, 20);
-            params.setMargins(8, 0, 8, 0);
+            params.setMargins(12, 0, 12, 0);
             dots[i].setLayoutParams(params);
             dots[i].setBackgroundResource(R.drawable.tab_indicator_dot);
 
             dots[i].setAlpha(i == defaultPosition ? 1.0f : 0.3f);
+
+            final int position = i;
+            dots[i].setOnClickListener(v -> {
+                viewPager.setCurrentItem(position, true);
+            });
 
             layoutDots.addView(dots[i]);
         }

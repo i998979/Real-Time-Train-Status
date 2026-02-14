@@ -10,37 +10,28 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="#365260"
-
-        app:tabPaddingStart="0dp"
-        app:tabPaddingEnd="0dp"
         android:minHeight="0dp"
-
-        app:tabIndicatorHeight="0dp"
+        app:tabGravity="fill"
         app:tabIndicator="@null"
-
-        app:tabSelectedTextColor="#D4D4D4"
-        app:tabTextColor="#96ADBB"
-        app:tabRippleColor="@android:color/transparent"
+        app:tabIndicatorHeight="0dp"
         app:tabMode="fixed"
-        app:tabGravity="fill" />
+        app:tabPaddingEnd="0dp"
+        app:tabPaddingStart="0dp"
+        app:tabRippleColor="@android:color/transparent"
+        app:tabSelectedTextColor="#D4D4D4"
+        app:tabTextColor="#96ADBB" />
 
-    <RelativeLayout
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/view_pager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <LinearLayout
-            android:id="@+id/layout_dots"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
-            android:orientation="horizontal" />
-    </RelativeLayout>
+    <LinearLayout
+        android:id="@+id/layout_dots"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:gravity="center"
+        android:orientation="horizontal" />
 
 </LinearLayout>
