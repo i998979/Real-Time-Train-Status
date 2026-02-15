@@ -118,6 +118,27 @@ public class HRConfig {
     }
 
 
+    public Map<String, Line> getLineAliasMap() {
+        return lineAliasMap;
+    }
+
+    public Map<Integer, Line> getLineMap() {
+        return lineMap;
+    }
+
+    public Map<String, Station> getAliasMap() {
+        return aliasMap;
+    }
+
+    public Map<Integer, Station> getIdMap() {
+        return idMap;
+    }
+
+    public List<Line> getAllLines() {
+        return new ArrayList<>(lineMap.values());
+    }
+
+
     public List<Line> getLinesByStationAlias(String alias) {
         Station sta = getStationByAlias(alias);
         return sta != null ? sta.lines : new ArrayList<>();

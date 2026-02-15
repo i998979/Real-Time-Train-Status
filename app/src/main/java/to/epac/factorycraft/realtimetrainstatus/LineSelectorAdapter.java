@@ -11,14 +11,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class LineSelectorAdapter extends RecyclerView.Adapter<LineSelectorAdapter.ViewHolder> {
-    private List<LineSelectorFragment.LineItem> items;
-    private OnItemClickListener listener;
+    private final List<HRConfig.Line> items;
+    private final OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(LineSelectorFragment.LineItem item);
+        void onItemClick(HRConfig.Line item);
     }
 
-    public LineSelectorAdapter(List<LineSelectorFragment.LineItem> items, OnItemClickListener listener) {
+    public LineSelectorAdapter(List<HRConfig.Line> items, OnItemClickListener listener) {
         this.items = items;
         this.listener = listener;
     }
@@ -31,11 +31,14 @@ public class LineSelectorAdapter extends RecyclerView.Adapter<LineSelectorAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder h, int p) {
-        LineSelectorFragment.LineItem item = items.get(p);
+        HRConfig.Line item = items.get(p);
+
         h.tvName.setText(item.name);
-        h.tvCode.setText(item.code);
-        h.codeBadge.setBackgroundColor(Color.parseColor(item.color));
-        h.itemView.setOnClickListener(v -> listener.onItemClick(item));
+        h.tvCode.setText(item.alias);
+        h.codeBadge.setBackgroundColor(Color.parseColor("#" + item.color));
+        h.itemView.setOnClickListener(v -> {
+            listener.onItemClick(item);
+        });
     }
 
     @Override
@@ -43,7 +46,7 @@ public class LineSelectorAdapter extends RecyclerView.Adapter<LineSelectorAdapte
         return items.size();
     }
 
-    protected static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvCode, tvName;
         View codeBadge;
 
