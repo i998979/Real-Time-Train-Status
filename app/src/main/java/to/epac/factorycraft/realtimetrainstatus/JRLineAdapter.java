@@ -523,7 +523,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             behavior.setSkipCollapsed(true);
 
-            MaterialButton btnClose = dialogView.findViewById(R.id.btn_return);
+            MaterialButton btnClose = dialogView.findViewById(R.id.btn_close);
             btnClose.setOnClickListener(v -> dialog.dismiss());
 
             behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
