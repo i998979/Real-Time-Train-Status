@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,12 +38,12 @@ public class HistoryDeleteActivity extends AppCompatActivity {
     private int currentType;
     private Set<Integer> selectedIds = new HashSet<>();
 
-    private ImageButton btnClose;
+    private MaterialButton btnClose;
     private CheckBox cbSelectAll;
     private TextView tvSelectAll;
     private RecyclerView rvDeleteHistory;
     private DeleteAdapter rvAdapter;
-    private Button btnDelete;
+    private MaterialButton btnDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
