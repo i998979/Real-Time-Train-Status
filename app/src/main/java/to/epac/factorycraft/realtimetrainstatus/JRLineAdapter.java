@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -524,7 +523,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             behavior.setSkipCollapsed(true);
 
-            MaterialButton btnClose = dialogView.findViewById(R.id.btn_close);
+            MaterialButton btnClose = dialogView.findViewById(R.id.btn_return);
             btnClose.setOnClickListener(v -> dialog.dismiss());
 
             behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {

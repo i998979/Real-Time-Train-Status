@@ -1,61 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/header_container"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#1C1C1E"
-        android:gravity="center"
-        android:orientation="vertical"
         android:padding="4dp">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_return"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:padding="0dp"
+            app:icon="@drawable/baseline_arrow_back_24"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="36dp"
+            app:iconTint="#92ADBB" />
+
         <LinearLayout
+            android:id="@+id/header_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_header_origin"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="起點"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginHorizontal="12dp"
-                android:src="@drawable/outline_arrow_forward_24"
-                app:tint="#666666" />
+                <TextView
+                    android:id="@+id/tv_header_origin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="起點"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginHorizontal="12dp"
+                    android:src="@drawable/outline_arrow_forward_24"
+                    app:tint="#666666" />
+
+                <TextView
+                    android:id="@+id/tv_header_dest"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="終點"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/tv_header_dest"
+                android:id="@+id/tv_journey_start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="終點"
+                android:text="2月10日(週二) 出發"
                 android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_journey_start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2月10日(週二) 出發"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
-
-    </LinearLayout>
+    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/routes_layout"
@@ -70,7 +90,8 @@
             android:gravity="center"
             android:orientation="vertical"
             android:padding="16dp"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="gone">
 
             <ImageView
                 android:id="@+id/imageView"
@@ -82,7 +103,7 @@
 
             <TextView
                 android:id="@+id/tv_title"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:gravity="center"
@@ -93,7 +114,7 @@
 
             <TextView
                 android:id="@+id/tv_subtitle"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
@@ -101,14 +122,15 @@
                 android:textColor="#CCCCCC"
                 android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/tv_back"
-                android:layout_width="match_parent"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_back"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
                 android:padding="12dp"
                 android:text="返回搜尋畫面"
-                android:textColor="#4CAF50"
+                android:textAllCaps="false"
+                android:textColor="#4CA87E"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
