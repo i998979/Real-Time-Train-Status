@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -17,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -59,7 +60,7 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         TrainLocationActivity.context = this;
 
-        ImageButton btnClose = findViewById(R.id.btn_close);
+        MaterialButton btnClose = findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> finish());
 
         lineCode = getIntent().getStringExtra("LINE_CODE");
