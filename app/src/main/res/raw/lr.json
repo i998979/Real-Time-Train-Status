@@ -1,0 +1,1298 @@
+{
+  "lines": [
+    {
+      "ID": "505",
+      "nameEN": "Sam Shing to Siu Hong",
+      "name": "\u4e09\u8056\u81f3\u5146\u5eb7",
+      "color": "cf0a2c",
+      "stationIDs": [
+        "100",
+        "110",
+        "120",
+        "130",
+        "140",
+        "150",
+        "160",
+        "170",
+        "180",
+        "190",
+        "200",
+        "60",
+        "295",
+        "280",
+        "270",
+        "265",
+        "920"
+      ]
+    },
+    {
+      "ID": "507",
+      "nameEN": "Tuen Mun Ferry Pier to Tin King",
+      "name": "\u5c6f\u9580\u78bc\u982d\u81f3\u7530\u666f",
+      "color": "00833e",
+      "stationIDs": [
+        "1",
+        "240",
+        "250",
+        "260",
+        "265",
+        "270",
+        "280",
+        "295",
+        "70",
+        "75",
+        "230",
+        "220",
+        "212",
+        "160",
+        "150",
+        "140"
+      ]
+    },
+    {
+      "ID": "610",
+      "nameEN": "Tuen Mun Ferry Pier to Yuen Long",
+      "name": "\u5c6f\u9580\u78bc\u982d\u81f3\u5143\u6717",
+      "color": "6b3833",
+      "stationIDs": [
+        "1",
+        "10",
+        "15",
+        "20",
+        "30",
+        "40",
+        "50",
+        "200",
+        "170",
+        "212",
+        "220",
+        "230",
+        "80",
+        "90",
+        "100",
+        "350",
+        "360",
+        "370",
+        "380",
+        "390",
+        "400",
+        "560",
+        "570",
+        "580",
+        "590",
+        "600"
+      ]
+    },
+    {
+      "ID": "614",
+      "nameEN": "Tuen Mun Ferry Pier to Yuen Long",
+      "name": "\u5c6f\u9580\u78bc\u982d\u81f3\u5143\u6717",
+      "color": "40b4e5",
+      "stationIDs": [
+        "1",
+        "240",
+        "250",
+        "260",
+        "265",
+        "270",
+        "280",
+        "300",
+        "310",
+        "320",
+        "330",
+        "340",
+        "100",
+        "350",
+        "360",
+        "370",
+        "380",
+        "390",
+        "400",
+        "560",
+        "570",
+        "580",
+        "590",
+        "600"
+      ]
+    },
+    {
+      "ID": "614P",
+      "nameEN": "Tuen Mun Ferry Pier to Siu Hong",
+      "name": "\u5c6f\u9580\u78bc\u982d\u81f3\u5146\u5eb7",
+      "color": "ee9bac",
+      "stationIDs": [
+        "1",
+        "240",
+        "250",
+        "260",
+        "265",
+        "270",
+        "280",
+        "300",
+        "310",
+        "320",
+        "330",
+        "340",
+        "100"
+      ]
+    },
+    {
+      "ID": "615",
+      "nameEN": "Tuen Mun Ferry Pier to Yuen Long",
+      "name": "\u5c6f\u9580\u78bc\u982d\u81f3\u5143\u6717",
+      "color": "ffce00",
+      "stationIDs": [
+        "1",
+        "10",
+        "15",
+        "20",
+        "30",
+        "40",
+        "50",
+        "200",
+        "170",
+        "160",
+        "150",
+        "140",
+        "130",
+        "120",
+        "100",
+        "350",
+        "360",
+        "370",
+        "380",
+        "390",
+        "400",
+        "560",
+        "570",
+        "580",
+        "590",
+        "600"
+      ]
+    },
+    {
+      "ID": "615P",
+      "nameEN": "Tuen Mun Ferry Pier to Siu Hong",
+      "name": "\u5c6f\u9580\u78bc\u982d\u81f3\u5146\u5eb7",
+      "color": "00567d",
+      "stationIDs": [
+        "1",
+        "10",
+        "15",
+        "20",
+        "30",
+        "40",
+        "50",
+        "200",
+        "170",
+        "160",
+        "150",
+        "140",
+        "130",
+        "120",
+        "110",
+        "100"
+      ]
+    },
+    {
+      "ID": "705",
+      "nameEN": "Tin Shui Wai Circular",
+      "name": "\u5929\u6c34\u570d\u5faa\u74b0\u7dab",
+      "color": "63a70a",
+      "stationIDs": [
+        "430",
+        "435",
+        "450",
+        "455",
+        "500",
+        "510",
+        "520",
+        "530",
+        "540",
+        "550",
+        "480",
+        "468",
+        "460",
+        "448",
+        "445"
+      ]
+    },
+    {
+      "ID": "706",
+      "nameEN": "Tin Shui Wai Circular",
+      "name": "\u5929\u6c34\u570d\u5faa\u74b0\u7dab",
+      "color": "bd83ca",
+      "stationIDs": [
+        "430",
+        "445",
+        "448",
+        "460",
+        "468",
+        "480",
+        "550",
+        "540",
+        "530",
+        "520",
+        "510",
+        "500",
+        "455",
+        "450",
+        "435"
+      ]
+    },
+    {
+      "ID": "751",
+      "nameEN": "Tin Yat to Yau Oi",
+      "name": "\u5929\u9038\u81f3\u53cb\u611b",
+      "color": "fe7f1d",
+      "stationIDs": [
+        "275",
+        "270",
+        "280",
+        "295",
+        "70",
+        "75",
+        "80",
+        "90",
+        "100",
+        "350",
+        "360",
+        "370",
+        "380",
+        "425",
+        "430",
+        "435",
+        "450",
+        "455",
+        "500",
+        "490",
+        "468",
+        "480",
+        "550"
+      ]
+    },
+    {
+      "ID": "761P",
+      "nameEN": "Tin Yat to Yuen Long",
+      "name": "\u5929\u9038\u81f3\u5143\u6717",
+      "color": "5b2b82",
+      "stationIDs": [
+        "550",
+        "480",
+        "468",
+        "460",
+        "448",
+        "445",
+        "425",
+        "390",
+        "400",
+        "560",
+        "570",
+        "580",
+        "590",
+        "600"
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "ID": "1",
+      "nameEN": "Zone 1",
+      "name": "1\u5340",
+      "stationIDs": [
+        "1",
+        "10",
+        "15",
+        "20",
+        "30",
+        "240",
+        "250",
+        "260",
+        "265",
+        "920"
+      ]
+    },
+    {
+      "ID": "2",
+      "nameEN": "Zone 2",
+      "name": "2\u5340",
+      "stationIDs": [
+        "40",
+        "50",
+        "60",
+        "70",
+        "75",
+        "80",
+        "170",
+        "180",
+        "190",
+        "200",
+        "212",
+        "220",
+        "230",
+        "270",
+        "275",
+        "280",
+        "295",
+        "300",
+        "310",
+        "320",
+        "330"
+      ]
+    },
+    {
+      "ID": "3",
+      "nameEN": "Zone 3",
+      "name": "3\u5340",
+      "stationIDs": [
+        "90",
+        "100",
+        "110",
+        "120",
+        "130",
+        "140",
+        "150",
+        "160",
+        "340",
+        "350",
+        "360",
+        "370"
+      ]
+    },
+    {
+      "ID": "4",
+      "nameEN": "Zone 4",
+      "name": "4\u5340",
+      "stationIDs": [
+        "380",
+        "390",
+        "400",
+        "425",
+        "430",
+        "435",
+        "445",
+        "448",
+        "450",
+        "455",
+        "460",
+        "490",
+        "500"
+      ]
+    },
+    {
+      "ID": "5",
+      "nameEN": "Zone 5",
+      "name": "5\u5340",
+      "stationIDs": [
+        "560",
+        "570",
+        "580",
+        "590",
+        "600"
+      ]
+    },
+    {
+      "ID": "5A",
+      "nameEN": "Zone 5A",
+      "name": "5A\u5340",
+      "stationIDs": [
+        "468",
+        "480",
+        "510",
+        "520",
+        "530",
+        "540",
+        "550"
+      ]
+    }
+  ],
+  "stations": [
+    {
+      "ID": "1",
+      "nameEN": "Tuen Mun Ferry Pier",
+      "name": "\u5c6f\u9580\u78bc\u982d",
+      "nameSC": "\u5c6f\u95e8\u7801\u5934",
+      "zoneID": "1",
+      "lineIDs": [
+        "507",
+        "610",
+        "614",
+        "614P",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3729410,113.9662380"
+    },
+    {
+      "ID": "10",
+      "nameEN": "Melody Garden",
+      "name": "\u7f8e\u6a02",
+      "nameSC": "\u7f8e\u4e50",
+      "zoneID": "1",
+      "lineIDs": [
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3749300,113.9613000"
+    },
+    {
+      "ID": "15",
+      "nameEN": "Butterfly",
+      "name": "\u8774\u8776",
+      "nameSC": "\u8774\u8776",
+      "zoneID": "1",
+      "lineIDs": [
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3777630,113.9613970"
+    },
+    {
+      "ID": "20",
+      "nameEN": "Light Rail Depot",
+      "name": "\u8f15\u9435\u8eca\u5ee0",
+      "nameSC": "\u8f7b\u94c1\u8f66\u5382",
+      "zoneID": "1",
+      "lineIDs": [
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3816980,113.9633450"
+    },
+    {
+      "ID": "30",
+      "nameEN": "Lung Mun",
+      "name": "\u9f8d\u9580",
+      "nameSC": "\u9f99\u95e8",
+      "zoneID": "1",
+      "lineIDs": [
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3855630,113.9649850"
+    },
+    {
+      "ID": "40",
+      "nameEN": "Tsing Shan Tsuen",
+      "name": "\u9752\u5c71\u6751",
+      "nameSC": "\u9752\u5c71\u6751",
+      "zoneID": "2",
+      "lineIDs": [
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3910910,113.9673760"
+    },
+    {
+      "ID": "50",
+      "nameEN": "Tsing Wun",
+      "name": "\u9752\u96f2",
+      "nameSC": "\u9752\u4e91",
+      "zoneID": "2",
+      "lineIDs": [
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3939880,113.9674090"
+    },
+    {
+      "ID": "60",
+      "nameEN": "Kin On",
+      "name": "\u5efa\u5b89",
+      "nameSC": "\u5efa\u5b89",
+      "zoneID": "2",
+      "lineIDs": [
+        "505"
+      ],
+      "coordinate": "22.3950790,113.9695330"
+    },
+    {
+      "ID": "70",
+      "nameEN": "Ho Tin",
+      "name": "\u6cb3\u7530",
+      "nameSC": "\u6cb3\u7530",
+      "zoneID": "2",
+      "lineIDs": [
+        "507",
+        "751"
+      ],
+      "coordinate": "22.3968740,113.9729770"
+    },
+    {
+      "ID": "75",
+      "nameEN": "Choy Yee Bridge",
+      "name": "\u8521\u610f\u6a4b",
+      "nameSC": "\u8521\u610f\u6865",
+      "zoneID": "2",
+      "lineIDs": [
+        "507",
+        "751"
+      ],
+      "coordinate": "22.3998750,113.9744360"
+    },
+    {
+      "ID": "80",
+      "nameEN": "Affluence",
+      "name": "\u6fa4\u8c50",
+      "nameSC": "\u6cfd\u4e30",
+      "zoneID": "2",
+      "lineIDs": [
+        "610",
+        "751"
+      ],
+      "coordinate": "22.4039420,113.9760450"
+    },
+    {
+      "ID": "90",
+      "nameEN": "Tuen Mun Hospital",
+      "name": "\u5c6f\u9580\u91ab\u9662",
+      "nameSC": "\u5c6f\u95e8\u533b\u9662",
+      "zoneID": "3",
+      "lineIDs": [
+        "610",
+        "751"
+      ],
+      "coordinate": "22.4077510,113.9771720"
+    },
+    {
+      "ID": "100",
+      "nameEN": "Siu Hong",
+      "name": "\u5146\u5eb7",
+      "nameSC": "\u5146\u5eb7",
+      "zoneID": "3",
+      "lineIDs": [
+        "505",
+        "610",
+        "614",
+        "614P",
+        "615",
+        "615P",
+        "751"
+      ],
+      "coordinate": "22.4121500,113.9778930"
+    },
+    {
+      "ID": "110",
+      "nameEN": "Kei Lun",
+      "name": "\u9e92\u9e9f",
+      "nameSC": "\u9e92\u9e9f",
+      "zoneID": "3",
+      "lineIDs": [
+        "505",
+        "615P"
+      ],
+      "coordinate": "22.4109900,113.9764340"
+    },
+    {
+      "ID": "120",
+      "nameEN": "Ching Chung",
+      "name": "\u9752\u677e",
+      "nameSC": "\u9752\u677e",
+      "zoneID": "3",
+      "lineIDs": [
+        "505",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.4074190,113.9729370"
+    },
+    {
+      "ID": "130",
+      "nameEN": "Kin Sang",
+      "name": "\u5efa\u751f",
+      "nameSC": "\u5efa\u751f",
+      "zoneID": "3",
+      "lineIDs": [
+        "505",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.4068830,113.9691920"
+    },
+    {
+      "ID": "140",
+      "nameEN": "Tin King",
+      "name": "\u7530\u666f",
+      "nameSC": "\u7530\u666f",
+      "zoneID": "3",
+      "lineIDs": [
+        "505",
+        "507",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.4077360,113.9663280"
+    },
+    {
+      "ID": "150",
+      "nameEN": "Leung King",
+      "name": "\u826f\u666f",
+      "nameSC": "\u826f\u666f",
+      "zoneID": "3",
+      "lineIDs": [
+        "505",
+        "507",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.4066850,113.9636020"
+    },
+    {
+      "ID": "160",
+      "nameEN": "San Wai",
+      "name": "\u65b0\u570d",
+      "nameSC": "\u65b0\u56f4",
+      "zoneID": "3",
+      "lineIDs": [
+        "505",
+        "507",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.4052770,113.9645570"
+    },
+    {
+      "ID": "170",
+      "nameEN": "Shek Pai",
+      "name": "\u77f3\u6392",
+      "nameSC": "\u77f3\u6392",
+      "zoneID": "2",
+      "lineIDs": [
+        "505",
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.4011330,113.9676680"
+    },
+    {
+      "ID": "180",
+      "nameEN": "Shan King (North)",
+      "name": "\u5c71\u666f (\u5317)",
+      "nameSC": "\u5c71\u666f (\u5317)",
+      "zoneID": "2",
+      "lineIDs": [
+        "505"
+      ],
+      "coordinate": "22.3989560,113.9666560"
+    },
+    {
+      "ID": "190",
+      "nameEN": "Shan King (South)",
+      "name": "\u5c71\u666f (\u5357)",
+      "nameSC": "\u5c71\u666f (\u5357)",
+      "zoneID": "2",
+      "lineIDs": [
+        "505"
+      ],
+      "coordinate": "22.3966150,113.9660440"
+    },
+    {
+      "ID": "200",
+      "nameEN": "Ming Kum",
+      "name": "\u9cf4\u7434",
+      "nameSC": "\u9e23\u7434",
+      "zoneID": "2",
+      "lineIDs": [
+        "505",
+        "610",
+        "615",
+        "615P"
+      ],
+      "coordinate": "22.3970220,113.9672890"
+    },
+    {
+      "ID": "212",
+      "nameEN": "Tai Hing (North)",
+      "name": "\u5927\u8208 (\u5317)",
+      "nameSC": "\u5927\u5174 (\u5317)",
+      "zoneID": "2",
+      "lineIDs": [
+        "507",
+        "610"
+      ],
+      "coordinate": "22.4045010,113.9700670"
+    },
+    {
+      "ID": "220",
+      "nameEN": "Tai Hing (South)",
+      "name": "\u5927\u8208 (\u5357)",
+      "nameSC": "\u5927\u5174 (\u5357)",
+      "zoneID": "2",
+      "lineIDs": [
+        "507",
+        "610"
+      ],
+      "coordinate": "22.4027850,113.9719560"
+    },
+    {
+      "ID": "230",
+      "nameEN": "Ngan Wai",
+      "name": "\u9280\u570d",
+      "nameSC": "\u94f6\u56f4",
+      "zoneID": "2",
+      "lineIDs": [
+        "507",
+        "610"
+      ],
+      "coordinate": "22.4025370,113.9745200"
+    },
+    {
+      "ID": "240",
+      "nameEN": "Siu Hei",
+      "name": "\u5146\u79a7",
+      "nameSC": "\u5146\u79a7",
+      "zoneID": "1",
+      "lineIDs": [
+        "507",
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.3753490,113.9668420"
+    },
+    {
+      "ID": "250",
+      "nameEN": "Tuen Mun Swimming Pool",
+      "name": "\u5c6f\u9580\u6cf3\u6c60",
+      "nameSC": "\u5c6f\u95e8\u6cf3\u6c60",
+      "zoneID": "1",
+      "lineIDs": [
+        "507",
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.3812530,113.9704350"
+    },
+    {
+      "ID": "260",
+      "nameEN": "Goodview Garden",
+      "name": "\u8c50\u666f\u5712",
+      "nameSC": "\u4e30\u666f\u56ed",
+      "zoneID": "1",
+      "lineIDs": [
+        "507",
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.3832470,113.9726020"
+    },
+    {
+      "ID": "265",
+      "nameEN": "Siu Lun",
+      "name": "\u5146\u9e9f",
+      "nameSC": "\u5146\u9e9f",
+      "zoneID": "1",
+      "lineIDs": [
+        "505",
+        "507",
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.3843560,113.9750400"
+    },
+    {
+      "ID": "270",
+      "nameEN": "On Ting",
+      "name": "\u5b89\u5b9a",
+      "nameSC": "\u5b89\u5b9a",
+      "zoneID": "2",
+      "lineIDs": [
+        "505",
+        "507",
+        "614",
+        "614P",
+        "751"
+      ],
+      "coordinate": "22.3878000,113.9751020"
+    },
+    {
+      "ID": "275",
+      "nameEN": "Yau Oi",
+      "name": "\u53cb\u611b",
+      "nameSC": "\u53cb\u7231",
+      "zoneID": "2",
+      "lineIDs": [
+        "751"
+      ],
+      "coordinate": "22.3867190,113.9735570"
+    },
+    {
+      "ID": "280",
+      "nameEN": "Town Centre",
+      "name": "\u5e02\u4e2d\u5fc3",
+      "nameSC": "\u5e02\u4e2d\u5fc3",
+      "zoneID": "2",
+      "lineIDs": [
+        "505",
+        "507",
+        "614",
+        "614P",
+        "751"
+      ],
+      "coordinate": "22.3914020,113.9749710"
+    },
+    {
+      "ID": "295",
+      "nameEN": "Tuen Mun",
+      "name": "\u5c6f\u9580",
+      "nameSC": "\u5c6f\u95e8",
+      "zoneID": "2",
+      "lineIDs": [
+        "505",
+        "507",
+        "751"
+      ],
+      "coordinate": "22.3939730,113.9728820"
+    },
+    {
+      "ID": "300",
+      "nameEN": "Pui To",
+      "name": "\u676f\u6e21",
+      "nameSC": "\u676f\u6e21",
+      "zoneID": "2",
+      "lineIDs": [
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.3945280,113.9763470"
+    },
+    {
+      "ID": "310",
+      "nameEN": "Hoh Fuk Tong",
+      "name": "\u4f55\u798f\u5802",
+      "nameSC": "\u4f55\u798f\u5802",
+      "zoneID": "2",
+      "lineIDs": [
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.3977820,113.9773560"
+    },
+    {
+      "ID": "320",
+      "nameEN": "San Hui",
+      "name": "\u65b0\u589f",
+      "nameSC": "\u65b0\u589f",
+      "zoneID": "2",
+      "lineIDs": [
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.4004700,113.9780640"
+    },
+    {
+      "ID": "330",
+      "nameEN": "Prime View",
+      "name": "\u666f\u5cf0",
+      "nameSC": "\u666f\u5cf0",
+      "zoneID": "2",
+      "lineIDs": [
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.4032970,113.9794590"
+    },
+    {
+      "ID": "340",
+      "nameEN": "Fung Tei",
+      "name": "\u9cf3\u5730",
+      "nameSC": "\u51e4\u5730",
+      "zoneID": "3",
+      "lineIDs": [
+        "614",
+        "614P"
+      ],
+      "coordinate": "22.4069870,113.9787510"
+    },
+    {
+      "ID": "350",
+      "nameEN": "Lam Tei",
+      "name": "\u85cd\u5730",
+      "nameSC": "\u84dd\u5730",
+      "zoneID": "3",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "751"
+      ],
+      "coordinate": "22.4185990,113.9818030"
+    },
+    {
+      "ID": "360",
+      "nameEN": "Nai Wai",
+      "name": "\u6ce5\u570d",
+      "nameSC": "\u6ce5\u56f4",
+      "zoneID": "3",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "751"
+      ],
+      "coordinate": "22.4240540,113.9867270"
+    },
+    {
+      "ID": "370",
+      "nameEN": "Chung Uk Tsuen",
+      "name": "\u937e\u5c4b\u6751",
+      "nameSC": "\u949f\u5c4b\u6751",
+      "zoneID": "3",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "751"
+      ],
+      "coordinate": "22.4298660,113.9923400"
+    },
+    {
+      "ID": "380",
+      "nameEN": "Hung Shui Kiu",
+      "name": "\u6d2a\u6c34\u6a4b",
+      "nameSC": "\u6d2a\u6c34\u6865",
+      "zoneID": "4",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "751"
+      ],
+      "coordinate": "22.4336350,113.9973610"
+    },
+    {
+      "ID": "390",
+      "nameEN": "Tong Fong Tsuen",
+      "name": "\u5858\u574a\u6751",
+      "nameSC": "\u5858\u574a\u6751",
+      "zoneID": "4",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "761P"
+      ],
+      "coordinate": "22.4403530,114.0074780"
+    },
+    {
+      "ID": "400",
+      "nameEN": "Ping Shan",
+      "name": "\u5c4f\u5c71",
+      "nameSC": "\u5c4f\u5c71",
+      "zoneID": "4",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "761P"
+      ],
+      "coordinate": "22.4427430,114.0116090"
+    },
+    {
+      "ID": "425",
+      "nameEN": "Hang Mei Tsuen",
+      "name": "\u5751\u5c3e\u6751",
+      "nameSC": "\u5751\u5c3e\u6751",
+      "zoneID": "4",
+      "lineIDs": [
+        "751",
+        "761P"
+      ],
+      "coordinate": "22.4453030,114.0055300"
+    },
+    {
+      "ID": "430",
+      "nameEN": "Tin Shui Wai",
+      "name": "\u5929\u6c34\u570d",
+      "nameSC": "\u5929\u6c34\u56f4",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "751"
+      ],
+      "coordinate": "22.4489720,114.0053910"
+    },
+    {
+      "ID": "435",
+      "nameEN": "Tin Tsz",
+      "name": "\u5929\u6148",
+      "nameSC": "\u5929\u6148",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "751"
+      ],
+      "coordinate": "22.4523140,114.0062490"
+    },
+    {
+      "ID": "445",
+      "nameEN": "Tin Yiu",
+      "name": "\u5929\u8000",
+      "nameSC": "\u5929\u8000",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "761P"
+      ],
+      "coordinate": "22.4498050,114.0029980"
+    },
+    {
+      "ID": "448",
+      "nameEN": "Locwood",
+      "name": "\u6a02\u6e56",
+      "nameSC": "\u4e50\u6e56",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "761P"
+      ],
+      "coordinate": "22.4528390,114.0013670"
+    },
+    {
+      "ID": "450",
+      "nameEN": "Tin Wu",
+      "name": "\u5929\u6e56",
+      "nameSC": "\u5929\u6e56",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "751"
+      ],
+      "coordinate": "22.4543860,114.0054980"
+    },
+    {
+      "ID": "455",
+      "nameEN": "Ginza",
+      "name": "\u9280\u5ea7",
+      "nameSC": "\u94f6\u5ea7",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "751"
+      ],
+      "coordinate": "22.4569240,114.0058090"
+    },
+    {
+      "ID": "460",
+      "nameEN": "Tin Shui",
+      "name": "\u5929\u745e",
+      "nameSC": "\u5929\u745e",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "761P"
+      ],
+      "coordinate": "22.4565840,113.9989360"
+    },
+    {
+      "ID": "468",
+      "nameEN": "Chung Fu",
+      "name": "\u980c\u5bcc",
+      "nameSC": "\u9882\u5bcc",
+      "zoneID": "5A",
+      "lineIDs": [
+        "705",
+        "706",
+        "751",
+        "761P"
+      ],
+      "coordinate": "22.4619090,113.9970260"
+    },
+    {
+      "ID": "480",
+      "nameEN": "Tin Fu",
+      "name": "\u5929\u5bcc",
+      "nameSC": "\u5929\u5bcc",
+      "zoneID": "5A",
+      "lineIDs": [
+        "705",
+        "706",
+        "751",
+        "761P"
+      ],
+      "coordinate": "22.4636040,113.9974550"
+    },
+    {
+      "ID": "490",
+      "nameEN": "Chestwood",
+      "name": "\u7fe0\u6e56",
+      "nameSC": "\u7fe0\u6e56",
+      "zoneID": "4",
+      "lineIDs": [
+        "751"
+      ],
+      "coordinate": "22.4597080,113.9994720"
+    },
+    {
+      "ID": "500",
+      "nameEN": "Tin Wing",
+      "name": "\u5929\u69ae",
+      "nameSC": "\u5929\u8363",
+      "zoneID": "4",
+      "lineIDs": [
+        "705",
+        "706",
+        "751"
+      ],
+      "coordinate": "22.4601240,114.0023690"
+    },
+    {
+      "ID": "510",
+      "nameEN": "Tin Yuet",
+      "name": "\u5929\u6085",
+      "nameSC": "\u5929\u60a6",
+      "zoneID": "5A",
+      "lineIDs": [
+        "705",
+        "706"
+      ],
+      "coordinate": "22.4628310,114.0015320"
+    },
+    {
+      "ID": "520",
+      "nameEN": "Tin Sau",
+      "name": "\u5929\u79c0",
+      "nameSC": "\u5929\u79c0",
+      "zoneID": "5A",
+      "lineIDs": [
+        "705",
+        "706"
+      ],
+      "coordinate": "22.4654680,114.0029060"
+    },
+    {
+      "ID": "530",
+      "nameEN": "Wetland Park",
+      "name": "\u6fd5\u5730\u516c\u5712",
+      "nameSC": "\u6e7f\u5730\u516c\u56ed",
+      "zoneID": "5A",
+      "lineIDs": [
+        "705",
+        "706"
+      ],
+      "coordinate": "22.4698210,114.0024550"
+    },
+    {
+      "ID": "540",
+      "nameEN": "Tin Heng",
+      "name": "\u5929\u6052",
+      "nameSC": "\u5929\u6052",
+      "zoneID": "5A",
+      "lineIDs": [
+        "705",
+        "706"
+      ],
+      "coordinate": "22.4698400,114.0008350"
+    },
+    {
+      "ID": "550",
+      "nameEN": "Tin Yat",
+      "name": "\u5929\u9038",
+      "nameSC": "\u5929\u9038",
+      "zoneID": "5A",
+      "lineIDs": [
+        "705",
+        "706",
+        "751",
+        "761P"
+      ],
+      "coordinate": "22.4667830,113.9992190"
+    },
+    {
+      "ID": "560",
+      "nameEN": "Shui Pin Wai",
+      "name": "\u6c34\u908a\u570d",
+      "nameSC": "\u6c34\u8fb9\u56f4",
+      "zoneID": "5",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "761P"
+      ],
+      "coordinate": "22.4445440,114.0203340"
+    },
+    {
+      "ID": "570",
+      "nameEN": "Fung Nin Road",
+      "name": "\u8c50\u5e74\u8def",
+      "nameSC": "\u4e30\u5e74\u8def",
+      "zoneID": "5",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "761P"
+      ],
+      "coordinate": "22.4445730,114.0239280"
+    },
+    {
+      "ID": "580",
+      "nameEN": "Hong Lok Road",
+      "name": "\u5eb7\u6a02\u8def",
+      "nameSC": "\u5eb7\u4e50\u8def",
+      "zoneID": "5",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "761P"
+      ],
+      "coordinate": "22.4445540,114.0270930"
+    },
+    {
+      "ID": "590",
+      "nameEN": "Tai Tong Road",
+      "name": "\u5927\u68e0\u8def",
+      "nameSC": "\u5927\u68e0\u8def",
+      "zoneID": "5",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "761P"
+      ],
+      "coordinate": "22.4444840,114.0292280"
+    },
+    {
+      "ID": "600",
+      "nameEN": "Yuen Long",
+      "name": "\u5143\u6717",
+      "nameSC": "\u5143\u6717",
+      "zoneID": "5",
+      "lineIDs": [
+        "610",
+        "614",
+        "615",
+        "761P"
+      ],
+      "coordinate": "22.4457830,114.0338200"
+    },
+    {
+      "ID": "920",
+      "nameEN": "Sam Shing",
+      "name": "\u4e09\u8056",
+      "nameSC": "\u4e09\u5723",
+      "zoneID": "1",
+      "lineIDs": [
+        "505"
+      ],
+      "coordinate": "22.3829730,113.9774090"
+    }
+  ],
+  "errorCode": "0",
+  "errorMsg": "success"
+}
