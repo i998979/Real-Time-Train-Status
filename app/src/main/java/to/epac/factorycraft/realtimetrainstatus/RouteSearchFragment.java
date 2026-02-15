@@ -77,7 +77,7 @@ public class RouteSearchFragment extends Fragment {
 
         for (int i = 0; i < 3; i++) {
             dots[i] = new View(getContext());
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(20, 20);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(24, 24);
             params.setMargins(12, 0, 12, 0);
             dots[i].setLayoutParams(params);
             dots[i].setBackgroundResource(R.drawable.tab_indicator_dot);
