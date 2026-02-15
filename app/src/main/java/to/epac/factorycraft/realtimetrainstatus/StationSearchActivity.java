@@ -7,12 +7,13 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,7 +35,7 @@ public class StationSearchActivity extends AppCompatActivity {
     private List<String> filteredCodes = new ArrayList<>();
 
     private EditText etSearch;
-    private ImageButton btnClose;
+    private MaterialButton btnClose;
 
     private View layoutHistoryHeader;
 

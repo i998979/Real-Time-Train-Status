@@ -33,7 +33,7 @@
             app:icon="@android:drawable/ic_menu_close_clear_cancel"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
-            app:iconSize="24dp"
+            app:iconSize="36dp"
             app:iconTint="#92ADBB"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
