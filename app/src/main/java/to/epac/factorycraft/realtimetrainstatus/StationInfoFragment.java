@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -27,7 +28,7 @@ public class StationInfoFragment extends Fragment {
 
     private View searchBar;
     private TextView tvSearchStation;
-    private View btnRefresh;
+    private MaterialButton btnRefresh;
     private TabLayout tabLayout;
     private ViewPager2 pagerContent;
 
