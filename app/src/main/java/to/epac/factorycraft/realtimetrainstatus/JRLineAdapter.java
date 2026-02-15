@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -523,7 +524,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             behavior.setSkipCollapsed(true);
 
-            ImageButton btnClose = dialogView.findViewById(R.id.btn_close);
+            MaterialButton btnClose = dialogView.findViewById(R.id.btn_close);
             btnClose.setOnClickListener(v -> dialog.dismiss());
 
             behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
