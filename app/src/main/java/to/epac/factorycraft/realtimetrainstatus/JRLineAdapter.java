@@ -452,7 +452,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 } else {
                     if (lineCode.equalsIgnoreCase("eal")) {
                         int ts = Integer.parseInt(trip.trainId);
-                        ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts, ts + 2));
+                        ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts - 2, ts));
                     } else if (lineCode.equalsIgnoreCase("tml")) {
                         int ts = Integer.parseInt(trip.trainId);
                         if (ts % 2 == 0)
