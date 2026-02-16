@@ -54,7 +54,7 @@ public class OperationInfoFragment extends Fragment {
                 case 0: // Frequently Viewed Route
                     return new Fragment();
                 case 1: // Traffic News
-                    return new Fragment();
+                    return new TrafficNewsFragment();
                 case 2: // Realtime Train Location
                     return new LineSelectorFragment();
                 default:
