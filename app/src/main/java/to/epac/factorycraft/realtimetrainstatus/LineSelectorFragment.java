@@ -45,6 +45,7 @@ public class LineSelectorFragment extends Fragment {
         } else {
             display = config.getLinesByStationAlias(stationCode);
         }
+        display.removeIf(line -> line.alias.equals("HSR"));
 
         LineSelectorAdapter adapter = new LineSelectorAdapter(display, line -> {
             Intent intent = new Intent(getContext(), TrainLocationActivity.class);

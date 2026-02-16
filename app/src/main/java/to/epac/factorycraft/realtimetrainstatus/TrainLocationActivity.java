@@ -147,7 +147,7 @@ public class TrainLocationActivity extends AppCompatActivity {
                         }
                     }
                 } else {
-                    String raw = download(lineConfig.apiUrl, "QkmjCRYvXt6o89UdZAvoXa49543NxOtU2tBhQQDQ");
+                    String raw = download(lineConfig.apiUrl, lineConfig.apiKey);
                     if (raw != null) {
                         rawList.addAll(parseRoctecJson(raw));
                     }

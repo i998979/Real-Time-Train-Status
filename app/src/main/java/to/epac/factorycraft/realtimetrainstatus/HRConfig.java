@@ -9,16 +9,17 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class HRConfig {
     private static HRConfig instance;
 
-    private final Map<String, Line> lineAliasMap = new HashMap<>();
-    private final Map<Integer, Line> lineMap = new HashMap<>();
-    private final Map<String, Station> aliasMap = new HashMap<>();
-    private final Map<Integer, Station> idMap = new HashMap<>();
+    private final Map<String, Line> lineAliasMap = new LinkedHashMap<>();
+    private final Map<Integer, Line> lineMap = new LinkedHashMap<>();
+    private final Map<String, Station> aliasMap = new LinkedHashMap<>();
+    private final Map<Integer, Station> idMap = new LinkedHashMap<>();
 
     public static class Line {
         public final int id;
