@@ -42,9 +42,10 @@
                 app:cardCornerRadius="12dp">
 
                 <ImageView
+                    android:id="@+id/iv_system_map"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
+                    android:scaleType="centerInside"
                     android:src="@drawable/mtr_routemap_510" />
             </com.google.android.material.card.MaterialCardView>
 

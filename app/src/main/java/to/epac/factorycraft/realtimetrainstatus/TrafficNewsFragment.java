@@ -1,9 +1,12 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,13 +30,18 @@ public class TrafficNewsFragment extends Fragment {
 
     private LinearLayout statusContainer;
 
+    private ImageView mapImageView;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_traffic_news, container, false);
+
         statusContainer = view.findViewById(R.id.status_container);
+        mapImageView = view.findViewById(R.id.iv_system_map);
 
         fetchTrafficNews();
+
         return view;
     }
 
@@ -56,7 +64,29 @@ public class TrafficNewsFragment extends Fragment {
                     reader.close();
 
                     String finalJsonData = response.toString();
-                    new Handler(Looper.getMainLooper()).post(() -> parseAndPopulate(finalJsonData));
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        parseAndPopulate(finalJsonData);
+                    });
+
+                    // 篩選出需要標記陰影的顏色
+                    JSONObject root = new JSONObject(finalJsonData);
+                    JSONArray lines = root.getJSONObject("ryg_status").getJSONArray("line");
+                    java.util.List<Integer> targetColors = new java.util.ArrayList<>();
+
+                    for (int i = 0; i < lines.length(); i++) {
+                        JSONObject lineObj = lines.getJSONObject(i);
+                        String status = lineObj.getString("status").toLowerCase();
+
+                        // 只要不是 green, grey, typhoon，就加入陰影名單
+                        targetColors.add(Color.parseColor(lineObj.getString("line_color")));
+                        if (!status.equals("green") && !status.equals("grey") && !status.equals("typhoon")) {
+                            targetColors.add(Color.parseColor(lineObj.getString("line_color")));
+                        }
+                    }
+
+                    if (!targetColors.isEmpty()) {
+                        applyMultiOutlineAsync(mapImageView, targetColors, Color.RED, 20);
+                    }
                 }
                 connection.disconnect();
             } catch (Exception e) {
@@ -146,4 +176,86 @@ public class TrafficNewsFragment extends Fragment {
                 break;
         }
     }
+
+    public void applyMultiOutlineAsync(ImageView imageView, java.util.List<Integer> targetColors, int shadowColor, int tolerance) {
+        Log.d("tagg", "draw");
+        new Thread(() -> {
+            try {
+                Bitmap originalBitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+                int width = originalBitmap.getWidth();
+                int height = originalBitmap.getHeight();
+
+                int[] pixels = new int[width * height];
+                originalBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+                int[] resultPixels = pixels.clone();
+
+                int radius = 10; // 陰影寬度
+
+                for (int y = radius; y < height - radius; y++) {
+                    for (int x = radius; x < width - radius; x++) {
+                        int index = y * width + x;
+
+                        // 檢查目前像素是否為任何一個目標顏色（縮短判斷，提升效能）
+                        boolean isAnyTarget = false;
+                        for (int tc : targetColors) {
+                            if (isColorSimilar(pixels[index], tc, tolerance)) {
+                                isAnyTarget = true;
+                                break;
+                            }
+                        }
+
+                        // 如果目前像素不是故障線路，我們才在它上面畫陰影
+                        if (!isAnyTarget) {
+                            float minDistance = radius + 1;
+
+                            // 檢查周邊是否有故障線路的顏色
+                            for (int sy = -radius; sy <= radius; sy++) {
+                                for (int sx = -radius; sx <= radius; sx++) {
+                                    int neighborIdx = (y + sy) * width + (x + sx);
+
+                                    for (int tc : targetColors) {
+                                        if (isColorSimilar(pixels[neighborIdx], tc, tolerance)) {
+                                            float dist = (float) Math.sqrt(sx * sx + sy * sy);
+                                            if (dist < minDistance) minDistance = dist;
+                                            break;
+                                        }
+                                    }
+                                    if (minDistance < 1.0f) break;
+                                }
+                            }
+
+                            if (minDistance <= radius) {
+                                float ratio = 1.0f - (minDistance / radius);
+                                int alpha = (int) (ratio * 255);
+
+                                // 進行簡易的 Alpha Blending，避免直接蓋掉地圖背景
+                                int backgroundPixel = pixels[index];
+                                int r = (Color.red(shadowColor) * alpha + Color.red(backgroundPixel) * (255 - alpha)) / 255;
+                                int g = (Color.green(shadowColor) * alpha + Color.green(backgroundPixel) * (255 - alpha)) / 255;
+                                int b = (Color.blue(shadowColor) * alpha + Color.blue(backgroundPixel) * (255 - alpha)) / 255;
+
+                                resultPixels[index] = Color.rgb(r, g, b);
+                            }
+                        }
+                    }
+                }
+
+                Bitmap resultBitmap = Bitmap.createBitmap(resultPixels, width, height, Bitmap.Config.ARGB_8888);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    imageView.setImageBitmap(resultBitmap);
+                    Log.d("tagg", "replaced");
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private boolean isColorSimilar(int color1, int color2, int tolerance) {
+        return Math.abs(Color.red(color1) - Color.red(color2)) < tolerance &&
+                Math.abs(Color.green(color1) - Color.green(color2)) < tolerance &&
+                Math.abs(Color.blue(color1) - Color.blue(color2)) < tolerance;
+    }
+
 }
