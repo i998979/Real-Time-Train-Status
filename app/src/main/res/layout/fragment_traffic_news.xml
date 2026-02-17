@@ -28,7 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="16dp">
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -44,7 +45,7 @@
                 <ImageView
                     android:id="@+id/iv_system_map"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:scaleType="centerInside"
                     android:src="@drawable/mtr_routemap_510" />
             </com.google.android.material.card.MaterialCardView>

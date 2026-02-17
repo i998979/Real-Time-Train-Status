@@ -28,8 +28,8 @@
 
                 <TextView
                     android:id="@+id/tv_line_code_badge"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
                     android:layout_gravity="center"
                     android:background="#FFFFFF"
                     android:gravity="center"
