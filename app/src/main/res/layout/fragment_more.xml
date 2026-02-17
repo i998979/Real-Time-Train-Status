@@ -71,7 +71,7 @@
             android:padding="16dp">
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btn_octopus"
+                android:id="@+id/btn_mtrmobile"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_marginHorizontal="4dp"
@@ -112,7 +112,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btn_mtrmobile"
+                android:id="@+id/btn_octopus"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_marginHorizontal="4dp"
