@@ -34,12 +34,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".StationSearchActivity"
             android:exported="true" />
         <activity
             android:name=".TrainLocationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".TrafficNewsActivity"
             android:exported="true" />
         <activity
             android:name=".HistoryDeleteActivity"
