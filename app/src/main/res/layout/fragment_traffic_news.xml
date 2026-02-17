@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
     android:orientation="vertical">
 
     <LinearLayout
@@ -18,46 +18,69 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="重鐵網絡"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="20sp"
             android:textStyle="bold" />
 
     </LinearLayout>
 
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="16dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/layout_abnormal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            tools:visibility="visible">
 
-            <com.google.android.material.card.MaterialCardView
+            <ImageView
+                android:id="@+id/iv_system_map"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="12dp">
+                android:scaleType="centerInside"
+                android:src="@drawable/mtr_routemap_510" />
 
-                <ImageView
-                    android:id="@+id/iv_system_map"
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/status_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/mtr_routemap_510" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <LinearLayout
-                android:id="@+id/status_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingTop="16dp" />
-
+                    android:orientation="vertical"
+                    android:padding="10dp" />
+            </ScrollView>
         </LinearLayout>
-    </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/layout_normal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="gone">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/baseline_trip_origin_24"
+                app:tint="#4BAC7F" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="現時，列車服務運作正常"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>

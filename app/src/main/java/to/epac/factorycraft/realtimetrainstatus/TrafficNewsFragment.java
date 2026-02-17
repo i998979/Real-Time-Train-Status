@@ -6,7 +6,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +24,16 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TrafficNewsFragment extends Fragment {
 
     private LinearLayout statusContainer;
 
     private ImageView mapImageView;
+    private View layoutNormal;
+    private View layoutAbnormal;
 
     @Nullable
     @Override
@@ -39,6 +42,8 @@ public class TrafficNewsFragment extends Fragment {
 
         statusContainer = view.findViewById(R.id.status_container);
         mapImageView = view.findViewById(R.id.iv_system_map);
+        layoutNormal = view.findViewById(R.id.layout_normal);
+        layoutAbnormal = view.findViewById(R.id.layout_abnormal);
 
         fetchTrafficNews();
 
@@ -71,22 +76,35 @@ public class TrafficNewsFragment extends Fragment {
                     // 篩選出需要標記陰影的顏色
                     JSONObject root = new JSONObject(finalJsonData);
                     JSONArray lines = root.getJSONObject("ryg_status").getJSONArray("line");
-                    java.util.List<Integer> targetColors = new java.util.ArrayList<>();
+
+                    List<Integer> targetColors = new ArrayList<>();
+                    boolean hasAbnormal = false;
 
                     for (int i = 0; i < lines.length(); i++) {
                         JSONObject lineObj = lines.getJSONObject(i);
                         String status = lineObj.getString("status").toLowerCase();
 
-                        // 只要不是 green, grey, typhoon，就加入陰影名單
-                        targetColors.add(Color.parseColor(lineObj.getString("line_color")));
                         if (!status.equals("green") && !status.equals("grey") && !status.equals("typhoon")) {
+                            hasAbnormal = true;
                             targetColors.add(Color.parseColor(lineObj.getString("line_color")));
                         }
                     }
 
-                    if (!targetColors.isEmpty()) {
-                        applyMultiOutlineAsync(mapImageView, targetColors, Color.RED, 20);
-                    }
+                    final boolean finalHasAbnormal = hasAbnormal;
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        if (finalHasAbnormal) {
+                            layoutNormal.setVisibility(View.GONE);
+                            layoutAbnormal.setVisibility(View.VISIBLE);
+                            parseAndPopulate(finalJsonData);
+
+                            if (!targetColors.isEmpty()) {
+                                applyMultiOutlineAsync(mapImageView, targetColors, Color.RED, 20);
+                            }
+                        } else {
+                            layoutNormal.setVisibility(View.VISIBLE);
+                            layoutAbnormal.setVisibility(View.GONE);
+                        }
+                    });
                 }
                 connection.disconnect();
             } catch (Exception e) {
@@ -177,8 +195,7 @@ public class TrafficNewsFragment extends Fragment {
         }
     }
 
-    public void applyMultiOutlineAsync(ImageView imageView, java.util.List<Integer> targetColors, int shadowColor, int tolerance) {
-        Log.d("tagg", "draw");
+    public void applyMultiOutlineAsync(ImageView imageView, List<Integer> targetColors, int shadowColor, int tolerance) {
         new Thread(() -> {
             try {
                 Bitmap originalBitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
@@ -243,7 +260,6 @@ public class TrafficNewsFragment extends Fragment {
                 Bitmap resultBitmap = Bitmap.createBitmap(resultPixels, width, height, Bitmap.Config.ARGB_8888);
                 new Handler(Looper.getMainLooper()).post(() -> {
                     imageView.setImageBitmap(resultBitmap);
-                    Log.d("tagg", "replaced");
                 });
 
             } catch (Exception e) {
