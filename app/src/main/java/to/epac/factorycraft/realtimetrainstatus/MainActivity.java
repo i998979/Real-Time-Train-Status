@@ -1,15 +1,20 @@
-// MainActivity.java
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String KEY_LAST_NAV_ID = "last_nav_id";
+
     private BottomNavigationView bottomNavigationView;
 
     @Override
@@ -17,41 +22,69 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         if (savedInstanceState == null) {
+            int lastNavId = prefs.getInt(KEY_LAST_NAV_ID, R.id.nav_search);
+
+            Fragment initial;
+            if (lastNavId == R.id.nav_operation) {
+                initial = new OperationInfoFragment();
+            } else if (lastNavId == R.id.nav_station) {
+                initial = new StationInfoFragment();
+            } else if (lastNavId == R.id.nav_more) {
+                initial = new MoreFragment();
+            } else {
+                initial = new RouteSearchFragment();
+                lastNavId = R.id.nav_search;
+            }
+
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.main_fragment_container, new RouteSearchFragment())
+                    .replace(R.id.main_container, initial)
                     .commit();
 
-            bottomNavigationView.setSelectedItemId(R.id.nav_search);
+            bottomNavigationView.setSelectedItemId(lastNavId);
         }
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            Fragment selected = getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
 
-            if (itemId == R.id.nav_search && selected instanceof RouteSearchFragment) return true;
-            if (itemId == R.id.nav_operation && selected instanceof OperationInfoFragment) return true;
-            if (itemId == R.id.nav_station && selected instanceof StationInfoFragment) return true;
-            if (itemId == R.id.nav_more && selected instanceof MoreFragment) return true;
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
+                    .putInt(KEY_LAST_NAV_ID, itemId)
+                    .apply();
+
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
+
+            getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+            Fragment nextFragment = null;
 
             if (itemId == R.id.nav_search) {
-                selected = new RouteSearchFragment();
+                if (currentFragment instanceof RouteSearchFragment) {
+                    ((RouteSearchFragment) currentFragment).viewPager.setCurrentItem(1, true);
+                    return true;
+                }
+                nextFragment = new RouteSearchFragment();
             } else if (itemId == R.id.nav_operation) {
-                selected = new OperationInfoFragment();
+                if (currentFragment instanceof OperationInfoFragment) return true;
+                nextFragment = new OperationInfoFragment();
             } else if (itemId == R.id.nav_station) {
-                selected = new StationInfoFragment();
+                if (currentFragment instanceof StationInfoFragment) return true;
+                nextFragment = new StationInfoFragment();
             } else if (itemId == R.id.nav_more) {
-                selected = new MoreFragment();
+                if (currentFragment instanceof MoreFragment) return true;
+                nextFragment = new MoreFragment();
             }
 
-            if (selected != null) {
+            if (nextFragment != null) {
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.main_fragment_container, selected)
+                        .replace(R.id.main_container, nextFragment)
                         .commit();
                 return true;
             }
+
             return false;
         });
 
@@ -63,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
                     getSupportFragmentManager().popBackStack();
                 } else {
                     setEnabled(false);
-                    onBackPressed();
+                    getOnBackPressedDispatcher().onBackPressed();
+                    setEnabled(true);
                 }
             }
         });

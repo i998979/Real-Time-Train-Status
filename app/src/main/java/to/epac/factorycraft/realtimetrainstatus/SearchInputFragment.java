@@ -89,10 +89,9 @@ public class SearchInputFragment extends Fragment {
             bundle.putString("d", selectedDestID);
             listFragment.setArguments(bundle);
 
-            requireActivity().findViewById(R.id.fragment_full_container).setVisibility(View.VISIBLE);
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-                    .replace(R.id.fragment_full_container, listFragment)
+                    .replace(R.id.main_container, listFragment)
                     .addToBackStack("LIST_PAGE")
                     .commit();
         });
