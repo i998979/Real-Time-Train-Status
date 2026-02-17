@@ -147,6 +147,16 @@ public class TrafficNewsFragment extends Fragment {
 
                 updateStatusUI(status, tvStatus, ivIcon);
 
+                itemView.setOnClickListener(v -> {
+                    android.content.Intent intent = new android.content.Intent(getActivity(), TrafficNewsActivity.class);
+                    intent.putExtra("line_code", lineCode);
+                    intent.putExtra("line_name_tc", lineNameTc);
+                    intent.putExtra("line_color", lineColor);
+                    intent.putExtra("status", status);
+                    intent.putExtra("messages", messages);
+                    startActivity(intent);
+                });
+
                 statusContainer.addView(itemView);
             }
         } catch (Exception e) {
@@ -158,37 +168,31 @@ public class TrafficNewsFragment extends Fragment {
         switch (status.toLowerCase()) {
             case "green":
                 tvStatus.setText("服務正常");
-                tvStatus.setTextColor(Color.WHITE);
                 ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
                 ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
                 break;
             case "yellow":
                 tvStatus.setText("服務延誤");
-                tvStatus.setTextColor(Color.parseColor("#FFA500"));
                 ivIcon.setImageResource(R.drawable.outline_exclamation_24);
                 ivIcon.setColorFilter(Color.parseColor("#FFA500"));
                 break;
             case "red":
                 tvStatus.setText("服務受阻");
-                tvStatus.setTextColor(Color.parseColor("#FF0000"));
                 ivIcon.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
                 ivIcon.setColorFilter(Color.parseColor("#FF0000"));
                 break;
             case "pink":
                 tvStatus.setText("服務延誤或受阻");
-                tvStatus.setTextColor(Color.parseColor("#FF69B4"));
                 ivIcon.setImageResource(R.drawable.baseline_warning_24);
                 ivIcon.setColorFilter(Color.parseColor("#FF69B4"));
                 break;
             case "typhoon":
                 tvStatus.setText("熱帶氣旋警告信號生效");
-                tvStatus.setTextColor(Color.parseColor("#00BCD4"));
                 ivIcon.setImageResource(R.drawable.outline_storm_24);
                 ivIcon.setColorFilter(Color.parseColor("#00BCD4"));
                 break;
             case "grey":
                 tvStatus.setText("非服務時間");
-                tvStatus.setTextColor(Color.GRAY);
                 ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
                 ivIcon.setColorFilter(Color.GRAY);
                 break;
