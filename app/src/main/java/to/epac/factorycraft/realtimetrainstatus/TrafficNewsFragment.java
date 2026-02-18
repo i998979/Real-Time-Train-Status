@@ -25,15 +25,37 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TrafficNewsFragment extends Fragment {
+
+    private static final Map<String, String> CHECK_STATIONS = new HashMap<>() {{
+        put("EAL", "TAW");
+        put("TML", "HUH");
+        put("KTL", "PRE");
+        put("AEL", "HOK");
+        put("DRL", "SUN");
+        put("ISL", "ADM");
+        put("TCL", "HOK");
+        put("TKL", "TIK");
+        put("TWL", "ADM");
+        put("SIL", "ADM");
+    }};
 
     private LinearLayout statusContainer;
 
     private ImageView mapImageView;
     private View layoutNormal;
-    private View layoutAbnormal;
+    private View layoutDelayed;
+
+    private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(CHECK_STATIONS.size());
+    private boolean isFetching = false;
 
     @Nullable
     @Override
@@ -43,14 +65,26 @@ public class TrafficNewsFragment extends Fragment {
         statusContainer = view.findViewById(R.id.status_container);
         mapImageView = view.findViewById(R.id.iv_system_map);
         layoutNormal = view.findViewById(R.id.layout_normal);
-        layoutAbnormal = view.findViewById(R.id.layout_abnormal);
+        layoutDelayed = view.findViewById(R.id.layout_delayed);
 
         fetchTrafficNews();
 
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (!crossCheckExecutor.isShutdown()) {
+            crossCheckExecutor.shutdownNow();
+        }
+    }
+
+
     private void fetchTrafficNews() {
+        if (isFetching) return;
+        isFetching = true;
+
         new Thread(() -> {
             try {
                 URL url = new URL("https://tnews.mtr.com.hk/alert/ryg_line_status.json");
@@ -68,57 +102,116 @@ public class TrafficNewsFragment extends Fragment {
                     }
                     reader.close();
 
-                    String finalJsonData = response.toString();
-                    new Handler(Looper.getMainLooper()).post(() -> {
-                        parseAndPopulate(finalJsonData);
-                    });
-
-                    // 篩選出需要標記陰影的顏色
-                    JSONObject root = new JSONObject(finalJsonData);
+                    JSONObject root = new JSONObject(response.toString());
                     JSONArray lines = root.getJSONObject("ryg_status").getJSONArray("line");
 
-                    List<Integer> targetColors = new ArrayList<>();
-                    boolean hasAbnormal = false;
+                    fetchNextTrain(lines);
 
+                    List<Integer> targetColors = new ArrayList<>();
                     for (int i = 0; i < lines.length(); i++) {
                         JSONObject lineObj = lines.getJSONObject(i);
                         String status = lineObj.getString("status").toLowerCase();
 
                         if (!status.equals("green") && !status.equals("grey") && !status.equals("typhoon")) {
-                            hasAbnormal = true;
                             targetColors.add(Color.parseColor(lineObj.getString("line_color")));
                         }
                     }
 
-                    final boolean finalHasAbnormal = hasAbnormal;
                     new Handler(Looper.getMainLooper()).post(() -> {
-                        if (finalHasAbnormal) {
-                            layoutNormal.setVisibility(View.GONE);
-                            layoutAbnormal.setVisibility(View.VISIBLE);
-                            parseAndPopulate(finalJsonData);
+                        if (!isAdded() || getView() == null) return;
 
-                            if (!targetColors.isEmpty()) {
-                                applyMultiOutlineAsync(mapImageView, targetColors, Color.RED, 20);
-                            }
-                        } else {
-                            layoutNormal.setVisibility(View.VISIBLE);
-                            layoutAbnormal.setVisibility(View.GONE);
+                        if (!targetColors.isEmpty()) {
+                            applyMultiOutlineAsync(mapImageView, targetColors, Color.RED, 20);
                         }
+                        updateMainLayout(lines);
+                        updateUI(lines);
+
                     });
                 }
                 connection.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                isFetching = false;
             }
         }).start();
     }
 
-    private void parseAndPopulate(String json) {
+    private void updateMainLayout(JSONArray lines) {
+        boolean delayed = false;
+        try {
+            for (int i = 0; i < lines.length(); i++) {
+                String status = lines.getJSONObject(i).getString("status").toLowerCase();
+                if (!status.equals("green") && !status.equals("grey") && !status.equals("typhoon")) {
+                    delayed = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (delayed) {
+            layoutNormal.setVisibility(View.GONE);
+            layoutDelayed.setVisibility(View.VISIBLE);
+        } else {
+            layoutNormal.setVisibility(View.VISIBLE);
+            layoutDelayed.setVisibility(View.GONE);
+        }
+    }
+
+    private void fetchNextTrain(JSONArray lines) throws Exception {
+        CountDownLatch latch = new CountDownLatch(lines.length());
+
+        for (int i = 0; i < lines.length(); i++) {
+            final JSONObject line = lines.getJSONObject(i);
+            crossCheckExecutor.execute(() -> {
+                HttpURLConnection conn = null;
+                try {
+                    String lineCode = line.getString("line_code").toUpperCase();
+                    String sta = CHECK_STATIONS.get(lineCode);
+
+                    URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=" + lineCode + "&sta=" + sta);
+
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(3000);
+                    conn.setReadTimeout(3000);
+
+                    try (BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                        StringBuilder sb = new StringBuilder();
+                        String l;
+                        while ((l = r.readLine()) != null) sb.append(l);
+
+                        JSONObject rtData = new JSONObject(sb.toString());
+
+                        boolean isApiDelay = rtData.optString("isdelay", "N").equals("Y");
+                        boolean isTimeBlank = rtData.optString("sys_time", "").equals("-") ||
+                                rtData.optString("curr_time", "").equals("-");
+
+                        if (isApiDelay || isTimeBlank) {
+                            String currentStatus = line.getString("status").toLowerCase();
+                            if (currentStatus.equals("green")) {
+                                line.put("status", "yellow");
+                                String original = line.optString("messages", "");
+                                String nexttrain = "列車服務可能受阻，詳情請留意官方發出的最新車務資訊。";
+                                line.put("messages", !original.isEmpty() ? original : nexttrain);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                } finally {
+                    if (conn != null) conn.disconnect();
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await(6, TimeUnit.SECONDS);
+    }
+
+    private void updateUI(JSONArray lines) {
         try {
             statusContainer.removeAllViews();
-            JSONObject root = new JSONObject(json);
-            JSONArray lines = root.getJSONObject("ryg_status").getJSONArray("line");
-
             for (int i = 0; i < lines.length(); i++) {
                 JSONObject lineObj = lines.getJSONObject(i);
 
@@ -127,6 +220,8 @@ public class TrafficNewsFragment extends Fragment {
                 String lineColor = lineObj.getString("line_color");
                 String status = lineObj.getString("status");
                 String messages = lineObj.optString("messages", "");
+
+                if (status.equals("green") || status.equals("grey")) continue;
 
                 View itemView = LayoutInflater.from(getContext()).inflate(R.layout.item_line_status, statusContainer, false);
 
@@ -277,5 +372,4 @@ public class TrafficNewsFragment extends Fragment {
                 Math.abs(Color.green(color1) - Color.green(color2)) < tolerance &&
                 Math.abs(Color.blue(color1) - Color.blue(color2)) < tolerance;
     }
-
 }
