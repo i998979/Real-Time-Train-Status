@@ -80,7 +80,7 @@ public class TrafficNewsActivity extends AppCompatActivity {
             case "typhoon":
                 tvStatus.setText("熱帶氣旋警告信號生效");
                 tvReason.setText("熱帶氣旋警告信號生效");
-                ivIcon.setImageResource(R.drawable.outline_storm_24);
+                ivIcon.setImageResource(R.drawable.baseline_storm_24);
                 ivIcon.setColorFilter(Color.parseColor("#00BCD4"));
                 break;
             case "grey":
