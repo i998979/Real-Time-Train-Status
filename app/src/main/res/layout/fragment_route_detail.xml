@@ -22,7 +22,7 @@
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="36dp"
-            app:iconTint="?attr/colorOutlineVariant" />
+            app:iconTint="?attr/colorOutline" />
 
         <LinearLayout
             android:id="@+id/header_container"
