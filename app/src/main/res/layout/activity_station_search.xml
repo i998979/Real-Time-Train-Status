@@ -18,7 +18,7 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:drawableStart="@drawable/outline_search_24"
+            android:drawableStart="@drawable/baseline_search_24"
             android:drawablePadding="8dp"
             android:hint="請輸入車站"
             android:inputType="text"

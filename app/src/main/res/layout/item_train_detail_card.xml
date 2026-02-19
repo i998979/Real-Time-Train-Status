@@ -176,7 +176,7 @@
                     android:id="@+id/fold_arrow"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/outline_keyboard_arrow_up_24"
+                    android:src="@drawable/baseline_keyboard_arrow_up_24"
                     app:tint="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
 

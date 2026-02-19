@@ -9,7 +9,7 @@
     <item
         android:width="14dp"
         android:height="14dp"
-        android:drawable="@drawable/outline_directions_walk_24"
+        android:drawable="@drawable/baseline_directions_walk_24"
         android:gravity="center"
         android:tint="?attr/colorOnSurfaceInverse" />
 </layer-list>

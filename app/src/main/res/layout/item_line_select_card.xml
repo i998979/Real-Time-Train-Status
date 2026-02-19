@@ -40,6 +40,6 @@
     <ImageView
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:src="@drawable/outline_chevron_right_24"
+        android:src="@drawable/baseline_keyboard_arrow_right_24"
         app:tint="#888888" />
 </LinearLayout>
