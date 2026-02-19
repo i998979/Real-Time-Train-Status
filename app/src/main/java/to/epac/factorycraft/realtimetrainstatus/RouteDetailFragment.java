@@ -82,7 +82,7 @@ public class RouteDetailFragment extends Fragment {
 
             boolean isTomorrow = (nowMins > lastMins % 1440 && nowMins < firstMins);
             if (isTomorrow)
-                cal.add(java.util.Calendar.DAY_OF_YEAR, 1);
+                cal.add(Calendar.DAY_OF_YEAR, 1);
 
             SimpleDateFormat sdf = new SimpleDateFormat("M月d日(E)", Locale.TRADITIONAL_CHINESE);
             journeyStart.setText(sdf.format(cal.getTime()));
