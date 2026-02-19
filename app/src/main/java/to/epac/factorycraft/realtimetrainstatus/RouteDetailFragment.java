@@ -18,9 +18,12 @@ import com.google.android.material.button.MaterialButton;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class RouteDetailFragment extends Fragment {
 
@@ -54,6 +57,7 @@ public class RouteDetailFragment extends Fragment {
         });
         TextView tvStartTime = root.findViewById(R.id.tv_start_time);
         TextView tvEndTime = root.findViewById(R.id.tv_end_time);
+        TextView journeyStart = root.findViewById(R.id.tv_journey_start);
 
         LinearLayout routeContainer = root.findViewById(R.id.route_container);
         TextView tvJourneyTime = root.findViewById(R.id.tv_journey_time);
@@ -62,29 +66,52 @@ public class RouteDetailFragment extends Fragment {
 
         try {
             JSONObject data = new JSONObject(getArguments().getString("route_data"));
+            JSONObject selected = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
 
-            // Footer Data
-            tvJourneyTime.setText(data.optString("time"));
-            tvInterchangeCount.setText(data.optString("interchangeStationsNo"));
 
-            JSONArray fares = data.optJSONArray("fares");
-            if (fares != null && fares.length() > 0) {
-                String price = fares.getJSONObject(0).optJSONObject("fareInfo").optJSONObject("adult").optString("octopus", "-");
-                tvFare.setText(price);
-            }
+            // Start and end time calculation
+            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+            int nowMins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
+
+            String firstTimeStr = data.getJSONObject("firstTrain").getString("time");
+            String lastTimeStr = data.getJSONObject("lastTrain").getString("time");
+            int firstMins = Integer.parseInt(firstTimeStr.split(":")[0]) * 60 + Integer.parseInt(firstTimeStr.split(":")[1]);
+            int lastMins = Integer.parseInt(lastTimeStr.split(":")[0]) * 60 + Integer.parseInt(lastTimeStr.split(":")[1]);
+
+            if (lastMins < firstMins) lastMins += 24 * 60;
+
+            boolean isTomorrow = (nowMins > lastMins % 1440 && nowMins < firstMins);
+            if (isTomorrow)
+                cal.add(java.util.Calendar.DAY_OF_YEAR, 1);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("M月d日(E)", Locale.TRADITIONAL_CHINESE);
+            journeyStart.setText(sdf.format(cal.getTime()));
 
             String startTime = getArguments().getString("start_time");
-            int startH = Integer.parseInt(getArguments().getString("start_time").split(":")[0]);
-            int startM = Integer.parseInt(getArguments().getString("start_time").split(":")[1]);
+            int startH = Integer.parseInt(startTime.split(":")[0]);
+            int startM = Integer.parseInt(startTime.split(":")[1]);
 
             tvStartTime.setText(startTime);
-            JSONArray path = data.getJSONArray("path");
+            JSONArray path = selected.getJSONArray("path");
             int endTotalMin = startM + path.getJSONObject(path.length() - 1).optInt("time");
             int endH = (startH + endTotalMin / 60) % 24;
             int endM = endTotalMin % 60;
             tvEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endH, endM));
 
-            List<VisualSegment> segments = parsePathToSegments(data.getJSONArray("path"), startH, startM);
+
+            // Footer Data
+            tvJourneyTime.setText(selected.optString("time"));
+            tvInterchangeCount.setText(selected.optString("interchangeStationsNo"));
+
+            JSONArray fares = selected.optJSONArray("fares");
+            if (fares != null && fares.length() > 0) {
+                String price = fares.getJSONObject(0).optJSONObject("fareInfo").optJSONObject("adult").optString("octopus", "-");
+                tvFare.setText(price);
+            }
+
+
+            // Apply path segments
+            List<VisualSegment> segments = parsePathToSegments(selected.getJSONArray("path"), startH, startM);
             buildRouteUI(inflater, routeContainer, segments, startH, startM);
 
         } catch (Exception e) {
