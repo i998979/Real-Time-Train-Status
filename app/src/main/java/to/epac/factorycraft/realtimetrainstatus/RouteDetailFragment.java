@@ -46,6 +46,15 @@ public class RouteDetailFragment extends Fragment {
 
         hrConf = HRConfig.getInstance(getContext());
 
+        MaterialButton btnReturn = root.findViewById(R.id.btn_return);
+        btnReturn.setOnClickListener(v -> {
+            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                getParentFragmentManager().popBackStack();
+            }
+        });
+        TextView tvStartTime = root.findViewById(R.id.tv_start_time);
+        TextView tvEndTime = root.findViewById(R.id.tv_end_time);
+
         LinearLayout routeContainer = root.findViewById(R.id.route_container);
         TextView tvJourneyTime = root.findViewById(R.id.tv_journey_time);
         TextView tvInterchangeCount = root.findViewById(R.id.tv_interchange_count);
@@ -64,8 +73,16 @@ public class RouteDetailFragment extends Fragment {
                 tvFare.setText(price);
             }
 
+            String startTime = getArguments().getString("start_time");
             int startH = Integer.parseInt(getArguments().getString("start_time").split(":")[0]);
             int startM = Integer.parseInt(getArguments().getString("start_time").split(":")[1]);
+
+            tvStartTime.setText(startTime);
+            JSONArray path = data.getJSONArray("path");
+            int endTotalMin = startM + path.getJSONObject(path.length() - 1).optInt("time");
+            int endH = (startH + endTotalMin / 60) % 24;
+            int endM = endTotalMin % 60;
+            tvEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endH, endM));
 
             List<VisualSegment> segments = parsePathToSegments(data.getJSONArray("path"), startH, startM);
             buildRouteUI(inflater, routeContainer, segments, startH, startM);
