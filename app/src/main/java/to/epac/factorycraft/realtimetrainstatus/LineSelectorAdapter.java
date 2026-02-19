@@ -53,7 +53,7 @@ public class LineSelectorAdapter extends RecyclerView.Adapter<LineSelectorAdapte
         ViewHolder(View v) {
             super(v);
             tvCode = v.findViewById(R.id.tv_line_code_badge);
-            tvName = v.findViewById(R.id.tv_line_name);
+            tvName = v.findViewById(R.id.tv_line);
             codeBadge = v.findViewById(R.id.line_color_badge);
         }
     }

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:minHeight="60dp"
+            android:paddingRight="8dp">
+
+            <TextView
+                android:id="@+id/tv_dep_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="23:50"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_dep_platform"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_dep_time"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/bg_platform_border"
+                android:paddingHorizontal="4dp"
+                android:text="1 / 2號月台"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="40dp"
+            android:layout_height="match_parent">
+
+            <View
+                android:id="@+id/v_line_middle"
+                android:layout_width="10dp"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="12dp"
+                android:background="#E60012" />
+
+            <FrameLayout
+                android:id="@+id/line_color_badge"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerHorizontal="true"
+                android:background="#E60012">
+
+                <TextView
+                    android:id="@+id/tv_line_code_badge"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:background="#FFFFFF"
+                    android:gravity="center"
+                    android:text="TWL"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:paddingEnd="20dp">
+
+            <TextView
+                android:id="@+id/tv_line"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="荃灣綫"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_direction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="荃灣 方面"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_car_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8両"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_expand"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:padding="0dp"
+                android:text="乘搭 4 站"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp"
+                app:icon="@drawable/baseline_keyboard_arrow_down_24"
+                app:iconGravity="end"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/container_intermediate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="8dp"
+            android:gravity="bottom"
+            android:minHeight="60dp"
+            android:paddingRight="8dp">
+
+            <TextView
+                android:id="@+id/tv_arv_platform"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/bg_platform_border"
+                android:paddingHorizontal="4dp"
+                android:text="1 / 2號月台"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_arv_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_arv_platform"
+                android:layout_alignParentEnd="true"
+                android:text="23:55"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="40dp"
+            android:layout_height="match_parent">
+
+            <View
+                android:id="@+id/v_line_bottom"
+                android:layout_width="10dp"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="8dp"
+                android:background="#E60012" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="bottom"
+            android:minHeight="60dp"
+            android:orientation="vertical" />
+    </LinearLayout>
+
+</LinearLayout>

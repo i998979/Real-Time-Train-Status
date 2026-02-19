@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="?attr/colorOutlineVariant" />
+        </shape>
+    </item>
+
+    <item
+        android:width="14dp"
+        android:height="14dp"
+        android:drawable="@drawable/outline_directions_walk_24"
+        android:gravity="center"
+        android:tint="?attr/colorOnSurfaceInverse" />
+</layer-list>

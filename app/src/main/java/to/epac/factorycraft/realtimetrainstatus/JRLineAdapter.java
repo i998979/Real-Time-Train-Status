@@ -408,7 +408,7 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 Trip trip = tripsAtLocation.get(position);
                 View v = holder.itemView;
 
-                TextView tvLine = v.findViewById(R.id.tv_line_name);
+                TextView tvLine = v.findViewById(R.id.tv_line);
                 tvLine.setBackgroundColor(lineColor);
                 tvLine.setText(Utils.getLineName(lineCode, true));
 
