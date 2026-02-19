@@ -19,19 +19,16 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class RouteDetailFragment extends Fragment {
 
     private HRConfig hrConf;
-    private int startHour, startMin;
 
     private static class VisualSegment {
         String lineName;
-        String colorHex;
+        String lineColor;
         int duration;
         int startH, startM;
         int endH, endM;
@@ -51,28 +48,27 @@ public class RouteDetailFragment extends Fragment {
 
         LinearLayout routeContainer = root.findViewById(R.id.route_container);
         TextView tvJourneyTime = root.findViewById(R.id.tv_journey_time);
-        TextView tvInterhcangeCount = root.findViewById(R.id.tv_interchange_count);
+        TextView tvInterchangeCount = root.findViewById(R.id.tv_interchange_count);
         TextView tvFare = root.findViewById(R.id.tv_fare);
 
         try {
-            JSONObject routeData = new JSONObject(getArguments().getString("route_data"));
-
-            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-            startHour = calendar.get(Calendar.HOUR_OF_DAY);
-            startMin = calendar.get(Calendar.MINUTE);
+            JSONObject data = new JSONObject(getArguments().getString("route_data"));
 
             // Footer Data
-            tvJourneyTime.setText(routeData.optString("time"));
-            tvInterhcangeCount.setText(routeData.optString("interchangeStationsNo"));
+            tvJourneyTime.setText(data.optString("time"));
+            tvInterchangeCount.setText(data.optString("interchangeStationsNo"));
 
-            JSONArray fares = routeData.optJSONArray("fares");
+            JSONArray fares = data.optJSONArray("fares");
             if (fares != null && fares.length() > 0) {
                 String price = fares.getJSONObject(0).optJSONObject("fareInfo").optJSONObject("adult").optString("octopus", "-");
                 tvFare.setText(price);
             }
 
-            List<VisualSegment> segments = parsePathToSegments(routeData.getJSONArray("path"), startHour, startMin);
-            buildRouteUI(inflater, routeContainer, segments);
+            int startH = Integer.parseInt(getArguments().getString("start_time").split(":")[0]);
+            int startM = Integer.parseInt(getArguments().getString("start_time").split(":")[1]);
+
+            List<VisualSegment> segments = parsePathToSegments(data.getJSONArray("path"), startH, startM);
+            buildRouteUI(inflater, routeContainer, segments, startH, startM);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,7 +76,7 @@ public class RouteDetailFragment extends Fragment {
         return root;
     }
 
-    private void buildRouteUI(LayoutInflater inflater, LinearLayout container, List<VisualSegment> segments) {
+    private void buildRouteUI(LayoutInflater inflater, LinearLayout container, List<VisualSegment> segments, int startH, int startM) {
         container.removeAllViews();
 
         for (int i = 0; i < segments.size(); i++) {
@@ -91,7 +87,7 @@ public class RouteDetailFragment extends Fragment {
 
             // Show Ride/Walk Section
             if (!seg.isWalk)
-                addRideSection(inflater, container, seg);
+                addRideSection(inflater, container, seg, startH, startM);
             else
                 addWalkSection(inflater, container, seg);
 
@@ -110,7 +106,7 @@ public class RouteDetailFragment extends Fragment {
         container.addView(view);
     }
 
-    private void addRideSection(LayoutInflater inflater, LinearLayout container, VisualSegment seg) {
+    private void addRideSection(LayoutInflater inflater, LinearLayout container, VisualSegment seg, int startH, int startM) {
         View view = inflater.inflate(R.layout.item_segment_ride, container, false);
 
         // Segment arrival
@@ -122,8 +118,8 @@ public class RouteDetailFragment extends Fragment {
             tvArvPlat.setVisibility(View.GONE);
 
         TextView tvArvTime = view.findViewById(R.id.tv_arv_time);
-        if (tvArvTime != null)
-            tvArvTime.setText(formatTime(seg.endNode.optInt("time")));
+        int totalArvMin = startM + seg.endNode.optInt("time");
+        tvArvTime.setText(String.format(Locale.getDefault(), "%02d:%02d", (startH + totalArvMin / 60) % 24, totalArvMin % 60));
 
 
         // Segment departure
@@ -142,7 +138,7 @@ public class RouteDetailFragment extends Fragment {
         // Segment line color
         View vLineTop = view.findViewById(R.id.v_line_middle);
         View vLineBottom = view.findViewById(R.id.v_line_bottom);
-        int color = Color.parseColor("#" + seg.colorHex);
+        int color = Color.parseColor("#" + seg.lineColor);
 
         vLineTop.setBackgroundColor(color);
         GradientDrawable lineBtmDrawable = new GradientDrawable();
@@ -200,8 +196,8 @@ public class RouteDetailFragment extends Fragment {
             TextView tvStartTime = intView.findViewById(R.id.tv_start_time);
             TextView tvMidStation = intView.findViewById(R.id.tv_mid_station);
             View vLineMiddle = intView.findViewById(R.id.v_line_middle);
-
-            tvStartTime.setText(formatTime(stop.optInt("time")));
+            int totalIntMin = startM + stop.optInt("time");
+            tvStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", (startH + totalIntMin / 60) % 24, totalIntMin % 60));
             tvMidStation.setText(hrConf.getStationName(stop.optInt("ID")));
             vLineMiddle.setBackgroundColor(color);
 
@@ -248,81 +244,63 @@ public class RouteDetailFragment extends Fragment {
         int i = 0;
         while (i < path.length() - 1) {
             JSONObject startNode = path.optJSONObject(i);
-            String startCat = startNode.optString("linkType").equals("WALKINTERCHANGE") ? "WALK" : "RIDE";
+            boolean isWalk = startNode.optString("linkType").equals("WALKINTERCHANGE");
             int startLineID = startNode.optInt("lineID");
 
-            // 尋找這一段的終點
+            // Find segment end
             int j = i;
             while (j < path.length() - 1) {
-                JSONObject curr = path.optJSONObject(j);
-                JSONObject next = path.optJSONObject(j + 1);
+                JSONObject currNode = path.optJSONObject(j);
+                boolean currIsWalk = currNode.optString("linkType").equals("WALKINTERCHANGE");
+                int currLineID = currNode.optInt("lineID");
 
-                String currCat = curr.optString("linkType").equals("WALKINTERCHANGE") ? "WALK" : "RIDE";
-                int currLineID = curr.optInt("lineID");
-
-                if (!startCat.equals(currCat) || (startCat.equals("RIDE") && currLineID != startLineID))
+                // If linkType change, segment ends
+                if (isWalk != currIsWalk || (!isWalk && currLineID != startLineID)) {
                     break;
-
+                }
                 j++;
             }
 
-            segments.add(createSegmentFromRange(path, i, j, startH, startM));
+            // Construct VisualSegment
+            VisualSegment seg = new VisualSegment();
+            JSONObject endNode = path.optJSONObject(j);
 
-            i = j;
+            seg.startNode = startNode;
+            seg.endNode = endNode;
+            seg.isWalk = isWalk;
+            seg.lineID = startLineID;
 
-            if (i < path.length() - 1) {
-                JSONObject currentEnd = path.optJSONObject(j);
-                JSONObject nextStart = path.optJSONObject(j + 1);
-                if (currentEnd.optInt("ID") == nextStart.optInt("ID")) {
-                    i = j + 1;
-                }
+            // Calculate start end time and duration
+            int startTime = startNode.optInt("time");
+            int endTime = endNode.optInt("time");
+            seg.duration = endTime - startTime;
+
+            int startTotalM = (startH * 60) + startM + startTime;
+            seg.startH = (startTotalM / 60) % 24;
+            seg.startM = startTotalM % 60;
+
+            int endTotalM = (startH * 60) + startM + endTime;
+            seg.endH = (endTotalM / 60) % 24;
+            seg.endM = endTotalM % 60;
+
+            // Apply line name and color
+            seg.lineName = hrConf.getLineById(startLineID).name;
+            seg.lineColor = hrConf.getLineById(startLineID).color;
+
+            // Add intermediate stations
+            for (int k = i + 1; k < j; k++) {
+                seg.intermediates.add(path.optJSONObject(k));
             }
+
+            segments.add(seg);
+
+            // Set next segment start
+            if (j < path.length() - 1)
+                i = j;
+            else
+                i = j + 1;
         }
 
         return segments;
-    }
-
-    private VisualSegment createSegmentFromRange(JSONArray path, int startIdx, int endIdx, int baseH, int baseM) {
-        JSONObject startNode = path.optJSONObject(startIdx);
-        JSONObject endNode = path.optJSONObject(endIdx);
-
-        String cat = startNode.optString("linkType").equals("WALKINTERCHANGE") ? "WALK" : "RIDE";
-        int lineID = startNode.optInt("lineID");
-        int duration = endNode.optInt("time") - startNode.optInt("time");
-
-        List<JSONObject> inters = new ArrayList<>();
-        for (int k = startIdx + 1; k < endIdx; k++) {
-            inters.add(path.optJSONObject(k));
-        }
-
-        VisualSegment seg = createSeg(cat, lineID, duration, baseH, baseM + startNode.optInt("time"), startNode, endNode, inters);
-
-        int endTotalM = (baseH * 60) + baseM + endNode.optInt("time");
-        seg.endH = (endTotalM / 60) % 24;
-        seg.endM = endTotalM % 60;
-
-        return seg;
-    }
-
-    private VisualSegment createSeg(String cat, int id, int dur, int h, int m, JSONObject start, JSONObject end, List<JSONObject> inter) {
-        VisualSegment seg = new VisualSegment();
-        seg.lineID = id;
-        seg.duration = dur;
-        int totalM = (h * 60) + m;
-        seg.startH = (totalM / 60) % 24;
-        seg.startM = totalM % 60;
-        seg.isWalk = "WALK".equals(cat);
-        seg.startNode = start;
-        seg.endNode = end;
-        seg.intermediates = new ArrayList<>(inter);
-        HRConfig.Line line = hrConf.getLineById(id);
-        seg.lineName = (line != null) ? line.name : (seg.isWalk ? "步行" : "MTR");
-        seg.colorHex = (line != null) ? line.color : "888888";
-        return seg;
-    }
-
-    private String formatTime(int minutesOffset) {
-        int totalMin = startMin + minutesOffset;
-        return String.format(Locale.getDefault(), "%02d:%02d", (startHour + totalMin / 60) % 24, totalMin % 60);
     }
 }
