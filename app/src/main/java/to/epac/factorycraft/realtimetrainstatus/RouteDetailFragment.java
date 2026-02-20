@@ -175,9 +175,12 @@ public class RouteDetailFragment extends Fragment {
             tvDepPlat.setVisibility(View.GONE);
 
         TextView tvDepTime = view.findViewById(R.id.tv_dep_time);
+        TextView tvDeparture = view.findViewById(R.id.tv_departure);
         tvDepTime.setText(String.format(Locale.getDefault(), "%02d:%02d", seg.startH, seg.startM));
-        tvDepTime.setVisibility(View.VISIBLE);
 
+        int startStationId = seg.startNode.optInt("ID");
+        String lineAlias = hrConf.getLineById(seg.lineID).alias;
+        tvDeparture.setVisibility(hrConf.isTerminus(lineAlias, startStationId) ? View.VISIBLE : View.GONE);
 
         // Segment line color
         View vLineTop = view.findViewById(R.id.v_line_middle);

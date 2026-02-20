@@ -35,9 +35,26 @@
                 android:layout_alignParentEnd="true"
                 android:background="@drawable/bg_platform_border"
                 android:paddingHorizontal="4dp"
+                android:paddingVertical="2dp"
                 android:text="1 / 2號月台"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_departure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_dep_platform"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="#03A9F4"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:text="本站始發"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -152,6 +169,7 @@
                 android:layout_alignParentEnd="true"
                 android:background="@drawable/bg_platform_border"
                 android:paddingHorizontal="4dp"
+                android:paddingVertical="2dp"
                 android:text="1 / 2號月台"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="11sp" />

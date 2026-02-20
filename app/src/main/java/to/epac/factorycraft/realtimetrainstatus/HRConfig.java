@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -8,7 +9,6 @@ import org.json.JSONObject;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +116,35 @@ public class HRConfig {
             instance = new HRConfig(context.getApplicationContext());
         }
         return instance;
+    }
+
+
+    public boolean isTerminus(String lineAlias, int stationId) {
+        String alias = getStationAlias(stationId);
+        switch (lineAlias) {
+            case "EAL": // 東鐵綫：金鐘、羅湖、落馬洲
+                return alias.equals("ADM") || alias.equals("LOW") || alias.equals("LMC");
+            case "TWL": // 荃灣綫：中環、荃灣
+                return alias.equals("CEN") || alias.equals("TSW");
+            case "ISL": // 港島綫：堅尼地城、柴灣
+                return alias.equals("KET") || alias.equals("CHW");
+            case "TML": // 屯馬綫：屯門、烏溪沙
+                return alias.equals("TUM") || alias.equals("WKS");
+            case "TKL": // 將軍澳綫：北角、寶琳、康城
+                return alias.equals("NOP") || alias.equals("POA") || alias.equals("LHP");
+            case "TCL": // 東涌綫：香港、東涌
+                return alias.equals("HOK") || alias.equals("TUC");
+            case "AEL": // 機場快綫：香港、博覽館
+                return alias.equals("AEL") || alias.equals("AWE");
+            case "SIL": // 南港島綫：金鐘、海怡半島
+                return alias.equals("ADM") || alias.equals("SOH");
+            case "DRL": // 迪士尼綫：欣澳、迪士尼
+                return alias.equals("SUN") || alias.equals("DIS");
+            case "KTL": // 觀塘綫：黃埔、調景嶺
+                return alias.equals("WHA") || alias.equals("TIK");
+            default:
+                return false;
+        }
     }
 
 
