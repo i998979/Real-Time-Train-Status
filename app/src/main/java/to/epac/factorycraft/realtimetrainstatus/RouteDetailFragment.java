@@ -156,7 +156,7 @@ public class RouteDetailFragment extends Fragment {
         // Segment arrival
         TextView tvArvPlat = view.findViewById(R.id.tv_arv_platform);
         String arvPlat = seg.endNode.optString("platform");
-        if (!arvPlat.isEmpty() && !arvPlat.equals("null"))
+        if (!arvPlat.isEmpty() && !arvPlat.equals("null") && !seg.endNode.optString("linkType").equals("INTERCHANGE"))
             tvArvPlat.setText(arvPlat + " 號月台");
         else
             tvArvPlat.setVisibility(View.GONE);
