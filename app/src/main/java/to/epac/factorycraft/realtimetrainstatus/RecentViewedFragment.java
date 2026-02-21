@@ -134,6 +134,11 @@ public class RecentViewedFragment extends Fragment {
             holder.tvDepartureTime.setText(sdf.format(calendar.getTime()));
 
 
+            holder.goLayout.setOnClickListener(v -> {
+                if (goClickListener != null) {
+                    goClickListener.onGo(item);
+                }
+            });
             holder.btnGo.setOnClickListener(v -> {
                 if (goClickListener != null) {
                     goClickListener.onGo(item);
@@ -147,10 +152,12 @@ public class RecentViewedFragment extends Fragment {
         }
 
         private static class ViewHolder extends RecyclerView.ViewHolder {
+            LinearLayout goLayout;
             TextView tvRouteName, tvDepartureTime, btnGo;
 
             private ViewHolder(View itemView) {
                 super(itemView);
+                goLayout = itemView.findViewById(R.id.layout_go);
                 tvRouteName = itemView.findViewById(R.id.tv_name);
                 tvDepartureTime = itemView.findViewById(R.id.tv_time);
                 btnGo = itemView.findViewById(R.id.btn_go);
