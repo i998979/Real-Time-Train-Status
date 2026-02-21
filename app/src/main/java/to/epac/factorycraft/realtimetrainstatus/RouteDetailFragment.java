@@ -29,19 +29,6 @@ public class RouteDetailFragment extends Fragment {
 
     private HRConfig hrConf;
 
-    private static class VisualSegment {
-        String lineName;
-        String lineColor;
-        int duration;
-        int startH, startM;
-        int endH, endM;
-        boolean isWalk = false;
-        JSONObject startNode;
-        JSONObject endNode;
-        List<JSONObject> intermediates = new ArrayList<>();
-        int lineID;
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -333,6 +320,7 @@ public class RouteDetailFragment extends Fragment {
             // Apply line name and color
             seg.lineName = hrConf.getLineById(startLineID).name;
             seg.lineColor = hrConf.getLineById(startLineID).color;
+            seg.stationName = hrConf.getStationName(endNode.optInt("ID"));
 
             // Add intermediate stations
             for (int k = i + 1; k < j; k++) {

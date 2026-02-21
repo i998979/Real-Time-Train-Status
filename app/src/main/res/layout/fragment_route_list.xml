@@ -137,7 +137,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/layout_global_background_lines"
+            android:id="@+id/layout_background_lines"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
