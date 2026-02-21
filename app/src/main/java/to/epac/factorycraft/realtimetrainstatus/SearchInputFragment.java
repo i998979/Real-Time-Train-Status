@@ -2,6 +2,8 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,7 +58,7 @@ public class SearchInputFragment extends Fragment {
             updateButtonStates();
         });
 
-         searchLauncher = registerForActivityResult(
+        searchLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         int id = result.getData().getIntExtra("selected_station_id", 1);
@@ -119,6 +121,9 @@ public class SearchInputFragment extends Fragment {
 
         boolean canGo = selectedOriginID != null && selectedDestID != null;
         btnGo.setEnabled(canGo);
-        btnGo.setAlpha(canGo ? 1.0f : 0.5f);
+
+        int activeColor = Color.parseColor("#6EC08D");
+        int greyColor = Color.parseColor("#BDBDBD");
+        btnGo.setBackgroundTintList(ColorStateList.valueOf(canGo ? activeColor : greyColor));
     }
 }
