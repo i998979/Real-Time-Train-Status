@@ -33,23 +33,7 @@ public class SearchInputFragment extends Fragment {
     private String selectedDestID = null;
     private boolean isSelectingOrigin = true;
 
-    private final ActivityResultLauncher<Intent> searchLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    int id = result.getData().getIntExtra("selected_station_id", 1);
-                    String name = result.getData().getStringExtra("selected_station_name");
-
-                    if (isSelectingOrigin) {
-                        selectedOriginID = String.valueOf(id);
-                        tvOrigin.setText(name);
-                    } else {
-                        selectedDestID = String.valueOf(id);
-                        tvDest.setText(name);
-                    }
-                    updateButtonStates();
-                }
-            }
-    );
+    private ActivityResultLauncher<Intent> searchLauncher;
 
     @Nullable
     @Override
@@ -71,6 +55,24 @@ public class SearchInputFragment extends Fragment {
             updateStationDisplay(tvDest, selectedDestID, "目的地");
             updateButtonStates();
         });
+
+         searchLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        int id = result.getData().getIntExtra("selected_station_id", 1);
+                        String name = result.getData().getStringExtra("selected_station_name");
+
+                        if (isSelectingOrigin) {
+                            selectedOriginID = String.valueOf(id);
+                            tvOrigin.setText(name);
+                        } else {
+                            selectedDestID = String.valueOf(id);
+                            tvDest.setText(name);
+                        }
+                        updateButtonStates();
+                    }
+                }
+        );
 
         View.OnClickListener searchClick = v -> {
             isSelectingOrigin = (v.getId() == R.id.layout_origin);
