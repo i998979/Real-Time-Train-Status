@@ -180,7 +180,7 @@ public class RouteListFragment extends Fragment {
             @Override
             public void draw(@NonNull Canvas canvas) {
                 Paint paint = new Paint();
-                paint.setColor(Color.parseColor("#33FFFFFF"));
+                paint.setColor(getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
                 paint.setStrokeWidth(dpToPx(1));
 
                 int w = getBounds().width();
@@ -214,7 +214,7 @@ public class RouteListFragment extends Fragment {
         private class ViewHolder extends RecyclerView.ViewHolder {
             LinearLayout routeLayout;
             LinearLayout layoutVisualSegments;
-            TextView journeyTime, startTime, interchangeCount, arriveTime, fare;
+            TextView journeyTime, startTime, arriveTime, fare;
 
             private ViewHolder(View itemView) {
                 super(itemView);
@@ -222,7 +222,6 @@ public class RouteListFragment extends Fragment {
                 layoutVisualSegments = itemView.findViewById(R.id.layout_visual_segments);
                 journeyTime = itemView.findViewById(R.id.tv_journey_time);
                 startTime = itemView.findViewById(R.id.tv_header_origin);
-                interchangeCount = itemView.findViewById(R.id.tv_interchange_count);
                 arriveTime = itemView.findViewById(R.id.tv_header_dest);
                 fare = itemView.findViewById(R.id.tv_fare);
             }
@@ -266,7 +265,6 @@ public class RouteListFragment extends Fragment {
 
                 holder.journeyTime.setText(route.getInt("time") + "分");
                 holder.startTime.setText(String.format(Locale.getDefault(), "%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
-                holder.interchangeCount.setText(route.getInt("interchangeStationsNo") + " 次轉乘");
 
                 int arrM_total = cal.get(Calendar.MINUTE) + route.getInt("time");
                 holder.arriveTime.setText(String.format(Locale.getDefault(), "%02d:%02d", (cal.get(Calendar.HOUR_OF_DAY) + arrM_total / 60) % 24, arrM_total % 60));
@@ -409,7 +407,7 @@ public class RouteListFragment extends Fragment {
 
         TextView tvLabel = new TextView(getContext());
         tvLabel.setText("轉乘");
-        tvLabel.setTextSize(10);
+        tvLabel.setTextSize(12);
         tvLabel.setGravity(Gravity.CENTER);
         tvLabel.setTypeface(null, Typeface.BOLD);
         tvLabel.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline));
@@ -447,19 +445,19 @@ public class RouteListFragment extends Fragment {
             TextView tvIcon = new TextView(getContext());
             tvIcon.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
             tvIcon.setTextSize(10);
-            tvIcon.setTextColor(Color.parseColor("#CCCCCC"));
+            tvIcon.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
             walkContainer.addView(tvIcon);
 
             TextView tvWalk = new TextView(getContext());
             tvWalk.setText(seg.duration + "");
             tvWalk.setTextSize(10);
             tvWalk.setTypeface(null, Typeface.BOLD);
-            tvWalk.setTextColor(Color.parseColor("#CCCCCC"));
+            tvWalk.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOnSurface));
 
             GradientDrawable bgTvWalk = new GradientDrawable();
             bgTvWalk.setShape(GradientDrawable.RECTANGLE);
             bgTvWalk.setCornerRadius(dpToPx(4));
-            bgTvWalk.setColor(Color.parseColor("#000000"));
+            bgTvWalk.setColor(getThemeColor(com.google.android.material.R.attr.colorOnSurfaceInverse));
             tvWalk.setBackground(bgTvWalk);
             tvWalk.setPadding(dpToPx(4), dpToPx(2), dpToPx(4), dpToPx(2));
             walkContainer.addView(tvWalk);
@@ -513,7 +511,7 @@ public class RouteListFragment extends Fragment {
         if (showStation) {
             TextView tvStation = new TextView(getContext());
             tvStation.setText(seg.stationName);
-            tvStation.setTextColor(Color.parseColor("#BBBBBB"));
+            tvStation.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
             tvStation.setTextSize(14);
             tvStation.setTypeface(null, Typeface.BOLD);
             tvStation.setGravity(Gravity.CENTER);

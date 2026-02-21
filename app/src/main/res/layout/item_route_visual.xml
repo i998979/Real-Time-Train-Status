@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:id="@+id/layout_route"
-        android:layout_width="wrap_content"
+        android:layout_width="60dp"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:text="30分"
-                android:textColor="#00BCD4"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textStyle="bold" />
 
             <TextView
@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:text="23:59"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:background="?attr/colorSurfaceVariant"
             android:gravity="center_horizontal"
-            android:orientation="vertical"/>
+            android:orientation="vertical" />
 
         <LinearLayout
             android:id="@+id/footer"
@@ -52,20 +52,12 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tv_interchange_count"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:text="轉乘 0 次"
-                android:textColor="#8E8E8E" />
-
-            <TextView
                 android:id="@+id/tv_header_dest"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:text="23:59"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
 
             <TextView
@@ -74,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:text="$ 10.0"
-                android:textColor="#FFFFFF" />
+                android:textColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
     </LinearLayout>
 
