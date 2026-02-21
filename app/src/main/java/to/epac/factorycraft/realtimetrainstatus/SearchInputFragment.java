@@ -1,7 +1,9 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -20,6 +22,10 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
 
 public class SearchInputFragment extends Fragment {
+    private static final String PREF_NAME = "route_prefs";
+    private static final String KEY_ORIGIN_ID = "origin_id";
+    private static final String KEY_DEST_ID = "dest_id";
+    private SharedPreferences prefs;
 
     private View layoutOrigin;
     private TextView tvOrigin;
@@ -41,6 +47,11 @@ public class SearchInputFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search_input, container, false);
+
+        prefs = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+
+        selectedOriginID = prefs.getString(KEY_ORIGIN_ID, null);
+        selectedDestID = prefs.getString(KEY_DEST_ID, null);
 
         layoutOrigin = view.findViewById(R.id.layout_origin);
         tvOrigin = view.findViewById(R.id.tv_origin_name);
@@ -100,6 +111,8 @@ public class SearchInputFragment extends Fragment {
                     .commit();
         });
 
+        updateStationDisplay(tvOrigin, selectedOriginID, "出發地");
+        updateStationDisplay(tvDest, selectedDestID, "目的地");
         updateButtonStates();
 
         return view;
@@ -120,10 +133,16 @@ public class SearchInputFragment extends Fragment {
         btnSwap.setAlpha(canSwap ? 1.0f : 0.5f);
 
         boolean canGo = selectedOriginID != null && selectedDestID != null;
+        btnGo.setAlpha(canGo ? 1.0f : 0.5f);
         btnGo.setEnabled(canGo);
 
         int activeColor = Color.parseColor("#6EC08D");
         int greyColor = Color.parseColor("#BDBDBD");
         btnGo.setBackgroundTintList(ColorStateList.valueOf(canGo ? activeColor : greyColor));
+
+        prefs.edit()
+                .putString(KEY_ORIGIN_ID, selectedOriginID)
+                .putString(KEY_DEST_ID, selectedDestID)
+                .apply();
     }
 }
