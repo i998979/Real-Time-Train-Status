@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
@@ -40,8 +41,9 @@
             android:id="@+id/layout_visual_segments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#363638"
-            android:orientation="vertical"></LinearLayout>
+            android:background="?attr/colorSurfaceVariant"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"/>
 
         <LinearLayout
             android:id="@+id/footer"

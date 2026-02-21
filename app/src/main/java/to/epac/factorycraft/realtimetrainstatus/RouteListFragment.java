@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -287,6 +288,7 @@ public class RouteListFragment extends Fragment {
         int badgeSize = dpToPx(32);
         int stationSize = dpToPx(32);
         int walkIntSize = dpToPx(36);
+        int interchangeSize = dpToPx(50);
 
         try {
             //            RecyclerView - Header reserved - Footer reserved
@@ -313,7 +315,11 @@ public class RouteListFragment extends Fragment {
                 }
             }
 
-            int remainingPx = Math.max(0, availableContentPx - totalStaticPx);
+            boolean shouldShowInterchange = availableContentPx - totalStaticPx >= dpToPx(60);
+
+            int finalAvailableContentPx = availableContentPx - (shouldShowInterchange ? interchangeSize : 0);
+            int remainingPx = Math.max(0, finalAvailableContentPx - totalStaticPx);
+
             int extraPxPerRide = (rideCount > 0) ? (remainingPx / rideCount) : 0;
             int remainderPx = (rideCount > 0) ? (remainingPx % rideCount) : 0;
 
@@ -332,12 +338,8 @@ public class RouteListFragment extends Fragment {
                 if (seg.isWalk) {
                     heightPx = walkIntSize + (showStation ? stationSize : 0);
                 } else {
-                    int staticBase = badgeSize + (showStation ? stationSize : 0);
-                    heightPx = staticBase + extraPxPerRide;
-
-                    if (currentRideIndex == rideCount - 1) {
-                        heightPx += remainderPx;
-                    }
+                    heightPx = badgeSize + (showStation ? stationSize : 0) + extraPxPerRide;
+                    if (currentRideIndex == rideCount - 1) heightPx += remainderPx;
                 }
 
                 View segmentView = createSegmentView(seg, isLast);
@@ -369,6 +371,15 @@ public class RouteListFragment extends Fragment {
                 holder.layoutVisualSegments.addView(segmentView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightPx));
             }
 
+            if (shouldShowInterchange) {
+                View interchangeView = createInterchangeCircleView(rideCount - 1);
+                LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(interchangeSize, interchangeSize);
+                circleParams.gravity = Gravity.CENTER;
+                circleParams.topMargin = dpToPx(5);
+                circleParams.bottomMargin = dpToPx(5);
+                holder.layoutVisualSegments.addView(interchangeView, circleParams);
+            }
+
             ViewGroup.LayoutParams segmentParams = holder.layoutVisualSegments.getLayoutParams();
             segmentParams.height = containerHeight;
             holder.layoutVisualSegments.setLayoutParams(segmentParams);
@@ -384,6 +395,36 @@ public class RouteListFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private View createInterchangeCircleView(int count) {
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setGravity(Gravity.CENTER);
+
+        GradientDrawable shape = new GradientDrawable();
+        shape.setShape(GradientDrawable.OVAL);
+        shape.setColor(getThemeColor(com.google.android.material.R.attr.colorSurface));
+        container.setBackground(shape);
+
+        TextView tvLabel = new TextView(getContext());
+        tvLabel.setText("轉乘");
+        tvLabel.setTextSize(10);
+        tvLabel.setGravity(Gravity.CENTER);
+        tvLabel.setTypeface(null, Typeface.BOLD);
+        tvLabel.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline));
+
+        TextView tvCount = new TextView(getContext());
+        tvCount.setText(count + "次");
+        tvCount.setTextSize(12);
+        tvCount.setGravity(Gravity.CENTER);
+        tvCount.setTypeface(null, Typeface.BOLD);
+        tvCount.setTextColor(getThemeColor(com.google.android.material.R.attr.colorSurfaceInverse));
+
+        container.addView(tvLabel);
+        container.addView(tvCount);
+
+        return container;
     }
 
     private View createSegmentView(VisualSegment seg, boolean isLastSegment) {
@@ -551,6 +592,12 @@ public class RouteListFragment extends Fragment {
                 i = j + 1;
         }
         return segments;
+    }
+
+    private int getThemeColor(int attr) {
+        TypedValue typedValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(attr, typedValue, true);
+        return typedValue.data;
     }
 
     private int dpToPx(int dp) {
