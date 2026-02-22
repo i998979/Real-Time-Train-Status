@@ -138,6 +138,7 @@
             android:id="@+id/layout_background_lines"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="?attr/colorSurface"
             android:orientation="vertical"
             android:paddingTop="60dp"
             android:paddingBottom="60dp" />
@@ -183,17 +184,17 @@
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="最短時間 (早)" />
+                    android:text="最短時間" />
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="最少轉乘 (樂)" />
+                    android:text="最少轉乘" />
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="最低車費 (安)" />
+                    android:text="最低車費" />
 
             </com.google.android.material.tabs.TabLayout>
         </LinearLayout>

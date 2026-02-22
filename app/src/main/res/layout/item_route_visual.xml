@@ -15,23 +15,29 @@
             android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:gravity="center_vertical"
+            android:gravity="center_horizontal"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_journey_time"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorSurface"
                 android:gravity="center_horizontal"
+                android:paddingHorizontal="2dp"
                 android:text="30分"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_header_origin"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorSurface"
                 android:gravity="center_horizontal"
+                android:paddingHorizontal="2dp"
                 android:text="23:59"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
@@ -49,22 +55,29 @@
             android:id="@+id/footer"
             android:layout_width="match_parent"
             android:layout_height="60dp"
+            android:gravity="center_horizontal"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_header_dest"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorSurface"
                 android:gravity="center_horizontal"
+                android:paddingHorizontal="2dp"
                 android:text="23:59"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_fare"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorSurface"
                 android:gravity="center_horizontal"
+                android:paddingHorizontal="2dp"
                 android:text="$ 10.0"
                 android:textColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>

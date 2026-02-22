@@ -340,7 +340,7 @@ public class RouteListFragment extends Fragment {
     }
 
     private void drawVisualSegments(RouteAdapter.ViewHolder holder, JSONObject route) {
-        int verticalPadding = dpToPx(10);
+        int verticalPadding = dpToPx(14);
         int badgeSize = dpToPx(32);
         int stationSize = dpToPx(32);
         int walkIntSize = dpToPx(36);
@@ -564,6 +564,31 @@ public class RouteListFragment extends Fragment {
             badgeContainer.addView(tvLineCode);
 
             segmentView.addView(badgeContainer);
+
+            if (hrConf.isTerminus(seg.lineName, seg.startNode.optInt("ID"))) {
+                TextView tvTerminus = new TextView(getContext());
+                int terminusSize = dpToPx(16);
+                FrameLayout.LayoutParams terminusParams = new FrameLayout.LayoutParams(terminusSize, terminusSize);
+                terminusParams.gravity = Gravity.TOP | Gravity.START;
+                terminusParams.leftMargin = -dpToPx(5);
+                terminusParams.topMargin = -dpToPx(5);
+
+                tvTerminus.setLayoutParams(terminusParams);
+                tvTerminus.setText("始");
+                tvTerminus.setTextColor(Color.WHITE);
+                tvTerminus.setTextSize(9);
+                tvTerminus.setGravity(Gravity.CENTER);
+                tvTerminus.setTypeface(null, Typeface.BOLD);
+
+                GradientDrawable termBg = new GradientDrawable();
+                termBg.setShape(GradientDrawable.RECTANGLE);
+                termBg.setCornerRadius(dpToPx(6));
+                termBg.setColor(Color.parseColor("#80D8FF"));
+                termBg.setStroke(dpToPx(1), Color.BLACK);
+                tvTerminus.setBackground(termBg);
+
+                badgeContainer.addView(tvTerminus);
+            }
         }
 
         if (showStation) {
