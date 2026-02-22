@@ -51,7 +51,9 @@ public class RouteListFragment extends Fragment {
     private TabLayout tabLayout;
     private List<JSONObject> fullRouteList = new ArrayList<>();
     private List<JSONObject> routeList = new ArrayList<>();
-    private JSONObject bestTime, bestInter, bestFare;
+    private int minTime;
+    private int minInter;
+    private float minFare;
     private String routeData = "";
 
     private HRConfig hrConf;
@@ -183,23 +185,24 @@ public class RouteListFragment extends Fragment {
                     fullRouteList.clear();
                     fullRouteList.addAll(tempRoutes);
 
-                    bestTime = null;
-                    bestInter = null;
-                    bestFare = null;
+                    minTime = Integer.MAX_VALUE;
+                    minInter = Integer.MAX_VALUE;
+                    minFare = Float.MAX_VALUE;
+
                     for (JSONObject r : fullRouteList) {
                         try {
-                            if (bestTime == null || r.getInt("time") < bestTime.getInt("time"))
-                                bestTime = r;
-                            if (bestInter == null || r.getInt("interchangeStationsNo") < bestInter.getInt("interchangeStationsNo"))
-                                bestInter = r;
-                            if (bestFare == null || getFare(r) < getFare(bestFare)) {
-                                bestFare = r;
-                            }
+                            int time = r.getInt("time");
+                            int inter = r.getInt("interchangeStationsNo");
+                            float fare = getFare(r);
+
+                            if (time < minTime) minTime = time;
+                            if (inter < minInter) minInter = inter;
+                            if (fare < minFare) minFare = fare;
                         } catch (Exception e) {
                         }
                     }
 
-                    filterRoutes(0);
+                    filterRoutes(tabLayout.getSelectedTabPosition());
                     updateBackground();
                     adapter.notifyDataSetChanged();
                 });
@@ -324,7 +327,11 @@ public class RouteListFragment extends Fragment {
 
                 String[] texts = {"早", "樂", "安"};
                 String[] colors = {"#2AB3D4", "#3DBC7F", "#FFAE0C"};
-                boolean[] conditions = {route == bestTime, route == bestInter, route == bestFare};
+                boolean[] conditions = {
+                        route.getInt("time") == minTime,
+                        route.getInt("interchangeStationsNo") == minInter,
+                        getFare(route) == minFare
+                };
 
                 for (int i = 0; i < texts.length; i++) {
                     if (conditions[i]) {
