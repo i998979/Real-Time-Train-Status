@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -47,6 +48,8 @@ public class RouteListFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private RouteAdapter adapter;
+    private TabLayout tabLayout;
+    private List<JSONObject> fullRouteList = new ArrayList<>();
     private List<JSONObject> routeList = new ArrayList<>();
     private String routeData = "";
 
@@ -114,6 +117,22 @@ public class RouteListFragment extends Fragment {
             }
         });
 
+        tabLayout = view.findViewById(R.id.tab_layout);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                filterRoutes(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
+
         fetchData(oID, dID);
         return view;
     }
@@ -160,9 +179,10 @@ public class RouteListFragment extends Fragment {
                 }
 
                 requireActivity().runOnUiThread(() -> {
-                    routeList.clear();
-                    routeList.addAll(tempRoutes);
+                    fullRouteList.clear();
+                    fullRouteList.addAll(tempRoutes);
 
+                    filterRoutes(0);
                     updateBackground();
                     adapter.notifyDataSetChanged();
                 });
@@ -170,6 +190,44 @@ public class RouteListFragment extends Fragment {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    private void filterRoutes(int position) {
+        routeList.clear();
+        if (position == 0) {
+            routeList.addAll(fullRouteList);
+        } else {
+            JSONObject best = null;
+            for (JSONObject r : fullRouteList) {
+                if (best == null) {
+                    best = r;
+                    continue;
+                }
+                try {
+                    if (position == 1) {
+                        if (r.getInt("time") < best.getInt("time")) best = r;
+                    } else if (position == 2) {
+                        if (r.getInt("interchangeStationsNo") < best.getInt("interchangeStationsNo"))
+                            best = r;
+                    } else if (position == 3) {
+                        float rFare = getFare(r);
+                        float bFare = getFare(best);
+                        if (rFare < bFare) best = r;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (best != null) routeList.add(best);
+        }
+        adapter.notifyDataSetChanged();
+        recyclerView.scrollToPosition(0);
+    }
+
+    private float getFare(JSONObject route) throws Exception {
+        String fareStr = route.getJSONArray("fares").getJSONObject(0)
+                .getJSONObject("fareInfo").getJSONObject("adult").getString("octopus");
+        return Float.parseFloat(fareStr);
     }
 
     private void updateBackground() {

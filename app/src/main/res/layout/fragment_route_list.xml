@@ -142,11 +142,61 @@
             android:paddingTop="60dp"
             android:paddingBottom="60dp" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_routes"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal" />
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_routes"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:background="@drawable/shadow_gradient_up" />
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="?attr/colorSurface"
+                app:tabGravity="fill"
+                app:tabIndicatorColor="#4CAF50"
+                app:tabIndicatorGravity="bottom"
+                app:tabIndicatorHeight="4dp"
+                app:tabMaxWidth="0dp"
+                app:tabMode="auto"
+                app:tabSelectedTextAppearance="@style/TabText.Selected"
+                app:tabSelectedTextColor="?attr/colorOnSurface"
+                app:tabTextAppearance="@style/TabText"
+                app:tabTextColor="?attr/colorOnSurface">
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="全部" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="最短時間 (早)" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="最少轉乘 (樂)" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="最低車費 (安)" />
+
+            </com.google.android.material.tabs.TabLayout>
+        </LinearLayout>
 
     </FrameLayout>
 
