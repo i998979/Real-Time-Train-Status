@@ -51,6 +51,7 @@ public class RouteListFragment extends Fragment {
     private TabLayout tabLayout;
     private List<JSONObject> fullRouteList = new ArrayList<>();
     private List<JSONObject> routeList = new ArrayList<>();
+    private JSONObject bestTime, bestInter, bestFare;
     private String routeData = "";
 
     private HRConfig hrConf;
@@ -182,6 +183,22 @@ public class RouteListFragment extends Fragment {
                     fullRouteList.clear();
                     fullRouteList.addAll(tempRoutes);
 
+                    bestTime = null;
+                    bestInter = null;
+                    bestFare = null;
+                    for (JSONObject r : fullRouteList) {
+                        try {
+                            if (bestTime == null || r.getInt("time") < bestTime.getInt("time"))
+                                bestTime = r;
+                            if (bestInter == null || r.getInt("interchangeStationsNo") < bestInter.getInt("interchangeStationsNo"))
+                                bestInter = r;
+                            if (bestFare == null || getFare(r) < getFare(bestFare)) {
+                                bestFare = r;
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+
                     filterRoutes(0);
                     updateBackground();
                     adapter.notifyDataSetChanged();
@@ -272,6 +289,7 @@ public class RouteListFragment extends Fragment {
         private class ViewHolder extends RecyclerView.ViewHolder {
             LinearLayout routeLayout;
             LinearLayout layoutVisualSegments;
+            LinearLayout layoutStatusBadges;
             TextView journeyTime, startTime, arriveTime, fare;
 
             private ViewHolder(View itemView) {
@@ -282,6 +300,7 @@ public class RouteListFragment extends Fragment {
                 startTime = itemView.findViewById(R.id.tv_header_origin);
                 arriveTime = itemView.findViewById(R.id.tv_header_dest);
                 fare = itemView.findViewById(R.id.tv_fare);
+                layoutStatusBadges = itemView.findViewById(R.id.layout_status_badges);
             }
         }
 
@@ -300,6 +319,36 @@ public class RouteListFragment extends Fragment {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             try {
                 JSONObject route = routeList.get(position);
+
+                holder.layoutStatusBadges.removeAllViews();
+
+                String[] texts = {"早", "樂", "安"};
+                String[] colors = {"#2AB3D4", "#3DBC7F", "#FFAE0C"};
+                boolean[] conditions = {route == bestTime, route == bestInter, route == bestFare};
+
+                for (int i = 0; i < texts.length; i++) {
+                    if (conditions[i]) {
+                        TextView tv = new TextView(getContext());
+                        int size = dpToPx(17);
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
+                        lp.setMargins(dpToPx(2), 0, dpToPx(2), 0);
+                        tv.setLayoutParams(lp);
+
+                        tv.setText(texts[i]);
+                        tv.setTextColor(Color.WHITE);
+                        tv.setTextSize(9);
+                        tv.setGravity(Gravity.CENTER);
+                        tv.setTypeface(null, Typeface.BOLD);
+
+                        GradientDrawable bg = new GradientDrawable();
+                        bg.setShape(GradientDrawable.RECTANGLE);
+                        bg.setCornerRadius(dpToPx(4));
+                        bg.setColor(Color.parseColor(colors[i]));
+                        tv.setBackground(bg);
+
+                        holder.layoutStatusBadges.addView(tv);
+                    }
+                }
 
                 holder.routeLayout.setOnClickListener(v -> {
                     RouteDetailFragment detailFragment = new RouteDetailFragment();
