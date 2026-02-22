@@ -6,25 +6,41 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.radiobutton.MaterialRadioButton;
 
 public class SearchInputFragment extends Fragment {
     private static final String PREF_NAME = "route_prefs";
     private static final String KEY_ORIGIN_ID = "origin_id";
     private static final String KEY_DEST_ID = "dest_id";
+
+    private static final String KEY_RT = "is_rt_enabled";
+    private static final String KEY_WALK_SPEED = "walk_speed";
+    private static final String KEY_FARE_TYPE = "fare_type";
     private SharedPreferences prefs;
 
     private View layoutOrigin;
@@ -115,6 +131,82 @@ public class SearchInputFragment extends Fragment {
         updateStationDisplay(tvDest, selectedDestID, "目的地");
         updateButtonStates();
 
+        int[] btnIds = {R.id.btn_option_rt, R.id.btn_option_walk, R.id.btn_option_fare};
+        int[] iconRes = {R.drawable.baseline_browse_gallery_24, R.drawable.baseline_directions_walk_24, R.drawable.baseline_credit_card_24};
+        int[] colors = {Color.parseColor("#6ec08d"), Color.parseColor("#6ec08d"), Color.parseColor("#6ec08d")};
+        int[] layoutIds = {R.layout.layout_rt_settings, R.layout.layout_walk_settings, R.layout.layout_fare_settings};
+
+        for (int i = 0; i < btnIds.length; i++) {
+            final int index = i;
+            MaterialButton settingsBtn = view.findViewById(btnIds[i]);
+
+            String currentStatus = "";
+            switch (index) {
+                case 0:
+                    currentStatus = prefs.getBoolean(KEY_RT, false) ? "開啟" : "關閉";
+                    break;
+                case 1:
+                    currentStatus = prefs.getString(KEY_WALK_SPEED, "普通");
+                    break;
+                case 2:
+                    currentStatus = "車票設定";
+                    break;
+            }
+            renderOptionButton(settingsBtn, index, currentStatus, colors[index], iconRes[index]);
+
+            BottomSheetDialog bottomSheet = new BottomSheetDialog(getContext());
+            bottomSheet.setContentView(layoutIds[index]);
+
+            settingsBtn.setOnClickListener(v -> {
+                if (index == 1) {
+                    MaterialButton closeBtn = bottomSheet.findViewById(R.id.btn_close);
+                    closeBtn.setOnClickListener(v1 -> {
+                        bottomSheet.dismiss();
+                    });
+
+                    RadioGroup rg = bottomSheet.findViewById(R.id.rg_walk_speed);
+
+                    String saved = prefs.getString(KEY_WALK_SPEED, "普通");
+                    if (saved.equals("快")) rg.check(R.id.rb_fast);
+                    else if (saved.equals("普通")) rg.check(R.id.rb_normal);
+                    else if (saved.equals("慢")) rg.check(R.id.rb_slow);
+                    else if (saved.equals("很慢")) rg.check(R.id.rb_veryslow);
+
+                    rg.setOnCheckedChangeListener((group, checkedId) -> {
+                        MaterialRadioButton rb = group.findViewById(checkedId);
+
+                        String selected = rb.getText().toString().split("\n")[0];
+                        prefs.edit()
+                                .putString(KEY_WALK_SPEED, selected)
+                                .apply();
+                        renderOptionButton(settingsBtn, index, selected, colors[index], iconRes[index]);
+                    });
+
+
+                    for (int j = 0; j < rg.getChildCount(); j++) {
+                        View child = rg.getChildAt(j);
+
+                        if (child instanceof MaterialRadioButton) {
+                            MaterialRadioButton rb = (MaterialRadioButton) child;
+
+                            // Reformat text with smaller and gray 2nd line
+                            String text = rb.getText().toString();
+                            int lineBreak = text.indexOf("\n");
+                            if (lineBreak != -1) {
+                                SpannableString ss = new SpannableString(text);
+                                ss.setSpan(new StyleSpan(Typeface.BOLD), 0, lineBreak, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                ss.setSpan(new ForegroundColorSpan(Color.GRAY), lineBreak + 1, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                ss.setSpan(new RelativeSizeSpan(0.8f), lineBreak + 1, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                rb.setText(ss);
+                            }
+                        }
+                    }
+                }
+
+                bottomSheet.show();
+            });
+        }
+
         return view;
     }
 
@@ -144,5 +236,41 @@ public class SearchInputFragment extends Fragment {
                 .putString(KEY_ORIGIN_ID, selectedOriginID)
                 .putString(KEY_DEST_ID, selectedDestID)
                 .apply();
+    }
+
+    private void renderOptionButton(MaterialButton btn, int index, String status, int color, int iconRes) {
+        String[] currentTitles = {" RT", "", ""};
+        String title = currentTitles[index];
+        boolean hasTitle = !title.isEmpty();
+
+        String firstLine = hasTitle ? " " + title : " ";
+        String fullText = firstLine + "\n" + status;
+
+        SpannableString spannable = new SpannableString(fullText);
+
+        Drawable icon = ContextCompat.getDrawable(requireContext(), iconRes);
+        if (icon != null) {
+            icon.setBounds(0, 0, dpToPx(18), dpToPx(18));
+            icon.setTint(color);
+            spannable.setSpan(new ImageSpan(icon, ImageSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new RelativeSizeSpan(hasTitle ? 0.4f : 1.0f), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        if (hasTitle) {
+            spannable.setSpan(new ForegroundColorSpan(color), 1, firstLine.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new StyleSpan(Typeface.BOLD), 1, firstLine.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        int startStatus = fullText.indexOf(status);
+        if (startStatus != -1) {
+            spannable.setSpan(new ForegroundColorSpan(Color.GRAY), startStatus, fullText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new RelativeSizeSpan(0.8f), startStatus, fullText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        btn.setText(spannable);
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round((float) dp * getResources().getDisplayMetrics().density);
     }
 }

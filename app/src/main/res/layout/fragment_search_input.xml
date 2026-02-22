@@ -101,4 +101,41 @@
         android:textStyle="bold"
         app:backgroundTint="@null" />
 
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_option_rt"
+                style="@style/OptionButtonStyle"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                android:textAllCaps="false" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_option_walk"
+                style="@style/OptionButtonStyle"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                android:textAllCaps="false" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_option_fare"
+                style="@style/OptionButtonStyle"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                android:textAllCaps="false" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
 </LinearLayout>
