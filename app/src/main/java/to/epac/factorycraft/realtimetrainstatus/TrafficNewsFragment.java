@@ -9,8 +9,10 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -48,11 +50,13 @@ public class TrafficNewsFragment extends Fragment {
         put("SIL", "ADM");
     }};
 
+    private FrameLayout trafficNewsLayout;
     private LinearLayout statusContainer;
 
     private ImageView mapImageView;
     private View layoutNormal;
     private View layoutDelayed;
+    private ProgressBar progressBar;
 
     private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(CHECK_STATIONS.size());
     private boolean isFetching = false;
@@ -62,10 +66,12 @@ public class TrafficNewsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_traffic_news, container, false);
 
+        trafficNewsLayout = view.findViewById(R.id.layout_traffic_news);
         statusContainer = view.findViewById(R.id.status_container);
         mapImageView = view.findViewById(R.id.iv_system_map);
         layoutNormal = view.findViewById(R.id.layout_normal);
         layoutDelayed = view.findViewById(R.id.layout_delayed);
+        progressBar = view.findViewById(R.id.progress_bar);
 
         fetchTrafficNews();
 
@@ -84,6 +90,10 @@ public class TrafficNewsFragment extends Fragment {
     private void fetchTrafficNews() {
         if (isFetching) return;
         isFetching = true;
+
+        new Handler(Looper.getMainLooper()).post(() -> {
+            progressBar.setVisibility(View.VISIBLE);
+        });
 
         new Thread(() -> {
             try {
@@ -125,7 +135,6 @@ public class TrafficNewsFragment extends Fragment {
                         }
                         updateMainLayout(lines);
                         updateUI(lines);
-
                     });
                 }
                 connection.disconnect();
@@ -133,6 +142,10 @@ public class TrafficNewsFragment extends Fragment {
                 e.printStackTrace();
             } finally {
                 isFetching = false;
+
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    progressBar.setVisibility(View.GONE);
+                });
             }
         }).start();
     }
