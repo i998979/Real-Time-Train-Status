@@ -1,5 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -45,6 +47,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class RouteListFragment extends Fragment {
+    private SharedPreferences prefs;
 
     private RecyclerView recyclerView;
     private RouteAdapter adapter;
@@ -67,6 +70,7 @@ public class RouteListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_route_list, container, false);
 
+        prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         hrConf = HRConfig.getInstance(requireContext());
 
         String oID = getArguments() != null ? getArguments().getString("o") : "1";
@@ -245,9 +249,42 @@ public class RouteListFragment extends Fragment {
     }
 
     private float getFare(JSONObject route) throws Exception {
-        String fareStr = route.getJSONArray("fares").getJSONObject(0)
-                .getJSONObject("fareInfo").getJSONObject("adult").getString("octopus");
-        return Float.parseFloat(fareStr);
+        String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
+        String ticketType = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
+        JSONArray fares = route.getJSONArray("fares");
+        float totalFare = 0.0f;
+
+        for (int i = 0; i < fares.length(); i++) {
+            JSONObject fareSection = fares.getJSONObject(i);
+            JSONObject fareInfo = fareSection.getJSONObject("fareInfo");
+            String fareTitle = fareSection.optString("fareTitle", "");
+
+            if (fareTitle.equals("firstClass")) continue;
+
+            String currentFareType = fareType;
+
+            if (!fareInfo.has(currentFareType)) {
+                if (currentFareType.equals("concessionchild") || currentFareType.equals("concessionchild2")) {
+                    currentFareType = "concession";
+                } else {
+                    currentFareType = "adult";
+                }
+            }
+
+
+            JSONObject idObj = fareInfo.optJSONObject(currentFareType);
+            if (idObj != null) {
+                String fStr = idObj.optString(ticketType, "0");
+
+                if (!fStr.equals("-") && !fStr.equals("免費")) {
+                    try {
+                        totalFare += Float.parseFloat(fStr);
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        }
+        return totalFare;
     }
 
     private void updateBackground() {
@@ -383,8 +420,7 @@ public class RouteListFragment extends Fragment {
                 int arrM_total = cal.get(Calendar.MINUTE) + route.getInt("time");
                 holder.arriveTime.setText(String.format(Locale.getDefault(), "%02d:%02d", (cal.get(Calendar.HOUR_OF_DAY) + arrM_total / 60) % 24, arrM_total % 60));
 
-                String fareStr = route.getJSONArray("fares").getJSONObject(0).getJSONObject("fareInfo").getJSONObject("adult").getString("octopus");
-                holder.fare.setText("$ " + fareStr);
+                holder.fare.setText("$ " + getFare(route));
 
                 // Draw visual segments
                 drawVisualSegments(holder, route);

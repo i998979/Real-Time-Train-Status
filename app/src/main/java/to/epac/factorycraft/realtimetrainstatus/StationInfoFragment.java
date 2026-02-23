@@ -27,8 +27,7 @@ import java.util.List;
 
 public class StationInfoFragment extends Fragment {
     private static final List<String> subTitles = Arrays.asList("位置圖", "街道圖", "列車走行位置", "車站商店");
-    private static final String PREFS_NAME = "StationPrefs";
-    private static final String KEY_STATION_CODE = "last_station_code";
+
     private SharedPreferences prefs;
 
     private View searchBar;
@@ -49,7 +48,7 @@ public class StationInfoFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
 
         return inflater.inflate(R.layout.fragment_station_info, container, false);
     }
@@ -81,7 +80,7 @@ public class StationInfoFragment extends Fragment {
         if (getArguments() != null) {
             code = getArguments().getString("station_code", "CEN");
         } else {
-            code = prefs.getString(KEY_STATION_CODE, "CEN");
+            code = prefs.getString(MainActivity.KEY_LAST_STATION_CODE, "CEN");
         }
 
         updateStationInfoFromCode(code);
@@ -91,7 +90,7 @@ public class StationInfoFragment extends Fragment {
         HRConfig.Station sta = HRConfig.getInstance(requireContext()).getStationByAlias(code);
 
         prefs.edit()
-                .putString(KEY_STATION_CODE, code)
+                .putString(MainActivity.KEY_LAST_STATION_CODE, code)
                 .apply();
         tvSearchStation.setText(sta.name);
 

@@ -12,8 +12,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String PREFS_NAME = "AppPrefs";
-    private static final String KEY_LAST_NAV_ID = "last_nav_id";
+    public static final String PREFS_NAME = "route_prefs";
+    public static final String KEY_LAST_NAV_ID = "last_nav_id";
+    public static final String KEY_ORIGIN_ID = "origin_id";
+    public static final String KEY_DEST_ID = "dest_id";
+
+    public static final String KEY_LAST_STATION_CODE = "last_station_code";
+
+    public static final String KEY_WALK_SPEED = "walk_speed";
+    public static final String KEY_TICKET_TYPE = "ticket_type";
+    public static final String KEY_FARE_TYPE = "fare_type";
+
 
     private BottomNavigationView bottomNavigationView;
 

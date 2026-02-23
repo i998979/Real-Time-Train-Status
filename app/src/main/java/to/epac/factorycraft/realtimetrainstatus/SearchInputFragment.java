@@ -35,12 +35,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 
 public class SearchInputFragment extends Fragment {
-    private static final String PREF_NAME = "route_prefs";
-    private static final String KEY_ORIGIN_ID = "origin_id";
-    private static final String KEY_DEST_ID = "dest_id";
-
-    private static final String KEY_WALK_SPEED = "walk_speed";
-    private static final String KEY_FARE_TYPE = "fare_type";
     private SharedPreferences prefs;
 
     private View layoutOrigin;
@@ -64,14 +58,16 @@ public class SearchInputFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search_input, container, false);
 
-        prefs = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        if (!prefs.contains(KEY_WALK_SPEED))
-            prefs.edit().putString(KEY_WALK_SPEED, "普通").apply();
-        if (!prefs.contains(KEY_FARE_TYPE))
-            prefs.edit().putString(KEY_FARE_TYPE, "adult-octopus").apply();
+        prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
+        if (!prefs.contains(MainActivity.KEY_WALK_SPEED))
+            prefs.edit().putString(MainActivity.KEY_WALK_SPEED, "普通").apply();
+        if (!prefs.contains(MainActivity.KEY_FARE_TYPE))
+            prefs.edit().putString(MainActivity.KEY_FARE_TYPE, "octopus").apply();
+        if (!prefs.contains(MainActivity.KEY_TICKET_TYPE))
+            prefs.edit().putString(MainActivity.KEY_TICKET_TYPE, "adult").apply();
 
-        selectedOriginID = prefs.getString(KEY_ORIGIN_ID, null);
-        selectedDestID = prefs.getString(KEY_DEST_ID, null);
+        selectedOriginID = prefs.getString(MainActivity.KEY_ORIGIN_ID, null);
+        selectedDestID = prefs.getString(MainActivity.KEY_DEST_ID, null);
 
         layoutOrigin = view.findViewById(R.id.layout_origin);
         tvOrigin = view.findViewById(R.id.tv_origin_name);
@@ -147,7 +143,7 @@ public class SearchInputFragment extends Fragment {
             String currentStatus = "";
             switch (index) {
                 case 0:
-                    currentStatus = prefs.getString(KEY_WALK_SPEED, "普通");
+                    currentStatus = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
                     break;
                 case 1:
                     currentStatus = "車票設定";
@@ -167,7 +163,7 @@ public class SearchInputFragment extends Fragment {
 
                     RadioGroup rg = bottomSheet.findViewById(R.id.rg_walk_speed);
 
-                    String saved = prefs.getString(KEY_WALK_SPEED, "普通");
+                    String saved = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
 
 
                     for (int j = 0; j < rg.getChildCount(); j++) {
@@ -198,7 +194,7 @@ public class SearchInputFragment extends Fragment {
 
                         String selected = rb.getText().toString().split("\n")[0];
                         prefs.edit()
-                                .putString(KEY_WALK_SPEED, selected)
+                                .putString(MainActivity.KEY_WALK_SPEED, selected)
                                 .apply();
                         renderOptionButton(settingsBtn, selected, colors[index], iconRes[index]);
                     });
@@ -212,30 +208,28 @@ public class SearchInputFragment extends Fragment {
                     RadioGroup rgTicketType = bottomSheet.findViewById(R.id.rg_ticket_type);
                     RadioGroup rgFareType = bottomSheet.findViewById(R.id.rg_fare_type);
 
-                    String saved = prefs.getString(KEY_FARE_TYPE, "adult-octopus");
-                    String[] parts = saved.split("-");
-                    String savedIdentity = parts[0];
-                    String savedSystem = parts[1];
-
-                    rgTicketType.check(savedSystem.equals("sj") ? R.id.rb_sj : R.id.rb_octopus);
+                    String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
+                    String ticketType = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
 
                     int fareRbId = R.id.rb_adult;
-                    if (savedIdentity.equals("adult"))
+                    if (ticketType.equals("adult"))
                         fareRbId = R.id.rb_adult;                       // 成人
-                    else if (savedIdentity.equals("concession"))
+                    else if (ticketType.equals("concession"))
                         fareRbId = R.id.rb_concession;        // 小童 (特惠)
-                    else if (savedIdentity.equals("concession2"))
+                    else if (ticketType.equals("concession2"))
                         fareRbId = R.id.rb_concession2;      // 長者 (特惠)
-                    else if (savedIdentity.equals("concessionelderly"))
+                    else if (ticketType.equals("concessionelderly"))
                         fareRbId = R.id.rb_joyyou_65;  // 樂悠咭 (65歲或以上)
-                    else if (savedIdentity.equals("joyyousixty"))
+                    else if (ticketType.equals("joyyousixty"))
                         fareRbId = R.id.rb_joyyou_60;        // 樂悠咭 (60-64歲)
-                    else if (savedIdentity.equals("concessionpwd"))
+                    else if (ticketType.equals("concessionpwd"))
                         fareRbId = R.id.rb_disability;     // 殘疾人士
-                    else if (savedIdentity.equals("student"))
+                    else if (ticketType.equals("student"))
                         fareRbId = R.id.rb_student;              // 學生
 
                     rgFareType.check(fareRbId);
+
+                    rgTicketType.check(fareType.equals("sj") ? R.id.rb_sj : R.id.rb_octopus);
 
                     Runnable updateFareVisibility = () -> {
                         boolean isSJ = rgTicketType.getCheckedRadioButtonId() == R.id.rb_sj;
@@ -280,18 +274,21 @@ public class SearchInputFragment extends Fragment {
         int ticketId = rgTicketType.getCheckedRadioButtonId();
         int fareId = rgFareType.getCheckedRadioButtonId();
 
-        String systemKey = (ticketId == R.id.rb_sj) ? "sj" : "octopus";
+        String fareType = "adult";
+        if (fareId == R.id.rb_adult) fareType = "adult";                       // 成人
+        else if (fareId == R.id.rb_concession) fareType = "concessionchild";   // 小童 (特惠)
+        else if (fareId == R.id.rb_concession2) fareType = "concessionchild2"; // 長者 (特惠)
+        else if (fareId == R.id.rb_joyyou_65) fareType = "concessionelderly";  // 樂悠咭 (65歲或以上)
+        else if (fareId == R.id.rb_joyyou_60) fareType = "joyyousixty";        // 樂悠咭 (60-64歲)
+        else if (fareId == R.id.rb_disability) fareType = "concessionpwd";     // 殘疾人士
+        else if (fareId == R.id.rb_student) fareType = "student";              // 學生
 
-        String identityKey = "adult";
-        if (fareId == R.id.rb_adult) identityKey = "adult";                       // 成人
-        else if (fareId == R.id.rb_concession) identityKey = "concessionchild";   // 小童 (特惠)
-        else if (fareId == R.id.rb_concession2) identityKey = "concessionchild2"; // 長者 (特惠)
-        else if (fareId == R.id.rb_joyyou_65) identityKey = "concessionelderly";  // 樂悠咭 (65歲或以上)
-        else if (fareId == R.id.rb_joyyou_60) identityKey = "joyyousixty";        // 樂悠咭 (60-64歲)
-        else if (fareId == R.id.rb_disability) identityKey = "concessionpwd";     // 殘疾人士
-        else if (fareId == R.id.rb_student) identityKey = "student";              // 學生
+        String ticketType = (ticketId == R.id.rb_sj) ? "sj" : "octopus";
 
-        prefs.edit().putString(KEY_FARE_TYPE, identityKey + "-" + systemKey).apply();
+        prefs.edit()
+                .putString(MainActivity.KEY_FARE_TYPE, fareType)
+                .putString(MainActivity.KEY_TICKET_TYPE, ticketType)
+                .apply();
     }
 
     private void updateStationDisplay(TextView tv, String id, String hint) {
@@ -317,8 +314,8 @@ public class SearchInputFragment extends Fragment {
         btnGo.setBackgroundTintList(ColorStateList.valueOf(canGo ? activeColor : greyColor));
 
         prefs.edit()
-                .putString(KEY_ORIGIN_ID, selectedOriginID)
-                .putString(KEY_DEST_ID, selectedDestID)
+                .putString(MainActivity.KEY_ORIGIN_ID, selectedOriginID)
+                .putString(MainActivity.KEY_DEST_ID, selectedDestID)
                 .apply();
     }
 

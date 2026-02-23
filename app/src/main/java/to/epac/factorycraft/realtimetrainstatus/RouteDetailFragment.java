@@ -1,5 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -28,12 +30,14 @@ import java.util.TimeZone;
 public class RouteDetailFragment extends Fragment {
 
     private HRConfig hrConf;
+    private SharedPreferences prefs;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_route_detail, container, false);
 
+        prefs = requireContext().getSharedPreferences(MainActivity.KEY_FARE_TYPE, Context.MODE_PRIVATE);
         hrConf = HRConfig.getInstance(getContext());
 
         MaterialButton btnReturn = root.findViewById(R.id.btn_return);
@@ -53,7 +57,7 @@ public class RouteDetailFragment extends Fragment {
 
         try {
             JSONObject data = new JSONObject(getArguments().getString("route_data"));
-            JSONObject selected = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
+            JSONObject selectedRoute = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
 
 
             // Start and end time calculation
@@ -79,7 +83,7 @@ public class RouteDetailFragment extends Fragment {
             int startM = Integer.parseInt(startTime.split(":")[1]);
 
             tvStartTime.setText(startTime);
-            JSONArray path = selected.getJSONArray("path");
+            JSONArray path = selectedRoute.getJSONArray("path");
             int endTotalMin = startM + path.getJSONObject(path.length() - 1).optInt("time");
             int endH = (startH + endTotalMin / 60) % 24;
             int endM = endTotalMin % 60;
@@ -87,18 +91,13 @@ public class RouteDetailFragment extends Fragment {
 
 
             // Footer Data
-            tvJourneyTime.setText(selected.optString("time"));
-            tvInterchangeCount.setText(selected.optString("interchangeStationsNo"));
-
-            JSONArray fares = selected.optJSONArray("fares");
-            if (fares != null && fares.length() > 0) {
-                String price = fares.getJSONObject(0).optJSONObject("fareInfo").optJSONObject("adult").optString("octopus", "-");
-                tvFare.setText(price);
-            }
+            tvJourneyTime.setText(selectedRoute.optString("time"));
+            tvInterchangeCount.setText(selectedRoute.optString("interchangeStationsNo"));
+            tvFare.setText(getFare(selectedRoute) + "");
 
 
             // Apply path segments
-            List<VisualSegment> segments = parsePathToSegments(selected.getJSONArray("path"), startH, startM);
+            List<VisualSegment> segments = parsePathToSegments(selectedRoute.getJSONArray("path"), startH, startM);
             buildRouteUI(inflater, routeContainer, segments, startH, startM);
 
         } catch (Exception e) {
@@ -337,5 +336,44 @@ public class RouteDetailFragment extends Fragment {
         }
 
         return segments;
+    }
+
+    private float getFare(JSONObject route) throws Exception {
+        String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
+        String ticketType = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
+        JSONArray fares = route.getJSONArray("fares");
+        float totalFare = 0.0f;
+
+        for (int i = 0; i < fares.length(); i++) {
+            JSONObject fareSection = fares.getJSONObject(i);
+            JSONObject fareInfo = fareSection.getJSONObject("fareInfo");
+            String fareTitle = fareSection.optString("fareTitle", "");
+
+            if (fareTitle.equals("firstClass")) continue;
+
+            String currentFareType = fareType;
+
+            if (!fareInfo.has(currentFareType)) {
+                if (currentFareType.equals("concessionchild") || currentFareType.equals("concessionchild2")) {
+                    currentFareType = "concession";
+                } else {
+                    currentFareType = "adult";
+                }
+            }
+
+
+            JSONObject idObj = fareInfo.optJSONObject(currentFareType);
+            if (idObj != null) {
+                String fStr = idObj.optString(ticketType, "0");
+
+                if (!fStr.equals("-") && !fStr.equals("免費")) {
+                    try {
+                        totalFare += Float.parseFloat(fStr);
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        }
+        return totalFare;
     }
 }
