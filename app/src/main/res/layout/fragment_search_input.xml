@@ -116,13 +116,6 @@
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_option_rt"
-                style="@style/OptionButtonStyle"
-                android:gravity="center"
-                android:lineSpacingExtra="2dp"
-                android:textAllCaps="false" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_option_walk"
                 style="@style/OptionButtonStyle"
                 android:gravity="center"

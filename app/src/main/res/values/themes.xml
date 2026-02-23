@@ -46,12 +46,11 @@
         <item name="android:textDirection">ltr</item>
         <item name="android:background">@drawable/bg_platform_border</item>
         <item name="android:backgroundTint">?attr/colorOnSurfaceInverse</item>
-        <item name="android:paddingVertical">10dp</item>
+        <item name="android:paddingVertical">16dp</item>
         <item name="android:paddingEnd">10dp</item>
         <item name="android:button">@drawable/selector_radio_check</item>
         <item name="buttonTint">@color/selector_radio_tint</item>
         <item name="useMaterialThemeColors">false</item>
-        <item name="android:drawableLeft">@drawable/baseline_directions_walk_24</item>
         <item name="android:drawablePadding">12dp</item>
         <item name="android:drawableTint">?android:attr/colorForeground</item>
         <item name="android:textSize">16sp</item>

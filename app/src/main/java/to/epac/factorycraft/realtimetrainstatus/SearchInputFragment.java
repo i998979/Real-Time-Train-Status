@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
@@ -38,7 +39,6 @@ public class SearchInputFragment extends Fragment {
     private static final String KEY_ORIGIN_ID = "origin_id";
     private static final String KEY_DEST_ID = "dest_id";
 
-    private static final String KEY_RT = "is_rt_enabled";
     private static final String KEY_WALK_SPEED = "walk_speed";
     private static final String KEY_FARE_TYPE = "fare_type";
     private SharedPreferences prefs;
@@ -65,6 +65,10 @@ public class SearchInputFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search_input, container, false);
 
         prefs = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        if (!prefs.contains(KEY_WALK_SPEED))
+            prefs.edit().putString(KEY_WALK_SPEED, "普通").apply();
+        if (!prefs.contains(KEY_FARE_TYPE))
+            prefs.edit().putString(KEY_FARE_TYPE, "adult-octopus").apply();
 
         selectedOriginID = prefs.getString(KEY_ORIGIN_ID, null);
         selectedDestID = prefs.getString(KEY_DEST_ID, null);
@@ -131,10 +135,10 @@ public class SearchInputFragment extends Fragment {
         updateStationDisplay(tvDest, selectedDestID, "目的地");
         updateButtonStates();
 
-        int[] btnIds = {R.id.btn_option_rt, R.id.btn_option_walk, R.id.btn_option_fare};
-        int[] iconRes = {R.drawable.baseline_browse_gallery_24, R.drawable.baseline_directions_walk_24, R.drawable.baseline_credit_card_24};
-        int[] colors = {Color.parseColor("#6ec08d"), Color.parseColor("#6ec08d"), Color.parseColor("#6ec08d")};
-        int[] layoutIds = {R.layout.layout_rt_settings, R.layout.layout_walk_settings, R.layout.layout_fare_settings};
+        int[] btnIds = {R.id.btn_option_walk, R.id.btn_option_fare};
+        int[] iconRes = {R.drawable.baseline_directions_walk_24, R.drawable.baseline_credit_card_24};
+        int[] colors = {Color.parseColor("#6ec08d"), Color.parseColor("#6ec08d")};
+        int[] layoutIds = {R.layout.layout_walk_settings, R.layout.layout_fare_settings};
 
         for (int i = 0; i < btnIds.length; i++) {
             final int index = i;
@@ -143,22 +147,19 @@ public class SearchInputFragment extends Fragment {
             String currentStatus = "";
             switch (index) {
                 case 0:
-                    currentStatus = prefs.getBoolean(KEY_RT, false) ? "開啟" : "關閉";
-                    break;
-                case 1:
                     currentStatus = prefs.getString(KEY_WALK_SPEED, "普通");
                     break;
-                case 2:
+                case 1:
                     currentStatus = "車票設定";
                     break;
             }
-            renderOptionButton(settingsBtn, index, currentStatus, colors[index], iconRes[index]);
+            renderOptionButton(settingsBtn, currentStatus, colors[index], iconRes[index]);
 
             BottomSheetDialog bottomSheet = new BottomSheetDialog(getContext());
             bottomSheet.setContentView(layoutIds[index]);
 
             settingsBtn.setOnClickListener(v -> {
-                if (index == 1) {
+                if (index == 0) {
                     MaterialButton closeBtn = bottomSheet.findViewById(R.id.btn_close);
                     closeBtn.setOnClickListener(v1 -> {
                         bottomSheet.dismiss();
@@ -199,15 +200,98 @@ public class SearchInputFragment extends Fragment {
                         prefs.edit()
                                 .putString(KEY_WALK_SPEED, selected)
                                 .apply();
-                        renderOptionButton(settingsBtn, index, selected, colors[index], iconRes[index]);
+                        renderOptionButton(settingsBtn, selected, colors[index], iconRes[index]);
                     });
+                }
+                if (index == 1) {
+                    MaterialButton closeBtn = bottomSheet.findViewById(R.id.btn_close);
+                    closeBtn.setOnClickListener(v1 -> {
+                        bottomSheet.dismiss();
+                    });
+
+                    RadioGroup rgTicketType = bottomSheet.findViewById(R.id.rg_ticket_type);
+                    RadioGroup rgFareType = bottomSheet.findViewById(R.id.rg_fare_type);
+
+                    String saved = prefs.getString(KEY_FARE_TYPE, "adult-octopus");
+                    String[] parts = saved.split("-");
+                    String savedIdentity = parts[0];
+                    String savedSystem = parts[1];
+
+                    rgTicketType.check(savedSystem.equals("sj") ? R.id.rb_sj : R.id.rb_octopus);
+
+                    int fareRbId = R.id.rb_adult;
+                    if (savedIdentity.equals("adult"))
+                        fareRbId = R.id.rb_adult;                       // 成人
+                    else if (savedIdentity.equals("concession"))
+                        fareRbId = R.id.rb_concession;        // 小童 (特惠)
+                    else if (savedIdentity.equals("concession2"))
+                        fareRbId = R.id.rb_concession2;      // 長者 (特惠)
+                    else if (savedIdentity.equals("concessionelderly"))
+                        fareRbId = R.id.rb_joyyou_65;  // 樂悠咭 (65歲或以上)
+                    else if (savedIdentity.equals("joyyousixty"))
+                        fareRbId = R.id.rb_joyyou_60;        // 樂悠咭 (60-64歲)
+                    else if (savedIdentity.equals("concessionpwd"))
+                        fareRbId = R.id.rb_disability;     // 殘疾人士
+                    else if (savedIdentity.equals("student"))
+                        fareRbId = R.id.rb_student;              // 學生
+
+                    rgFareType.check(fareRbId);
+
+                    Runnable updateFareVisibility = () -> {
+                        boolean isSJ = rgTicketType.getCheckedRadioButtonId() == R.id.rb_sj;
+
+                        int[] octopusOnly = {R.id.rb_joyyou_65, R.id.rb_joyyou_60, R.id.rb_disability, R.id.rb_student};
+                        for (int id : octopusOnly) {
+                            View rb = rgFareType.findViewById(id);
+                            rb.setVisibility(isSJ ? View.GONE : View.VISIBLE);
+
+                            if (isSJ && rgFareType.getCheckedRadioButtonId() == id)
+                                rgFareType.check(R.id.rb_adult);
+                        }
+                    };
+
+                    rgTicketType.setOnCheckedChangeListener((group, checkedId) -> {
+                        updateFareVisibility.run();
+                        saveFareState(rgTicketType, rgFareType);
+                    });
+                    rgFareType.setOnCheckedChangeListener((group, checkedId) -> {
+                        saveFareState(rgTicketType, rgFareType);
+                    });
+
+                    updateFareVisibility.run();
                 }
 
                 bottomSheet.show();
+
+                View bottomSheetInternal = bottomSheet.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+                if (bottomSheetInternal != null) {
+                    BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheetInternal);
+
+                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                    behavior.setSkipCollapsed(true);
+                }
             });
         }
 
         return view;
+    }
+
+    private void saveFareState(RadioGroup rgTicketType, RadioGroup rgFareType) {
+        int ticketId = rgTicketType.getCheckedRadioButtonId();
+        int fareId = rgFareType.getCheckedRadioButtonId();
+
+        String systemKey = (ticketId == R.id.rb_sj) ? "sj" : "octopus";
+
+        String identityKey = "adult";
+        if (fareId == R.id.rb_adult) identityKey = "adult";                       // 成人
+        else if (fareId == R.id.rb_concession) identityKey = "concessionchild";   // 小童 (特惠)
+        else if (fareId == R.id.rb_concession2) identityKey = "concessionchild2"; // 長者 (特惠)
+        else if (fareId == R.id.rb_joyyou_65) identityKey = "concessionelderly";  // 樂悠咭 (65歲或以上)
+        else if (fareId == R.id.rb_joyyou_60) identityKey = "joyyousixty";        // 樂悠咭 (60-64歲)
+        else if (fareId == R.id.rb_disability) identityKey = "concessionpwd";     // 殘疾人士
+        else if (fareId == R.id.rb_student) identityKey = "student";              // 學生
+
+        prefs.edit().putString(KEY_FARE_TYPE, identityKey + "-" + systemKey).apply();
     }
 
     private void updateStationDisplay(TextView tv, String id, String hint) {
@@ -238,12 +322,8 @@ public class SearchInputFragment extends Fragment {
                 .apply();
     }
 
-    private void renderOptionButton(MaterialButton btn, int index, String status, int color, int iconRes) {
-        String[] currentTitles = {" RT", "", ""};
-        String title = currentTitles[index];
-        boolean hasTitle = !title.isEmpty();
-
-        String firstLine = hasTitle ? " " + title : " ";
+    private void renderOptionButton(MaterialButton btn, String status, int color, int iconRes) {
+        String firstLine = " ";
         String fullText = firstLine + "\n" + status;
 
         SpannableString spannable = new SpannableString(fullText);
@@ -253,12 +333,7 @@ public class SearchInputFragment extends Fragment {
             icon.setBounds(0, 0, dpToPx(18), dpToPx(18));
             icon.setTint(color);
             spannable.setSpan(new ImageSpan(icon, ImageSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            spannable.setSpan(new RelativeSizeSpan(hasTitle ? 0.4f : 1.0f), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-
-        if (hasTitle) {
-            spannable.setSpan(new ForegroundColorSpan(color), 1, firstLine.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            spannable.setSpan(new StyleSpan(Typeface.BOLD), 1, firstLine.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new RelativeSizeSpan(1.0f), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         int startStatus = fullText.indexOf(status);
