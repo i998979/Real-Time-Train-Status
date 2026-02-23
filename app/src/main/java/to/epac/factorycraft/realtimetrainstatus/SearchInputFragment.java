@@ -208,33 +208,32 @@ public class SearchInputFragment extends Fragment {
                     RadioGroup rgTicketType = bottomSheet.findViewById(R.id.rg_ticket_type);
                     RadioGroup rgFareType = bottomSheet.findViewById(R.id.rg_fare_type);
 
-                    String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
                     String ticketType = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
+                    String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
 
                     int fareRbId = R.id.rb_adult;
-                    if (ticketType.equals("adult"))
-                        fareRbId = R.id.rb_adult;                       // 成人
-                    else if (ticketType.equals("concession"))
-                        fareRbId = R.id.rb_concession;        // 小童 (特惠)
-                    else if (ticketType.equals("concession2"))
-                        fareRbId = R.id.rb_concession2;      // 長者 (特惠)
-                    else if (ticketType.equals("concessionelderly"))
-                        fareRbId = R.id.rb_joyyou_65;  // 樂悠咭 (65歲或以上)
-                    else if (ticketType.equals("joyyousixty"))
-                        fareRbId = R.id.rb_joyyou_60;        // 樂悠咭 (60-64歲)
-                    else if (ticketType.equals("concessionpwd"))
-                        fareRbId = R.id.rb_disability;     // 殘疾人士
-                    else if (ticketType.equals("student"))
-                        fareRbId = R.id.rb_student;              // 學生
+                    if (fareType.equals("adult"))
+                        fareRbId = R.id.rb_adult;
+                    else if (fareType.equals("concessionchild"))
+                        fareRbId = R.id.rb_concessionchild;
+                    else if (fareType.equals("concessionchild2"))
+                        fareRbId = R.id.rb_concessionchild2;
+                    else if (fareType.equals("concessionelderly"))
+                        fareRbId = R.id.rb_concessionelderly;
+                    else if (fareType.equals("joyyousixty"))
+                        fareRbId = R.id.rb_joyyousixty;
+                    else if (fareType.equals("concessionpwd"))
+                        fareRbId = R.id.rb_concessionpwd;
+                    else if (fareType.equals("student"))
+                        fareRbId = R.id.rb_student;
 
+                    rgTicketType.check(ticketType.equals("sj") ? R.id.rb_sj : R.id.rb_octopus);
                     rgFareType.check(fareRbId);
-
-                    rgTicketType.check(fareType.equals("sj") ? R.id.rb_sj : R.id.rb_octopus);
 
                     Runnable updateFareVisibility = () -> {
                         boolean isSJ = rgTicketType.getCheckedRadioButtonId() == R.id.rb_sj;
 
-                        int[] octopusOnly = {R.id.rb_joyyou_65, R.id.rb_joyyou_60, R.id.rb_disability, R.id.rb_student};
+                        int[] octopusOnly = {R.id.rb_concessionelderly, R.id.rb_joyyousixty, R.id.rb_concessionpwd, R.id.rb_student};
                         for (int id : octopusOnly) {
                             View rb = rgFareType.findViewById(id);
                             rb.setVisibility(isSJ ? View.GONE : View.VISIBLE);
@@ -274,20 +273,20 @@ public class SearchInputFragment extends Fragment {
         int ticketId = rgTicketType.getCheckedRadioButtonId();
         int fareId = rgFareType.getCheckedRadioButtonId();
 
-        String fareType = "adult";
-        if (fareId == R.id.rb_adult) fareType = "adult";                       // 成人
-        else if (fareId == R.id.rb_concession) fareType = "concessionchild";   // 小童 (特惠)
-        else if (fareId == R.id.rb_concession2) fareType = "concessionchild2"; // 長者 (特惠)
-        else if (fareId == R.id.rb_joyyou_65) fareType = "concessionelderly";  // 樂悠咭 (65歲或以上)
-        else if (fareId == R.id.rb_joyyou_60) fareType = "joyyousixty";        // 樂悠咭 (60-64歲)
-        else if (fareId == R.id.rb_disability) fareType = "concessionpwd";     // 殘疾人士
-        else if (fareId == R.id.rb_student) fareType = "student";              // 學生
-
         String ticketType = (ticketId == R.id.rb_sj) ? "sj" : "octopus";
 
+        String fareType = "adult";
+        if (fareId == R.id.rb_adult) fareType = "adult";
+        else if (fareId == R.id.rb_concessionchild) fareType = "concessionchild";
+        else if (fareId == R.id.rb_concessionchild2) fareType = "concessionchild2";
+        else if (fareId == R.id.rb_concessionelderly) fareType = "concessionelderly";
+        else if (fareId == R.id.rb_joyyousixty) fareType = "joyyousixty";
+        else if (fareId == R.id.rb_concessionpwd) fareType = "concessionpwd";
+        else if (fareId == R.id.rb_student) fareType = "student";
+
         prefs.edit()
-                .putString(MainActivity.KEY_FARE_TYPE, fareType)
                 .putString(MainActivity.KEY_TICKET_TYPE, ticketType)
+                .putString(MainActivity.KEY_FARE_TYPE, fareType)
                 .apply();
     }
 

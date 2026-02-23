@@ -82,31 +82,31 @@
             android:text="成人" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rb_concession"
+            android:id="@+id/rb_concessionchild"
             style="@style/RadioButtonStyle"
             android:drawableLeft="@drawable/outline_child_hat_24"
             android:text="小童 (特惠)" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rb_concession2"
+            android:id="@+id/rb_concessionchild2"
             style="@style/RadioButtonStyle"
             android:drawableLeft="@drawable/outline_child_hat_24"
             android:text="長者 (特惠)" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rb_joyyou_65"
+            android:id="@+id/rb_concessionelderly"
             style="@style/RadioButtonStyle"
             android:drawableLeft="@drawable/baseline_elderly_24"
             android:text="樂悠咭 (65歲或以上)" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rb_joyyou_60"
+            android:id="@+id/rb_joyyousixty"
             style="@style/RadioButtonStyle"
             android:drawableLeft="@drawable/baseline_elderly_24"
             android:text="樂悠咭 (60-64歲)" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rb_disability"
+            android:id="@+id/rb_concessionpwd"
             style="@style/RadioButtonStyle"
             android:drawableLeft="@drawable/baseline_accessible_24"
             android:text="殘疾人士" />
