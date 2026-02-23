@@ -47,71 +47,27 @@
         android:id="@+id/rg_walk_speed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:checkedButton="@id/rb_normal"
         android:showDividers="middle">
 
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/rb_fast"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:button="@drawable/selector_radio_check"
-            android:drawableLeft="@drawable/baseline_directions_walk_24"
-            android:drawablePadding="10dp"
-            android:drawableTint="?android:attr/colorForeground"
-            android:layoutDirection="rtl"
-            android:padding="10dp"
-            android:paddingStart="20dp"
-            android:text="快速\n在轉乘路綫沒有疑慮時"
-            android:textAlignment="textStart"
-            android:textDirection="ltr"
-            android:textSize="16sp" />
+            style="@style/Widget.App.RadioButton.WalkOption"
+            android:text="快速\n在轉乘路綫沒有疑慮時" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/rb_normal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:button="@drawable/selector_radio_check"
-            android:drawableLeft="@drawable/baseline_directions_walk_24"
-            android:drawablePadding="10dp"
-            android:drawableTint="?android:attr/colorForeground"
-            android:layoutDirection="rtl"
-            android:padding="10dp"
-            android:text="普通\n可以不迷路移動時"
-            android:textAlignment="textStart"
-            android:textDirection="ltr"
-            android:textSize="16sp" />
+            style="@style/Widget.App.RadioButton.WalkOption"
+            android:text="普通\n可以不迷路移動時" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/rb_slow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:button="@drawable/selector_radio_check"
-            android:drawableLeft="@drawable/baseline_directions_walk_24"
-            android:drawablePadding="10dp"
-            android:drawableTint="?android:attr/colorForeground"
-            android:layoutDirection="rtl"
-            android:padding="10dp"
-            android:text="慢速\n需要更多時間移動時"
-            android:textAlignment="textStart"
-            android:textDirection="ltr"
-            android:textSize="16sp" />
+            style="@style/Widget.App.RadioButton.WalkOption"
+            android:text="慢速\n需要更多時間移動時" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/rb_veryslow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:button="@drawable/selector_radio_check"
-            android:drawableLeft="@drawable/baseline_directions_walk_24"
-            android:drawablePadding="10dp"
-            android:drawableTint="?android:attr/colorForeground"
-            android:layoutDirection="rtl"
-            android:padding="10dp"
-            android:text="很慢\n帶著大型行李或行動不便時"
-            android:textAlignment="textStart"
-            android:textDirection="ltr"
-            android:textSize="16sp" />
+            style="@style/Widget.App.RadioButton.WalkOption"
+            android:text="很慢\n帶著大型行李或行動不便時" />
     </RadioGroup>
 </LinearLayout>

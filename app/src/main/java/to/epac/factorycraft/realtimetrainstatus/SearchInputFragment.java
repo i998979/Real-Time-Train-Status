@@ -167,10 +167,30 @@ public class SearchInputFragment extends Fragment {
                     RadioGroup rg = bottomSheet.findViewById(R.id.rg_walk_speed);
 
                     String saved = prefs.getString(KEY_WALK_SPEED, "普通");
-                    if (saved.equals("快")) rg.check(R.id.rb_fast);
-                    else if (saved.equals("普通")) rg.check(R.id.rb_normal);
-                    else if (saved.equals("慢")) rg.check(R.id.rb_slow);
-                    else if (saved.equals("很慢")) rg.check(R.id.rb_veryslow);
+
+
+                    for (int j = 0; j < rg.getChildCount(); j++) {
+                        View child = rg.getChildAt(j);
+
+                        if (child instanceof MaterialRadioButton) {
+                            MaterialRadioButton rb = (MaterialRadioButton) child;
+
+                            // Reformat text with smaller and gray 2nd line
+                            String rawText = rb.getText().toString();
+                            String title = rawText.split("\n")[0];
+
+                            int lineBreak = rawText.indexOf("\n");
+                            if (lineBreak != -1) {
+                                SpannableString ss = new SpannableString(rawText);
+                                ss.setSpan(new StyleSpan(Typeface.BOLD), 0, lineBreak, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                ss.setSpan(new ForegroundColorSpan(Color.GRAY), lineBreak + 1, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                ss.setSpan(new RelativeSizeSpan(0.8f), lineBreak + 1, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                rb.setText(ss);
+                            }
+
+                            if (title.equals(saved)) rg.check(rb.getId());
+                        }
+                    }
 
                     rg.setOnCheckedChangeListener((group, checkedId) -> {
                         MaterialRadioButton rb = group.findViewById(checkedId);
@@ -181,26 +201,6 @@ public class SearchInputFragment extends Fragment {
                                 .apply();
                         renderOptionButton(settingsBtn, index, selected, colors[index], iconRes[index]);
                     });
-
-
-                    for (int j = 0; j < rg.getChildCount(); j++) {
-                        View child = rg.getChildAt(j);
-
-                        if (child instanceof MaterialRadioButton) {
-                            MaterialRadioButton rb = (MaterialRadioButton) child;
-
-                            // Reformat text with smaller and gray 2nd line
-                            String text = rb.getText().toString();
-                            int lineBreak = text.indexOf("\n");
-                            if (lineBreak != -1) {
-                                SpannableString ss = new SpannableString(text);
-                                ss.setSpan(new StyleSpan(Typeface.BOLD), 0, lineBreak, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                ss.setSpan(new ForegroundColorSpan(Color.GRAY), lineBreak + 1, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                ss.setSpan(new RelativeSizeSpan(0.8f), lineBreak + 1, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                rb.setText(ss);
-                            }
-                        }
-                    }
                 }
 
                 bottomSheet.show();
