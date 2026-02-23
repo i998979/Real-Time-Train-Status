@@ -179,7 +179,7 @@ public class SearchInputFragment extends Fragment {
                             int lineBreak = rawText.indexOf("\n");
                             if (lineBreak != -1) {
                                 SpannableString ss = new SpannableString(rawText);
-                                ss.setSpan(new StyleSpan(Typeface.BOLD), 0, lineBreak, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                ss.setSpan(new StyleSpan(Typeface.BOLD), 0, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                                 ss.setSpan(new ForegroundColorSpan(Color.GRAY), lineBreak + 1, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                                 ss.setSpan(new RelativeSizeSpan(0.8f), lineBreak + 1, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                                 rb.setText(ss);
