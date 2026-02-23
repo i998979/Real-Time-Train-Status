@@ -70,6 +70,15 @@ public class StationInfoFragment extends Fragment {
         pagerContent = view.findViewById(R.id.pager_content);
         pagerContent.setUserInputEnabled(false);
 
+        pagerContent.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                prefs.edit()
+                        .putInt(MainActivity.KEY_STATIONINFO_LAST_TAB, position)
+                        .apply();
+            }
+        });
+
         View.OnClickListener searchClickListener = v -> {
             searchLauncher.launch(new Intent(requireContext(), StationSearchActivity.class));
         };
@@ -84,6 +93,9 @@ public class StationInfoFragment extends Fragment {
         }
 
         updateStationInfoFromCode(code);
+
+        int lastTab = prefs.getInt(MainActivity.KEY_STATIONINFO_LAST_TAB, 0);
+        pagerContent.setCurrentItem(lastTab, false);
     }
 
     private void updateStationInfoFromCode(String code) {

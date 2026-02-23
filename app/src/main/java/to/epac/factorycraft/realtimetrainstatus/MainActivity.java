@@ -17,6 +17,10 @@ public class MainActivity extends AppCompatActivity {
     public static final String KEY_ORIGIN_ID = "origin_id";
     public static final String KEY_DEST_ID = "dest_id";
 
+    public static final String KEY_ROUTESEARCH_LAST_TAB = "routesearch_last_selected_tab";
+    public static final String KEY_OPERATIONINFO_LAST_TAB = "operationinfo_last_selected_tab";
+    public static final String KEY_STATIONINFO_LAST_TAB = "stationinfo_last_selected_tab";
+
     public static final String KEY_LAST_STATION_CODE = "last_station_code";
 
     public static final String KEY_WALK_SPEED = "walk_speed";
