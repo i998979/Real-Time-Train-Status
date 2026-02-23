@@ -53,13 +53,13 @@
             android:checkedButton="@id/rb_octopus"
             android:orientation="vertical">
 
-            <RadioButton
+            <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/rb_octopus"
                 style="@style/RadioButtonStyle"
                 android:drawableLeft="@drawable/baseline_credit_card_24"
                 android:text="八達通" />
 
-            <RadioButton
+            <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/rb_sj"
                 style="@style/RadioButtonStyle"
                 android:drawableLeft="@drawable/outline_transit_ticket_24"

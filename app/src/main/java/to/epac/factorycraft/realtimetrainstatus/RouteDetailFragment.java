@@ -306,7 +306,25 @@ public class RouteDetailFragment extends Fragment {
             // Calculate start end time and duration
             int startTime = startNode.optInt("time");
             int endTime = endNode.optInt("time");
-            seg.duration = endTime - startTime;
+
+            float multiplier = 1.0F;
+            String speed = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
+            switch (speed) {
+                case "很慢":
+                    multiplier = 1.2F;
+                    break;
+                case "慢速":
+                    multiplier = 1.1F;
+                    break;
+                case "普通":
+                    multiplier = 1.0F;
+                    break;
+                case "快速":
+                    multiplier = 0.9F;
+                    break;
+            }
+            seg.duration = (int) ((endTime - startTime) * (isWalk ? multiplier : 1));
+
 
             int startTotalM = (startH * 60) + startM + startTime;
             seg.startH = (startTotalM / 60) % 24;

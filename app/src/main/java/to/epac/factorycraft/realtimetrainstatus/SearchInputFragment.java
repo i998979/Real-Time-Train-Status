@@ -324,13 +324,11 @@ public class SearchInputFragment extends Fragment {
 
         SpannableString spannable = new SpannableString(fullText);
 
-        Drawable icon = ContextCompat.getDrawable(requireContext(), iconRes);
-        if (icon != null) {
-            icon.setBounds(0, 0, dpToPx(18), dpToPx(18));
-            icon.setTint(color);
-            spannable.setSpan(new ImageSpan(icon, ImageSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            spannable.setSpan(new RelativeSizeSpan(1.0f), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
+        Drawable icon = ContextCompat.getDrawable(requireContext(), iconRes).mutate();
+        icon.setBounds(0, 0, dpToPx(18), dpToPx(18));
+        icon.setTint(color);
+        spannable.setSpan(new ImageSpan(icon, ImageSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannable.setSpan(new RelativeSizeSpan(1.0f), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         int startStatus = fullText.indexOf(status);
         if (startStatus != -1) {

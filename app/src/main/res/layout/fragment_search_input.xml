@@ -1,134 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/layout_origin"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:padding="15dp">
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_origin_name"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/layout_origin"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="出發地"
-            android:textColor="#6ec08d"
-            android:textSize="48sp"
-            android:textStyle="bold" />
+            android:background="?attr/selectableItemBackground"
+            android:padding="15dp">
+            <TextView
+                android:id="@+id/tv_origin_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="出發地"
+                android:textColor="#6ec08d"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/tv_origin_name"
+                android:layout_marginStart="8dp"
+                android:layout_toEndOf="@id/tv_origin_name"
+                android:text="起點"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
+        <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/tv_origin_name"
-            android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/tv_origin_name"
-            android:text="起點"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+            android:paddingHorizontal="40dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_swap"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:enabled="false"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                app:backgroundTint="?attr/colorOutlineVariant"
+                app:cornerRadius="28dp"
+                app:icon="@drawable/baseline_swap_vert_24"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconSize="46dp"
+                app:iconTint="?attr/colorSurfaceInverse" />
+        </FrameLayout>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="40dp">
+        <RelativeLayout
+            android:id="@+id/layout_dest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:padding="15dp">
+            <TextView
+                android:id="@+id/tv_dest_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="目的地"
+                android:textColor="#6ec08d"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/tv_dest_name"
+                android:layout_marginStart="8dp"
+                android:layout_toEndOf="@id/tv_dest_name"
+                android:text="終點"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_swap"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:id="@+id/btn_go"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="50dp"
+            android:background="@drawable/bg_circle_go"
             android:enabled="false"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:padding="0dp"
-            app:backgroundTint="?attr/colorOutlineVariant"
-            app:cornerRadius="28dp"
-            app:icon="@drawable/baseline_swap_vert_24"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="46dp"
-            app:iconTint="?attr/colorSurfaceInverse" />
-    </FrameLayout>
-
-    <RelativeLayout
-        android:id="@+id/layout_dest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:padding="15dp">
-
-        <TextView
-            android:id="@+id/tv_dest_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="目的地"
-            android:textColor="#6ec08d"
-            android:textSize="48sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/tv_dest_name"
-            android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/tv_dest_name"
-            android:text="終點"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_go"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginTop="50dp"
-        android:background="@drawable/bg_circle_go"
-        android:enabled="false"
-        android:gravity="center"
-        android:padding="0dp"
-        android:text="GO!"
-        android:textColor="#FFFFFF"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        app:backgroundTint="@null" />
-
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:clipToPadding="false"
-        android:fillViewport="true"
-        android:scrollbars="none">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:padding="0dp"
+            android:text="GO!"
+            android:textColor="#FFFFFF"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            app:backgroundTint="@null" />
+    </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_option_walk"
-                style="@style/OptionButtonStyle"
-                android:gravity="center"
-                android:lineSpacingExtra="2dp"
-                android:textAllCaps="false" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_option_fare"
-                style="@style/OptionButtonStyle"
-                android:gravity="center"
-                android:lineSpacingExtra="2dp"
-                android:textAllCaps="false" />
-        </LinearLayout>
-    </HorizontalScrollView>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_option_walk"
+            style="@style/OptionButtonStyle"
+            android:layout_marginEnd="10dp"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:textAllCaps="false" />
 
-</LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_option_fare"
+            style="@style/OptionButtonStyle"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+</RelativeLayout>
