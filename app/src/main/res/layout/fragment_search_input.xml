@@ -108,7 +108,8 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingTop="40dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_option_walk"
