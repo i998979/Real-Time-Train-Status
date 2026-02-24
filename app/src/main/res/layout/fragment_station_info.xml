@@ -5,55 +5,61 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_search_header"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="60dp"
         android:layout_alignParentTop="true"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:background="?attr/colorSecondary"
         android:paddingHorizontal="16dp">
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/search_bar"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="44dp"
             android:background="@drawable/bg_search_bar_rounded"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp">
+            android:elevation="6dp"
+            android:paddingHorizontal="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.6">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:id="@+id/iv_search_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="start|center_vertical"
                 android:src="@drawable/baseline_search_24"
-                app:tint="?attr/colorOnSurface" />
+                app:tint="#FFFFFF" />
 
             <TextView
                 android:id="@+id/tv_search_station"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
-                android:layout_weight="1"
-                android:gravity="center"
+                android:layout_gravity="center"
                 android:text="中環"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="16sp" />
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_refresh"
-                style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="end|center_vertical"
-                app:icon="@drawable/baseline_refresh_24"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp"
-                app:iconSize="36dp"
-                app:iconTint="#92ADBB" />
+        </FrameLayout>
 
-        </LinearLayout>
-    </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_refresh"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:icon="@drawable/baseline_refresh_24"
+            app:iconPadding="0dp"
+            app:iconSize="32dp"
+            app:iconTint="#92ADBB"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"

@@ -8,6 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <color name="bar_bright">#355260</color>
+    <color name="bar_dark">#0E1B24</color>
+
     <color name="eal">#5eb7e8</color>
     <color name="tml">#9c2e00</color>
     <color name="ktl">#00a040</color>

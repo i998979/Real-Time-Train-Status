@@ -60,24 +60,32 @@
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/rb_fast"
                 style="@style/RadioButtonStyle"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorOnSurfaceInverse"
                 android:drawableLeft="@drawable/baseline_directions_walk_24"
                 android:text="快速\n在轉乘路綫沒有疑慮時" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/rb_normal"
                 style="@style/RadioButtonStyle"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorOnSurfaceInverse"
                 android:drawableLeft="@drawable/baseline_directions_walk_24"
                 android:text="普通\n可以不迷路移動時" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/rb_slow"
                 style="@style/RadioButtonStyle"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorOnSurfaceInverse"
                 android:drawableLeft="@drawable/baseline_directions_walk_24"
                 android:text="慢速\n需要更多時間移動時" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/rb_veryslow"
                 style="@style/RadioButtonStyle"
+                android:background="@drawable/bg_platform_border"
+                android:backgroundTint="?attr/colorOnSurfaceInverse"
                 android:drawableLeft="@drawable/baseline_directions_walk_24"
                 android:text="很慢\n帶著大型行李或行動不便時" />
         </RadioGroup>

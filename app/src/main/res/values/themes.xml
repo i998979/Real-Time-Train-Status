@@ -6,11 +6,11 @@
 
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondary">@color/bar_bright</item>
         <item name="colorOnSecondary">@color/black</item>
 
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@color/bar_bright</item>
+        <item name="android:navigationBarColor">@color/bar_bright</item>
     </style>
 
     <style name="TabText" parent="TextAppearance.Design.Tab">
