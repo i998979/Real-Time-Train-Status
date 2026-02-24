@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="?android:attr/colorForeground"
+    app:cardBackgroundColor="?android:attr/colorForegroundInverse"
     app:cardCornerRadius="8dp">
 
     <LinearLayout
@@ -61,7 +61,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="東鐵綫"
-                        android:textColor="?attr/colorOnSurfaceInverse"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -94,7 +94,7 @@
                     android:layout_height="wrap_content"
                     android:paddingEnd="12dp"
                     android:text="服務正常"
-                    android:textColor="?attr/colorOnSurfaceInverse"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 

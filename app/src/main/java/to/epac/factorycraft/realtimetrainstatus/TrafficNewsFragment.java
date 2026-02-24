@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,6 +51,8 @@ public class TrafficNewsFragment extends Fragment {
         put("SIL", "ADM");
     }};
 
+    private HRConfig hrConf;
+
     private FrameLayout trafficNewsLayout;
     private LinearLayout statusContainer;
 
@@ -65,6 +68,8 @@ public class TrafficNewsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_traffic_news, container, false);
+
+        hrConf = HRConfig.getInstance(getContext());
 
         trafficNewsLayout = view.findViewById(R.id.layout_traffic_news);
         statusContainer = view.findViewById(R.id.status_container);
@@ -232,7 +237,28 @@ public class TrafficNewsFragment extends Fragment {
                 String lineNameTc = lineObj.getString("line_name_tc");
                 String lineColor = lineObj.getString("line_color");
                 String status = lineObj.getString("status");
-                String messages = lineObj.optString("messages", "");
+                String lineSection = "全綫";
+
+                String displayMessage = "服務正常";
+                Object messagesObj = lineObj.opt("messages");
+
+                if (messagesObj instanceof JSONObject) {
+                    JSONObject msgObj = ((JSONObject) messagesObj).optJSONObject("message");
+                    if (msgObj != null) {
+                        String title = msgObj.optString("title_tc", "");
+                        String cause = msgObj.optString("cause_tc", "");
+                        displayMessage = !title.isEmpty() ? title : cause;
+
+                        JSONObject affectedAreaObj = msgObj.optJSONObject("affected_areas").optJSONObject("affected_area");
+                        lineSection = hrConf.getStationName(affectedAreaObj.getString("station_code_fr")) + "~"
+                                + hrConf.getStationName(affectedAreaObj.getString("station_code_to"));
+                    }
+                } else if (messagesObj instanceof String) {
+                    String msgStr = (String) messagesObj;
+                    if (!msgStr.isEmpty()) {
+                        displayMessage = msgStr;
+                    }
+                }
 
                 if (status.equals("green") || status.equals("grey")) continue;
 
@@ -242,6 +268,7 @@ public class TrafficNewsFragment extends Fragment {
                 View vBadgeLayout = itemView.findViewById(R.id.line_color_badge);
                 TextView tvLineCode = itemView.findViewById(R.id.tv_line_code_badge);
                 TextView tvLineName = itemView.findViewById(R.id.tv_line);
+                TextView tvLineSection = itemView.findViewById(R.id.tv_line_section);
                 TextView tvStatus = itemView.findViewById(R.id.tv_status);
                 TextView tvMessage = itemView.findViewById(R.id.tv_message);
                 ImageView ivIcon = itemView.findViewById(R.id.iv_status_icon);
@@ -251,7 +278,8 @@ public class TrafficNewsFragment extends Fragment {
                 vBadgeLayout.setBackgroundColor(colorInt);
                 tvLineCode.setText(lineCode);
                 tvLineName.setText(lineNameTc);
-                tvMessage.setText(messages.isEmpty() ? "服務正常" : messages);
+                tvLineSection.setText(lineSection);
+                tvMessage.setText(displayMessage);
 
                 updateStatusUI(status, tvStatus, ivIcon);
 
@@ -261,7 +289,7 @@ public class TrafficNewsFragment extends Fragment {
                     intent.putExtra("line_name_tc", lineNameTc);
                     intent.putExtra("line_color", lineColor);
                     intent.putExtra("status", status);
-                    intent.putExtra("messages", messages);
+                    intent.putExtra("messages", messagesObj.toString());
                     startActivity(intent);
                 });
 
