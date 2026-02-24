@@ -61,10 +61,10 @@ public class SearchInputFragment extends Fragment {
         prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         if (!prefs.contains(MainActivity.KEY_WALK_SPEED))
             prefs.edit().putString(MainActivity.KEY_WALK_SPEED, "普通").apply();
-        if (!prefs.contains(MainActivity.KEY_FARE_TYPE))
-            prefs.edit().putString(MainActivity.KEY_FARE_TYPE, "octopus").apply();
         if (!prefs.contains(MainActivity.KEY_TICKET_TYPE))
-            prefs.edit().putString(MainActivity.KEY_TICKET_TYPE, "adult").apply();
+            prefs.edit().putString(MainActivity.KEY_TICKET_TYPE, "octopus").apply();
+        if (!prefs.contains(MainActivity.KEY_FARE_TYPE))
+            prefs.edit().putString(MainActivity.KEY_FARE_TYPE, "adult").apply();
 
         selectedOriginID = prefs.getString(MainActivity.KEY_ORIGIN_ID, null);
         selectedDestID = prefs.getString(MainActivity.KEY_DEST_ID, null);

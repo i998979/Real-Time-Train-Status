@@ -37,7 +37,7 @@ public class RouteDetailFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_route_detail, container, false);
 
-        prefs = requireContext().getSharedPreferences(MainActivity.KEY_FARE_TYPE, Context.MODE_PRIVATE);
+        prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         hrConf = HRConfig.getInstance(getContext());
 
         MaterialButton btnReturn = root.findViewById(R.id.btn_return);
@@ -81,23 +81,23 @@ public class RouteDetailFragment extends Fragment {
             String startTime = getArguments().getString("start_time");
             int startH = Integer.parseInt(startTime.split(":")[0]);
             int startM = Integer.parseInt(startTime.split(":")[1]);
-
             tvStartTime.setText(startTime);
-            JSONArray path = selectedRoute.getJSONArray("path");
-            int endTotalMin = startM + path.getJSONObject(path.length() - 1).optInt("time");
-            int endH = (startH + endTotalMin / 60) % 24;
-            int endM = endTotalMin % 60;
-            tvEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endH, endM));
-
 
             // Footer Data
-            tvJourneyTime.setText(selectedRoute.optString("time"));
             tvInterchangeCount.setText(selectedRoute.optString("interchangeStationsNo"));
             tvFare.setText(getFare(selectedRoute) + "");
 
 
             // Apply path segments
             List<VisualSegment> segments = parsePathToSegments(selectedRoute.getJSONArray("path"), startH, startM);
+            if (!segments.isEmpty()) {
+                VisualSegment lastSeg = segments.get(segments.size() - 1);
+                tvEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", lastSeg.endH, lastSeg.endM));
+
+                int totalJourneyMinutes = (lastSeg.endH * 60 + lastSeg.endM) - (startH * 60 + startM);
+                if (totalJourneyMinutes < 0) totalJourneyMinutes += 1440;
+                tvJourneyTime.setText(totalJourneyMinutes + "");
+            }
             buildRouteUI(inflater, routeContainer, segments, startH, startM);
 
         } catch (Exception e) {
@@ -185,7 +185,7 @@ public class RouteDetailFragment extends Fragment {
         vLineBottom.setBackground(lineBtmDrawable);
 
         TextView tvLine = view.findViewById(R.id.tv_line);
-        tvLine.setText(seg.lineName);
+        tvLine.setText(hrConf.getLineByAlias(seg.lineCode).name);
 
         TextView tvBadge = view.findViewById(R.id.tv_line_code_badge);
         View lineColorBadge = view.findViewById(R.id.line_color_badge);
@@ -274,6 +274,26 @@ public class RouteDetailFragment extends Fragment {
         List<VisualSegment> segments = new ArrayList<>();
         if (path == null || path.length() < 2) return segments;
 
+        // Walk interchange multiplier
+        float multiplier = 1.0F;
+        String speed = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
+        switch (speed) {
+            case "很慢":
+                multiplier = 1.2F;
+                break;
+            case "慢速":
+                multiplier = 1.1F;
+                break;
+            case "普通":
+                multiplier = 1.0F;
+                break;
+            case "快速":
+                multiplier = 0.9F;
+                break;
+        }
+
+        int accumulatedDelay = 0;
+
         int i = 0;
         while (i < path.length() - 1) {
             JSONObject startNode = path.optJSONObject(i);
@@ -304,38 +324,24 @@ public class RouteDetailFragment extends Fragment {
             seg.lineID = startLineID;
 
             // Calculate start end time and duration
-            int startTime = startNode.optInt("time");
-            int endTime = endNode.optInt("time");
+            int rawStartTime = startNode.optInt("time");
+            int rawEndTime = endNode.optInt("time");
+            int rawDuration = rawEndTime - rawStartTime;
 
-            float multiplier = 1.0F;
-            String speed = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
-            switch (speed) {
-                case "很慢":
-                    multiplier = 1.2F;
-                    break;
-                case "慢速":
-                    multiplier = 1.1F;
-                    break;
-                case "普通":
-                    multiplier = 1.0F;
-                    break;
-                case "快速":
-                    multiplier = 0.9F;
-                    break;
-            }
-            seg.duration = (int) ((endTime - startTime) * (isWalk ? multiplier : 1));
-
-
-            int startTotalM = (startH * 60) + startM + startTime;
+            int startTotalM = (startH * 60) + startM + rawStartTime + accumulatedDelay;
             seg.startH = (startTotalM / 60) % 24;
             seg.startM = startTotalM % 60;
 
-            int endTotalM = (startH * 60) + startM + endTime;
+            seg.duration = (int) (rawDuration * (isWalk ? multiplier : 1.0F));
+
+            int endTotalM = startTotalM + seg.duration;
             seg.endH = (endTotalM / 60) % 24;
             seg.endM = endTotalM % 60;
 
+            accumulatedDelay += (seg.duration - rawDuration);
+
             // Apply line name and color
-            seg.lineName = hrConf.getLineById(startLineID).name;
+            seg.lineCode = hrConf.getLineById(startLineID).alias;
             seg.lineColor = hrConf.getLineById(startLineID).color;
             seg.stationName = hrConf.getStationName(endNode.optInt("ID"));
 

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VisualSegment {
-    String lineName;
+    String lineCode;
     String lineColor;
     int duration;
     int startH, startM;

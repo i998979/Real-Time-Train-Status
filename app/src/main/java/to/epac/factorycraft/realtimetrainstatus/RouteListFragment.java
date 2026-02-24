@@ -52,12 +52,14 @@ public class RouteListFragment extends Fragment {
     private RecyclerView recyclerView;
     private RouteAdapter adapter;
     private TabLayout tabLayout;
+
+    private JSONObject routeData;
     private List<JSONObject> fullRouteList = new ArrayList<>();
     private List<JSONObject> routeList = new ArrayList<>();
+
     private int minTime;
     private int minInter;
     private float minFare;
-    private String routeData = "";
 
     private HRConfig hrConf;
     private Calendar startAt = null;
@@ -154,52 +156,72 @@ public class RouteListFragment extends Fragment {
                 String line;
                 while ((line = reader.readLine()) != null) sb.append(line);
 
-                routeData = sb.toString();
-                JSONObject data = new JSONObject(routeData);
-                JSONArray routes = data.getJSONArray("routes");
+                routeData = new JSONObject(sb.toString());
 
-                int max = 0;
-                List<JSONObject> tempRoutes = new ArrayList<>();
-                for (int i = 0; i < routes.length(); i++) {
-                    JSONObject r = routes.getJSONObject(i);
-                    tempRoutes.add(r);
-                    if (r.optInt("time") > max) max = r.optInt("time");
-                }
-                maxDuration = (int) Math.ceil(max / 15.0) * 15;
-                if (maxDuration < 30) maxDuration = 30;
 
-                String firstTrain = data.getJSONObject("firstTrain").getString("time");
-                String lastTrain = data.getJSONObject("lastTrain").getString("time");
-
-                Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-                int nowMins = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
-                int firstMins = Integer.parseInt(firstTrain.split(":")[0]) * 60 + Integer.parseInt(firstTrain.split(":")[1]);
-                int lastMins = Integer.parseInt(lastTrain.split(":")[0]) * 60 + Integer.parseInt(lastTrain.split(":")[1]);
-
-                if (lastMins < firstMins) lastMins += 24 * 60;
-                boolean isAfterLast = (nowMins > lastMins % 1440 && nowMins < firstMins);
-
-                startAt = (Calendar) now.clone();
-                if (isAfterLast) {
-                    startAt.set(Calendar.HOUR_OF_DAY, firstMins / 60);
-                    startAt.set(Calendar.MINUTE, firstMins % 60);
-                }
-
+                // Update Tab Layout data, background (if not drawn), adapter data
                 requireActivity().runOnUiThread(() -> {
-                    fullRouteList.clear();
-                    fullRouteList.addAll(tempRoutes);
+                    List<JSONObject> routes = new ArrayList<>();
 
+                    // Find longest journey time route
+                    try {
+                        JSONArray data = routeData.getJSONArray("routes");
+                        int max = 0;
+                        for (int i = 0; i < data.length(); i++) {
+                            JSONObject r = data.getJSONObject(i);
+                            routes.add(r);
+                            if (r.optInt("time") > max) max = r.optInt("time");
+                        }
+                        maxDuration = (int) Math.ceil(max / 15.0) * 15;
+                        if (maxDuration < 30) maxDuration = 30;
+                    } catch (Exception e) {
+                    }
+
+
+                    // Set full route list
+                    fullRouteList.clear();
+                    fullRouteList.addAll(routes);
+
+
+                    // Calculate journey start time based on first/last train
+                    try {
+                        String[] ft = routeData.getJSONObject("firstTrain").getString("time").split(":");
+                        String[] lt = routeData.getJSONObject("lastTrain").getString("time").split(":");
+
+                        int firstMins = Integer.parseInt(ft[0]) * 60 + Integer.parseInt(ft[1]);
+                        int lastMins = Integer.parseInt(lt[0]) * 60 + Integer.parseInt(lt[1]);
+
+                        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+                        int nowMins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
+
+                        boolean isAfterLast;
+                        if (lastMins < firstMins)
+                            isAfterLast = (nowMins > lastMins && nowMins < firstMins);
+                        else
+                            isAfterLast = (nowMins > lastMins || nowMins < firstMins);
+
+                        if (isAfterLast) {
+                            if (nowMins > lastMins)
+                                cal.add(Calendar.DAY_OF_MONTH, 1);
+                            cal.set(Calendar.HOUR_OF_DAY, firstMins / 60);
+                            cal.set(Calendar.MINUTE, firstMins % 60);
+                        }
+                        startAt = cal;
+                    } catch (Exception e) {
+                    }
+
+
+                    // Find min time, min interchange, min fare
                     minTime = Integer.MAX_VALUE;
                     minInter = Integer.MAX_VALUE;
                     minFare = Float.MAX_VALUE;
-
                     for (JSONObject r : fullRouteList) {
                         try {
-                            int time = r.getInt("time");
+                            int journeyTime = getJourneyTime(r.getJSONArray("path"));
                             int inter = r.getInt("interchangeStationsNo");
                             float fare = getFare(r);
 
-                            if (time < minTime) minTime = time;
+                            if (journeyTime < minTime) minTime = journeyTime;
                             if (inter < minInter) minInter = inter;
                             if (fare < minFare) minFare = fare;
                         } catch (Exception e) {
@@ -214,77 +236,6 @@ public class RouteListFragment extends Fragment {
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    private void filterRoutes(int position) {
-        routeList.clear();
-        if (position == 0) {
-            routeList.addAll(fullRouteList);
-        } else {
-            JSONObject best = null;
-            for (JSONObject r : fullRouteList) {
-                if (best == null) {
-                    best = r;
-                    continue;
-                }
-                try {
-                    if (position == 1) {
-                        if (r.getInt("time") < best.getInt("time")) best = r;
-                    } else if (position == 2) {
-                        if (r.getInt("interchangeStationsNo") < best.getInt("interchangeStationsNo"))
-                            best = r;
-                    } else if (position == 3) {
-                        float rFare = getFare(r);
-                        float bFare = getFare(best);
-                        if (rFare < bFare) best = r;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (best != null) routeList.add(best);
-        }
-        adapter.notifyDataSetChanged();
-        recyclerView.scrollToPosition(0);
-    }
-
-    private float getFare(JSONObject route) throws Exception {
-        String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
-        String ticketType = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
-        JSONArray fares = route.getJSONArray("fares");
-        float totalFare = 0.0f;
-
-        for (int i = 0; i < fares.length(); i++) {
-            JSONObject fareSection = fares.getJSONObject(i);
-            JSONObject fareInfo = fareSection.getJSONObject("fareInfo");
-            String fareTitle = fareSection.optString("fareTitle", "");
-
-            if (fareTitle.equals("firstClass")) continue;
-
-            String currentFareType = fareType;
-
-            if (!fareInfo.has(currentFareType)) {
-                if (currentFareType.equals("concessionchild") || currentFareType.equals("concessionchild2")) {
-                    currentFareType = "concession";
-                } else {
-                    currentFareType = "adult";
-                }
-            }
-
-
-            JSONObject idObj = fareInfo.optJSONObject(currentFareType);
-            if (idObj != null) {
-                String fStr = idObj.optString(ticketType, "0");
-
-                if (!fStr.equals("-") && !fStr.equals("免費")) {
-                    try {
-                        totalFare += Float.parseFloat(fStr);
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        }
-        return totalFare;
     }
 
     private void updateBackground() {
@@ -325,6 +276,46 @@ public class RouteListFragment extends Fragment {
         });
     }
 
+    private int getJourneyTime(JSONArray path) {
+        List<VisualSegment> temp = parsePathToSegments(path, 0, 0);
+        int total = 0;
+        for (VisualSegment s : temp) total += s.duration;
+        return total;
+    }
+
+    private void filterRoutes(int position) {
+        routeList.clear();
+        if (position == 0) {
+            routeList.addAll(fullRouteList);
+        } else {
+            JSONObject best = null;
+            for (JSONObject r : fullRouteList) {
+                if (best == null) {
+                    best = r;
+                    continue;
+                }
+                try {
+                    if (position == 1) {
+                        if (r.getInt("time") < best.getInt("time")) best = r;
+                    } else if (position == 2) {
+                        if (r.getInt("interchangeStationsNo") < best.getInt("interchangeStationsNo"))
+                            best = r;
+                    } else if (position == 3) {
+                        float rFare = getFare(r);
+                        float bFare = getFare(best);
+                        if (rFare < bFare) best = r;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (best != null) routeList.add(best);
+        }
+        adapter.notifyDataSetChanged();
+        recyclerView.scrollToPosition(0);
+    }
+
+
     private class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.ViewHolder> {
         private class ViewHolder extends RecyclerView.ViewHolder {
             LinearLayout routeLayout;
@@ -360,18 +351,39 @@ public class RouteListFragment extends Fragment {
             try {
                 JSONObject route = routeList.get(position);
 
+                List<VisualSegment> segments = parsePathToSegments(route.getJSONArray("path"),
+                        startAt.get(Calendar.HOUR_OF_DAY), startAt.get(Calendar.MINUTE));
+
+                if (segments.isEmpty()) return;
+
+
+                // Header & Footer UI Setup
+                VisualSegment lastSeg = segments.get(segments.size() - 1);
+                VisualSegment firstSeg = segments.get(0);
+
+                int startTotalM = startAt.get(Calendar.HOUR_OF_DAY) * 60 + startAt.get(Calendar.MINUTE);
+                int endTotalM = (lastSeg.endH < firstSeg.startH ? lastSeg.endH + 24 : lastSeg.endH) * 60 + lastSeg.endM;
+                int journeyTime = endTotalM - startTotalM;
+
+                holder.journeyTime.setText(journeyTime + "分");
+                holder.startTime.setText(String.format(Locale.getDefault(), "%02d:%02d", firstSeg.startH, firstSeg.startM));
+                holder.arriveTime.setText(String.format(Locale.getDefault(), "%02d:%02d", lastSeg.endH, lastSeg.endM));
+                holder.fare.setText("$ " + getFare(route));
+
+
+                // Apply min time/interchange/fare badge
                 holder.layoutStatusBadges.removeAllViews();
 
                 String[] texts = {"早", "樂", "安"};
                 String[] colors = {"#2AB3D4", "#3DBC7F", "#FFAE0C"};
-                boolean[] conditions = {
-                        route.getInt("time") == minTime,
+                boolean[] match = {
+                        getJourneyTime(route.getJSONArray("path")) == minTime,
                         route.getInt("interchangeStationsNo") == minInter,
                         getFare(route) == minFare
                 };
 
                 for (int i = 0; i < texts.length; i++) {
-                    if (conditions[i]) {
+                    if (match[i]) {
                         TextView tv = new TextView(getContext());
                         int size = dpToPx(17);
                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
@@ -394,10 +406,12 @@ public class RouteListFragment extends Fragment {
                     }
                 }
 
+
+                // Apply onClickListener
                 holder.routeLayout.setOnClickListener(v -> {
                     RouteDetailFragment detailFragment = new RouteDetailFragment();
                     Bundle bundle = new Bundle();
-                    bundle.putString("route_data", routeData);
+                    bundle.putString("route_data", routeData.toString());
                     bundle.putInt("selected_route", position);
                     bundle.putString("start_time", String.format(Locale.getDefault(), "%02d:%02d",
                             startAt.get(Calendar.HOUR_OF_DAY), startAt.get(Calendar.MINUTE)));
@@ -411,19 +425,9 @@ public class RouteListFragment extends Fragment {
                             .commit();
                 });
 
-                // Header & Footer UI Setup
-                Calendar cal = (Calendar) startAt.clone();
-
-                holder.journeyTime.setText(route.getInt("time") + "分");
-                holder.startTime.setText(String.format(Locale.getDefault(), "%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
-
-                int arrM_total = cal.get(Calendar.MINUTE) + route.getInt("time");
-                holder.arriveTime.setText(String.format(Locale.getDefault(), "%02d:%02d", (cal.get(Calendar.HOUR_OF_DAY) + arrM_total / 60) % 24, arrM_total % 60));
-
-                holder.fare.setText("$ " + getFare(route));
 
                 // Draw visual segments
-                drawVisualSegments(holder, route);
+                drawVisualSegments(holder, segments, journeyTime);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -431,7 +435,7 @@ public class RouteListFragment extends Fragment {
         }
     }
 
-    private void drawVisualSegments(RouteAdapter.ViewHolder holder, JSONObject route) {
+    private void drawVisualSegments(RouteAdapter.ViewHolder holder, List<VisualSegment> segments, int adjustedTime) {
         int verticalPadding = dpToPx(14);
         int badgeSize = dpToPx(32);
         int stationSize = dpToPx(32);
@@ -442,10 +446,7 @@ public class RouteListFragment extends Fragment {
             //            RecyclerView - Header reserved - Footer reserved
             int totalVisualSpan = rvHeight - dpToPx(60) - dpToPx(60);
             float pxPerMin = (float) totalVisualSpan / maxDuration;
-            int containerHeight = Math.round(route.getInt("time") * pxPerMin);
-
-            List<VisualSegment> segments = parsePathToSegments(route.getJSONArray("path"),
-                    startAt.get(Calendar.HOUR_OF_DAY), startAt.get(Calendar.MINUTE));
+            int containerHeight = Math.round(adjustedTime * pxPerMin);
 
             int rideCount = 0;
             int totalStaticPx = 0;
@@ -648,7 +649,7 @@ public class RouteListFragment extends Fragment {
             tvLineCode.setBackgroundColor(Color.WHITE);
             tvLineCode.setLayoutParams(textParams);
 
-            tvLineCode.setText(seg.lineName);
+            tvLineCode.setText(seg.lineCode);
             tvLineCode.setTextColor(Color.BLACK);
             tvLineCode.setTextSize(12);
             tvLineCode.setTypeface(null, Typeface.BOLD);
@@ -657,7 +658,7 @@ public class RouteListFragment extends Fragment {
 
             segmentView.addView(badgeContainer);
 
-            if (hrConf.isTerminus(seg.lineName, seg.startNode.optInt("ID"))) {
+            if (hrConf.isTerminus(seg.lineCode, seg.startNode.optInt("ID"))) {
                 TextView tvTerminus = new TextView(getContext());
                 int terminusSize = dpToPx(16);
                 FrameLayout.LayoutParams terminusParams = new FrameLayout.LayoutParams(terminusSize, terminusSize);
@@ -700,9 +701,30 @@ public class RouteListFragment extends Fragment {
         return segmentView;
     }
 
+
     private List<VisualSegment> parsePathToSegments(JSONArray path, int startH, int startM) {
         List<VisualSegment> segments = new ArrayList<>();
         if (path == null || path.length() < 2) return segments;
+
+        // Walk interchange multiplier
+        float multiplier = 1.0F;
+        String speed = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
+        switch (speed) {
+            case "很慢":
+                multiplier = 1.2F;
+                break;
+            case "慢速":
+                multiplier = 1.1F;
+                break;
+            case "普通":
+                multiplier = 1.0F;
+                break;
+            case "快速":
+                multiplier = 0.9F;
+                break;
+        }
+
+        int accumulatedDelay = 0;
 
         int i = 0;
         while (i < path.length() - 1) {
@@ -734,38 +756,24 @@ public class RouteListFragment extends Fragment {
             seg.lineID = startLineID;
 
             // Calculate start end time and duration
-            int startTime = startNode.optInt("time");
-            int endTime = endNode.optInt("time");
+            int rawStartTime = startNode.optInt("time");
+            int rawEndTime = endNode.optInt("time");
+            int rawDuration = rawEndTime - rawStartTime;
 
-            float multiplier = 1.0F;
-            String speed = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
-            switch (speed) {
-                case "很慢":
-                    multiplier = 1.2F;
-                    break;
-                case "慢速":
-                    multiplier = 1.1F;
-                    break;
-                case "普通":
-                    multiplier = 1.0F;
-                    break;
-                case "快速":
-                    multiplier = 0.9F;
-                    break;
-            }
-            seg.duration = (int) ((endTime - startTime) * multiplier * (isWalk ? multiplier : 1));
-
-
-            int startTotalM = (startH * 60) + startM + startTime;
+            int startTotalM = (startH * 60) + startM + rawStartTime + accumulatedDelay;
             seg.startH = (startTotalM / 60) % 24;
             seg.startM = startTotalM % 60;
 
-            int endTotalM = (startH * 60) + startM + endTime;
+            seg.duration = (int) (rawDuration * (isWalk ? multiplier : 1.0F));
+
+            int endTotalM = startTotalM + seg.duration;
             seg.endH = (endTotalM / 60) % 24;
             seg.endM = endTotalM % 60;
 
+            accumulatedDelay += (seg.duration - rawDuration);
+
             // Apply line name and color
-            seg.lineName = hrConf.getLineById(startLineID).alias;
+            seg.lineCode = hrConf.getLineById(startLineID).alias;
             seg.lineColor = hrConf.getLineById(startLineID).color;
             seg.stationName = hrConf.getStationName(endNode.optInt("ID"));
 
@@ -782,7 +790,49 @@ public class RouteListFragment extends Fragment {
             else
                 i = j + 1;
         }
+
         return segments;
+    }
+
+    private float getFare(JSONObject route) {
+        float totalFare = 0.0f;
+
+        try {
+            String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
+            String ticketType = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
+
+            JSONArray fares = route.getJSONArray("fares");
+            for (int i = 0; i < fares.length(); i++) {
+                JSONObject fareSection = fares.getJSONObject(i);
+                JSONObject fareInfo = fareSection.getJSONObject("fareInfo");
+                String fareTitle = fareSection.optString("fareTitle", "");
+
+                if (fareTitle.equals("firstClass")) continue;
+
+                String currentFareType = fareType;
+
+                if (!fareInfo.has(currentFareType)) {
+                    if (currentFareType.equals("concessionchild") || currentFareType.equals("concessionchild2")) {
+                        currentFareType = "concession";
+                    } else {
+                        currentFareType = "adult";
+                    }
+                }
+
+
+                JSONObject idObj = fareInfo.optJSONObject(currentFareType);
+                if (idObj != null) {
+                    String fStr = idObj.optString(ticketType, "0");
+
+                    if (!fStr.equals("-") && !fStr.equals("免費"))
+                        totalFare += Float.parseFloat(fStr);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return totalFare;
     }
 
     private int getThemeColor(int attr) {
