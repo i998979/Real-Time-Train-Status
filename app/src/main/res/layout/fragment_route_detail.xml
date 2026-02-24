@@ -24,6 +24,19 @@
             app:iconSize="36dp"
             app:iconTint="?attr/colorOutline" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_share"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="right|center_vertical"
+            android:padding="0dp"
+            app:icon="@drawable/baseline_share_24"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="36dp"
+            app:iconTint="?attr/colorOutline" />
+
         <LinearLayout
             android:id="@+id/header_container"
             android:layout_width="wrap_content"
@@ -94,69 +107,133 @@
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:gravity="center_horizontal"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tv_journey_time"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="45"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" 分"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tv_journey_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="45"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:text="轉乘 "
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" 分"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tv_interchange_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:text="轉乘 "
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" 次"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tv_interchange_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:text="$ "
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" 次"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tv_fare"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="100.0"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:text="$ "
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_fare"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100.0"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_route_picture"
+                        style="@style/OptionButtonStyle"
+                        android:layout_width="100dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/bg_platform_border"
+                        android:drawableTop="@drawable/baseline_camera_alt_24"
+                        android:drawableTint="?attr/colorOnSurfaceVariant"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:text="螢幕截圖保存"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="?attr/colorOnSurfaceInverse" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_route_save"
+                        style="@style/OptionButtonStyle"
+                        android:layout_width="100dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/bg_platform_border"
+                        android:drawableTop="@drawable/baseline_route_24"
+                        android:drawableTint="?attr/colorOnSurfaceVariant"
+                        android:gravity="center"
+                        android:padding="4dp"
+                        android:text="保存至\n常用檢索"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="?attr/colorOnSurfaceInverse" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_check_value"
+                        style="@style/OptionButtonStyle"
+                        android:layout_width="100dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/bg_platform_border"
+                        android:drawableTop="@drawable/baseline_credit_card_24"
+                        android:drawableTint="?attr/colorOnSurfaceVariant"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:text="八達通\n餘額確認"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="?attr/colorOnSurfaceInverse" />
+                </LinearLayout>
+
             </LinearLayout>
 
         </LinearLayout>
