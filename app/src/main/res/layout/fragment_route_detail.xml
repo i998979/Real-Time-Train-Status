@@ -227,7 +227,7 @@
                         android:drawableTint="?attr/colorOnSurfaceVariant"
                         android:gravity="center"
                         android:padding="8dp"
-                        android:text="八達通\n餘額確認"
+                        android:text="八達通卡\n餘額確認"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="12sp"
                         android:textStyle="bold"

@@ -21,6 +21,30 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RealTimeTrainStatus">
 
+        <receiver
+            android:name=".OctopusWidget"
+            android:exported="true"
+            android:label="八達通卡餘額確認">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_octopus_info" />
+        </receiver>
+
+        <receiver
+            android:name=".SavedRouteWidget"
+            android:exported="true"
+            android:label="常用查看路綫">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_saved_route_info" />
+        </receiver>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
@@ -40,7 +64,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

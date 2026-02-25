@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class OperationInfoFragment extends Fragment {
-    private static final List<String> subTitles = Arrays.asList("最近查看路綫", "運行情報", "列車走行位置");
+    private static final List<String> subTitles = Arrays.asList("常用查看路綫", "運行情報", "列車走行位置");
 
     private SharedPreferences prefs;
 
@@ -53,6 +54,23 @@ public class OperationInfoFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        ViewPager2 pagerContent = view.findViewById(R.id.pager_content);
+
+        if (getActivity() != null && getActivity().getIntent() != null) {
+            Intent intent = getActivity().getIntent();
+            if ("SAVED_ROUTE".equals(intent.getStringExtra("TARGET_FRAGMENT"))) {
+                pagerContent.post(() -> {
+                    pagerContent.setCurrentItem(0, true);
+                    intent.removeExtra("TARGET_FRAGMENT");
+                });
+            }
+        }
     }
 
 

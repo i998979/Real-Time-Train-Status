@@ -8,9 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="bar_bright">#355260</color>
-    <color name="bar_dark">#0E1B24</color>
-
     <color name="eal">#5eb7e8</color>
     <color name="tml">#9c2e00</color>
     <color name="ktl">#00a040</color>
@@ -21,4 +18,10 @@
     <color name="tkl">#7e3c93</color>
     <color name="twl">#e60012</color>
     <color name="sil">#cbd300</color>
+
+    <color name="bar_bright">#355260</color>
+    <color name="bar_dark">#0E1B24</color>
+
+    <color name="widget_background">#FFFFFF</color>
+    <color name="widget_foreground">#000000</color>
 </resources>

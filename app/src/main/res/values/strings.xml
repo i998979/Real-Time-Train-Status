@@ -2,6 +2,10 @@
     <string name="app_name">Real Time Train Status</string>
     <string name="title_activity_maps">MapsActivity</string>
 
+    <string name="widget_octopus_description">快速查看八達通卡餘額。</string>
+    <string name="widget_saved_route_description">快速查看已儲存路綫的運行狀況。</string>
+
+
     <!-- LOW -> ADM -->
     <string name="eal_station_id">13 12 11 10 9 8 6 5 4 3 2 21 22 23</string>
     <string name="eal_station_code">LOW SHS FAN TWO TAP UNI FOT SHT TAW KOT MKK HUH EXC ADM</string>

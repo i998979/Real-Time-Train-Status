@@ -1,5 +1,6 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -7,6 +8,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -117,5 +119,33 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        handleWidgetIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleWidgetIntent(intent);
+    }
+
+    private void handleWidgetIntent(Intent intent) {
+        if (intent != null && "SAVED_ROUTE".equals(intent.getStringExtra("TARGET_FRAGMENT"))) {
+            // 1. 切換 BottomNavigationView 到「運行情報」分頁
+            bottomNavigationView.setSelectedItemId(R.id.nav_operation);
+
+            // 2. 嘗試尋找當前 Fragment
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
+
+            // 如果 Fragment 已經存在（例如 App 原本就在後台打開著）
+            if (currentFragment instanceof OperationInfoFragment) {
+                ViewPager2 pager = currentFragment.getView().findViewById(R.id.pager_content);
+                if (pager != null) {
+                    pager.setCurrentItem(0, true);
+                    intent.removeExtra("TARGET_FRAGMENT");
+                }
+            }
+        }
     }
 }
