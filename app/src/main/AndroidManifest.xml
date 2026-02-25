@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <queries>
+        <package android:name="com.google.android.apps.maps" />
         <package android:name="com.mtr.mtrmobile" />
         <package android:name="com.octopuscards.nfc_reader" />
     </queries>

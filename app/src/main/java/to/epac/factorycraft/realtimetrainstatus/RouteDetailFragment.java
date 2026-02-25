@@ -303,10 +303,28 @@ public class RouteDetailFragment extends Fragment {
         TextView tvWalkIntTime = walkView.findViewById(R.id.tv_walkinterchange_time);
         TextView tvStartTime = walkView.findViewById(R.id.tv_start_time);
         TextView tvArriveTime = walkView.findViewById(R.id.tv_end_time);
+        MaterialButton btnMap = walkView.findViewById(R.id.btn_map);
 
         tvWalkIntTime.setText(seg.duration + " 分");
         tvStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", seg.startH, seg.startM));
         tvArriveTime.setText(String.format(Locale.getDefault(), "%02d:%02d", seg.endH, seg.endM));
+        btnMap.setOnClickListener(v -> {
+            String coords = hrConf.getStationCoord(seg.endNode.optInt("ID"));
+
+            if (!coords.isEmpty()) {
+                Uri uri = Uri.parse("geo:" + coords + "?z=17");
+
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setPackage("com.google.android.apps.maps");
+
+                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Uri webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=" + coords);
+                    startActivity(new Intent(Intent.ACTION_VIEW, webUri));
+                }
+            }
+        });
 
         container.addView(walkView);
     }
