@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <external-cache-path
-        name="my_images"
-        path="images/" />
+        name="route_detail"
+        path="route_detail/" />
 </paths>

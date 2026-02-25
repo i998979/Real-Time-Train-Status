@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String KEY_TICKET_TYPE = "ticket_type";
     public static final String KEY_FARE_TYPE = "fare_type";
 
+    public static final String OCTOPUS_PACKAGE = "com.octopuscards.nfc_reader";
+    public static final String MTRMOBILE_PACKAGE = "com.mtr.mtrmobile";
+
 
     private BottomNavigationView bottomNavigationView;
 

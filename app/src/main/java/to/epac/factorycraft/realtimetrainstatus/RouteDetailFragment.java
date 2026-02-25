@@ -1,9 +1,12 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,8 +20,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +29,7 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,6 +50,8 @@ public class RouteDetailFragment extends Fragment {
     private HRConfig hrConf;
     private SharedPreferences prefs;
 
+    private ScrollView svRoute;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -61,6 +67,8 @@ public class RouteDetailFragment extends Fragment {
             }
         });
 
+        svRoute = root.findViewById(R.id.sv_route);
+
         LinearLayout routeContainer = root.findViewById(R.id.route_container);
 
         TextView tvStartTime = root.findViewById(R.id.tv_start_time);
@@ -72,72 +80,22 @@ public class RouteDetailFragment extends Fragment {
         TextView tvFare = root.findViewById(R.id.tv_fare);
 
         MaterialButton btnShare = root.findViewById(R.id.btn_share);
+        btnShare.setOnClickListener(v -> {
+            Bitmap routeBitmap = bitmapFromView(routeContainer);
+            shareBitmap(routeBitmap);
+        });
 
         MaterialButton btnRoutePicture = root.findViewById(R.id.btn_route_picture);
-        MaterialButton btnRouteSave = root.findViewById(R.id.btn_route_save);
-        MaterialButton brnCheckValue = root.findViewById(R.id.btn_check_value);
-
         btnRoutePicture.setOnClickListener(v -> {
-            // 1. 獲取背景色
-            TypedValue typedValue = new TypedValue();
-            requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
-            int backgroundColor = typedValue.data;
-
-            // 2. 徹底解除限制：寬高都使用 UNSPECIFIED 測量
-            int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-            int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-            routeContainer.measure(widthSpec, heightSpec);
-
-            int measuredWidth = routeContainer.getMeasuredWidth();
-            int measuredHeight = routeContainer.getMeasuredHeight();
-
-            // 設定安全緩衝與最終寬度
-            int buffer = (int) (0 * getResources().getDisplayMetrics().density);
-            int finalWidth = measuredWidth + (buffer * 2);
-
-            // 3. 展開佈局：這一步能確保 draw(canvas) 抓到完整高度
-            routeContainer.layout(0, 0, measuredWidth, measuredHeight);
-
-            try {
-                // 4. 建立 Bitmap
-                Bitmap bitmap = Bitmap.createBitmap(finalWidth, measuredHeight, Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                canvas.drawColor(backgroundColor);
-                canvas.save();
-                canvas.translate(buffer, 0);
-                routeContainer.draw(canvas);
-                canvas.restore();
-
-                // 5. 使用 MediaStore 儲存到 Downloads 資料夾
-                String fileName = "Route_" + System.currentTimeMillis() + ".png";
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-                // 設定路徑為 Downloads/YourAppName (API 29+)
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-
-                Uri uri = requireContext().getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-
-                if (uri != null) {
-                    OutputStream outputStream = requireContext().getContentResolver().openOutputStream(uri);
-                    boolean success = bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                    if (outputStream != null) outputStream.close();
-
-                    if (success) {
-                        Toast.makeText(requireContext(), "已儲存至下載資料夾", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-            } catch (OutOfMemoryError oom) {
-                Toast.makeText(requireContext(), "圖片過大，記憶體不足", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(requireContext(), "儲存失敗：" + e.getMessage(), Toast.LENGTH_SHORT).show();
-            } finally {
-                // 重要：儲存完畢後，通知系統重新佈局，避免畫面上原本的 View 跑掉
-                routeContainer.requestLayout();
-            }
+            Bitmap routeBitmap = bitmapFromView(routeContainer);
+            saveBitmapToDCIM(routeBitmap);
         });
+        MaterialButton btnRouteSave = root.findViewById(R.id.btn_route_save);
+        MaterialButton btnCheckValue = root.findViewById(R.id.btn_check_value);
+        btnCheckValue.setOnClickListener(v -> {
+            openExternalApp(MainActivity.OCTOPUS_PACKAGE);
+        });
+
 
         try {
             JSONObject data = new JSONObject(getArguments().getString("route_data"));
@@ -351,6 +309,153 @@ public class RouteDetailFragment extends Fragment {
         tvArriveTime.setText(String.format(Locale.getDefault(), "%02d:%02d", seg.endH, seg.endM));
 
         container.addView(walkView);
+    }
+
+
+    private Bitmap bitmapFromView(View targetView) {
+        TypedValue typedValue = new TypedValue();
+        requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+        int backgroundColor = typedValue.data;
+
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        targetView.measure(widthSpec, heightSpec);
+
+        int measuredWidth = targetView.getMeasuredWidth();
+        int measuredHeight = targetView.getMeasuredHeight();
+
+        targetView.layout(0, 0, measuredWidth, measuredHeight);
+
+        Bitmap bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(backgroundColor);
+        targetView.draw(canvas);
+
+        targetView.requestLayout();
+
+        return bitmap;
+    }
+
+    private void shareBitmap(Bitmap bitmap) {
+        if (bitmap == null) return;
+
+        try {
+            File cachePath = new File(requireContext().getExternalCacheDir(), "route_detail");
+            cachePath.mkdirs();
+            File file = new File(cachePath, "screenshot_" + System.currentTimeMillis() + ".png");
+            FileOutputStream stream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            stream.close();
+
+            Uri contentUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    requireContext().getPackageName() + ".fileprovider",
+                    file);
+
+            if (contentUri != null) {
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.setDataAndType(contentUri, requireContext().getContentResolver().getType(contentUri));
+                shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                shareIntent.setType("image/png");
+
+                startActivity(Intent.createChooser(shareIntent, "分享路綫截圖"));
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖分享失敗。");
+        }
+    }
+
+    private void saveBitmapToDCIM(Bitmap bitmap) {
+        if (bitmap == null) return;
+
+        String fileName = "screenshot_" + System.currentTimeMillis() + ".png";
+        String subFolderName = Environment.DIRECTORY_DCIM + File.separator + getString(R.string.app_name);
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, subFolderName);
+        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+
+        try {
+            ContentResolver resolver = requireContext().getContentResolver();
+            Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            Uri uri = resolver.insert(contentUri, values);
+
+            if (uri != null) {
+                OutputStream outputStream = resolver.openOutputStream(uri);
+                if (outputStream != null) {
+                    boolean success = bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    outputStream.close();
+
+                    values.clear();
+                    values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                    resolver.update(uri, values, null, null);
+
+                    if (success) {
+                        showSnackBar(svRoute, Color.parseColor("#58A473"), "路綫截圖已成功保存。");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖保存失敗。");
+        }
+    }
+
+
+    private void showSnackBar(View anchor, int color, String message) {
+        Snackbar snackbar = Snackbar.make(anchor, message, Snackbar.LENGTH_SHORT);
+        View snackbarView = snackbar.getView();
+
+        snackbarView.setBackgroundTintList(ColorStateList.valueOf(color));
+        // snackbar.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
+
+        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        textView.setTextColor(Color.WHITE);
+        textView.setTextSize(16);
+
+        View navigationBar = getActivity().findViewById(R.id.bottom_navigation);
+        snackbar.setAnchorView(navigationBar);
+
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) snackbarView.getLayoutParams();
+        snackbarView.setLayoutParams(params);
+
+        snackbar.show();
+    }
+
+
+    private void openExternalApp(String packageName) {
+        try {
+            Intent intent = requireContext().getPackageManager().getLaunchIntentForPackage(packageName);
+
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } else {
+                goToPlayStore(packageName);
+            }
+
+        } catch (Exception e) {
+            goToPlayStore(packageName);
+        }
+    }
+
+    private void goToPlayStore(String appPackage) {
+        Uri uri = Uri.parse("market://details?id=" + appPackage);
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+
+        goToMarket.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        try {
+            startActivity(goToMarket);
+        } catch (ActivityNotFoundException e) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackage)));
+        }
     }
 
 

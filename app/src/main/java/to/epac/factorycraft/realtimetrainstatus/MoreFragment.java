@@ -17,9 +17,6 @@ import com.google.android.material.card.MaterialCardView;
 
 public class MoreFragment extends Fragment {
 
-    private static final String OCTOPUS_PACKAGE = "com.octopuscards.nfc_reader";
-    private static final String MTRMOBILE_PACKAGE = "com.mtr.mtrmobile";
-
     private PackageManager pm;
 
     private MaterialCardView btnOctopus;
@@ -33,9 +30,9 @@ public class MoreFragment extends Fragment {
         pm = requireContext().getPackageManager();
 
         btnOctopus = view.findViewById(R.id.btn_octopus);
-        btnOctopus.setOnClickListener(v -> openExternalApp(OCTOPUS_PACKAGE));
+        btnOctopus.setOnClickListener(v -> openExternalApp(MainActivity.OCTOPUS_PACKAGE));
         btnMtrMobile = view.findViewById(R.id.btn_mtrmobile);
-        btnMtrMobile.setOnClickListener(v -> openExternalApp(MTRMOBILE_PACKAGE));
+        btnMtrMobile.setOnClickListener(v -> openExternalApp(MainActivity.MTRMOBILE_PACKAGE));
 
         return view;
     }
