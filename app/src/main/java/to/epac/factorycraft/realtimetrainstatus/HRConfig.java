@@ -1,7 +1,8 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
-import android.util.Log;
+import android.location.Address;
+import android.location.Geocoder;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class HRConfig {
@@ -43,14 +45,16 @@ public class HRConfig {
         public final String name;
         public final String nameEN;
         public final String nameSC;
+        public final String coordinate;
         public final List<Line> lines = new ArrayList<>();
 
-        public Station(int id, String alias, String name, String nameEN, String nameSC) {
+        public Station(int id, String alias, String name, String nameEN, String nameSC, String coordinate) {
             this.id = id;
             this.alias = alias;
             this.name = name;
             this.nameEN = nameEN;
             this.nameSC = nameSC;
+            this.coordinate = coordinate;
         }
     }
 
@@ -92,7 +96,8 @@ public class HRConfig {
                         alias,
                         s.getString("name"),
                         s.getString("nameEN"),
-                        s.getString("nameSC")
+                        s.getString("nameSC"),
+                        s.optString("coordinate", "")
                 );
 
                 JSONArray lineIDs = s.getJSONArray("lineIDs");
@@ -188,6 +193,39 @@ public class HRConfig {
 
     public Station getStationById(int id) {
         return idMap.get(id);
+    }
+
+
+    public String getStationCoord(String alias) {
+        Station sta = getStationByAlias(alias);
+        return sta != null ? sta.coordinate : "";
+    }
+
+    public String getStationCoord(int id) {
+        Station sta = getStationById(id);
+        return sta != null ? sta.coordinate : "";
+    }
+
+    public String getStationAddress(Context context, int id) {
+        Station sta = getStationById(id);
+
+        if (sta == null || sta.coordinate == null || !sta.coordinate.contains(",")) return "";
+
+        try {
+            String[] parts = sta.coordinate.split(",");
+            double lat = Double.parseDouble(parts[0].trim());
+            double lng = Double.parseDouble(parts[1].trim());
+
+            Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+
+            if (addresses != null && !addresses.isEmpty()) {
+                return addresses.get(0).getAddressLine(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
 

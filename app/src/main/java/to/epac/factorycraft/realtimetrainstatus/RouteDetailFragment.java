@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -25,6 +26,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsClient;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsServiceConnection;
+import androidx.browser.customtabs.CustomTabsSession;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
@@ -49,6 +55,9 @@ public class RouteDetailFragment extends Fragment {
 
     private HRConfig hrConf;
     private SharedPreferences prefs;
+
+    private CustomTabsSession tabsSession;
+    private CustomTabsClient tabsClient;
 
     private ScrollView svRoute;
 
@@ -148,6 +157,14 @@ public class RouteDetailFragment extends Fragment {
         return root;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        bindCustomTabsService();
+    }
+
+
     private void buildRouteUI(LayoutInflater inflater, LinearLayout container, List<VisualSegment> segments, int startH, int startM) {
         container.removeAllViews();
 
@@ -164,10 +181,51 @@ public class RouteDetailFragment extends Fragment {
                 addWalkSection(inflater, container, seg);
 
             // Show Destination Station Section
-            if (i == segments.size() - 1)
-                addStationSection(inflater, container, seg.endNode);
+            if (i == segments.size() - 1) {
+                View lastStationView = inflater.inflate(R.layout.item_route_step, container, false);
+                TextView tvStation = lastStationView.findViewById(R.id.tv_station);
+                tvStation.setText(hrConf.getStationName(seg.endNode.optInt("ID")));
+
+                View layoutNearby = lastStationView.findViewById(R.id.layout_nearby);
+                layoutNearby.setVisibility(View.VISIBLE);
+
+                View.OnClickListener listener = v -> {
+                    String queryKeyword = "";
+                    int id = v.getId();
+                    if (id == R.id.btn_coffee) queryKeyword = "咖啡";
+                    else if (id == R.id.btn_restaurant) queryKeyword = "餐廳";
+                    else if (id == R.id.btn_atm) queryKeyword = "自動櫃員機";
+                    else if (id == R.id.btn_hotel) queryKeyword = "酒店";
+
+                    final String finalKeyword = queryKeyword;
+
+                    new Thread(() -> {
+                        String address = hrConf.getStationAddress(requireContext(), seg.endNode.optInt("ID"));
+
+                        if (address.isEmpty()) {
+                            address = hrConf.getStationName(seg.endNode.optInt("ID")) + "站";
+                        }
+
+                        String searchUrl = "https://www.google.com/search?q=" + Uri.encode(address + " 附近的" + finalKeyword);
+
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                openNearbySearchSheet(searchUrl);
+                            });
+                        }
+                    }).start();
+                };
+
+                lastStationView.findViewById(R.id.btn_coffee).setOnClickListener(listener);
+                lastStationView.findViewById(R.id.btn_restaurant).setOnClickListener(listener);
+                lastStationView.findViewById(R.id.btn_atm).setOnClickListener(listener);
+                lastStationView.findViewById(R.id.btn_hotel).setOnClickListener(listener);
+
+                container.addView(lastStationView);
+            }
         }
     }
+
 
     private void addStationSection(LayoutInflater inflater, LinearLayout container, JSONObject node) {
         View view = inflater.inflate(R.layout.item_route_step, container, false);
@@ -327,6 +385,51 @@ public class RouteDetailFragment extends Fragment {
         });
 
         container.addView(walkView);
+    }
+
+
+    private void bindCustomTabsService() {
+        CustomTabsClient.bindCustomTabsService(requireContext(), "com.android.chrome", new CustomTabsServiceConnection() {
+            @Override
+            public void onCustomTabsServiceConnected(ComponentName name, CustomTabsClient client) {
+                RouteDetailFragment.this.tabsClient = client;
+                RouteDetailFragment.this.tabsClient.warmup(0L);
+                tabsSession = RouteDetailFragment.this.tabsClient.newSession(null);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                tabsClient = null;
+                tabsSession = null;
+            }
+        });
+    }
+
+    private void openNearbySearchSheet(String url) {
+        TypedValue typedValue = new TypedValue();
+        requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true);
+        int surfaceColor = typedValue.data;
+        CustomTabColorSchemeParams colorParams = new CustomTabColorSchemeParams.Builder()
+                .setToolbarColor(surfaceColor)
+                .build();
+
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(tabsSession);
+        builder.setDefaultColorSchemeParams(colorParams);
+        builder.setShowTitle(true);
+
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+
+        builder.setToolbarCornerRadiusDp(16);
+
+        builder.setStartAnimations(requireContext(), R.anim.slide_in_up, R.anim.hold);
+        builder.setExitAnimations(requireContext(), R.anim.hold, R.anim.slide_out_down);
+
+        CustomTabsIntent customTabsIntent = builder.build();
+
+        customTabsIntent.intent.putExtra("androidx.browser.customtabs.extra.INITIAL_ACTIVITY_HEIGHT_PX", screenHeight);
+        customTabsIntent.intent.putExtra("androidx.browser.customtabs.extra.ACTIVITY_HEIGHT_RESIZE_BEHAVIOR", CustomTabsIntent.ACTIVITY_HEIGHT_ADJUSTABLE);
+
+        customTabsIntent.launchUrl(requireActivity(), Uri.parse(url));
     }
 
 

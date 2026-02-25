@@ -9,6 +9,7 @@
         <package android:name="com.google.android.apps.maps" />
         <package android:name="com.mtr.mtrmobile" />
         <package android:name="com.octopuscards.nfc_reader" />
+        <package android:name="com.android.chrome" />
     </queries>
 
     <application
