@@ -416,19 +416,13 @@ public class RouteDetailFragment extends Fragment {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(tabsSession);
         builder.setDefaultColorSchemeParams(colorParams);
         builder.setShowTitle(true);
+        builder.setToolbarCornerRadiusDp(16);
 
         int screenHeight = getResources().getDisplayMetrics().heightPixels;
 
-        builder.setToolbarCornerRadiusDp(16);
-
-        builder.setStartAnimations(requireContext(), R.anim.slide_in_up, R.anim.hold);
-        builder.setExitAnimations(requireContext(), R.anim.hold, R.anim.slide_out_down);
-
         CustomTabsIntent customTabsIntent = builder.build();
-
         customTabsIntent.intent.putExtra("androidx.browser.customtabs.extra.INITIAL_ACTIVITY_HEIGHT_PX", screenHeight);
         customTabsIntent.intent.putExtra("androidx.browser.customtabs.extra.ACTIVITY_HEIGHT_RESIZE_BEHAVIOR", CustomTabsIntent.ACTIVITY_HEIGHT_ADJUSTABLE);
-
         customTabsIntent.launchUrl(requireActivity(), Uri.parse(url));
     }
 
