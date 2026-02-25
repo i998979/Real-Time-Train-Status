@@ -1,18 +1,28 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -20,6 +30,10 @@ import com.google.android.material.button.MaterialButton;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,14 +60,84 @@ public class RouteDetailFragment extends Fragment {
                 getParentFragmentManager().popBackStack();
             }
         });
+
+        LinearLayout routeContainer = root.findViewById(R.id.route_container);
+
         TextView tvStartTime = root.findViewById(R.id.tv_start_time);
         TextView tvEndTime = root.findViewById(R.id.tv_end_time);
         TextView journeyStart = root.findViewById(R.id.tv_journey_start);
 
-        LinearLayout routeContainer = root.findViewById(R.id.route_container);
         TextView tvJourneyTime = root.findViewById(R.id.tv_journey_time);
         TextView tvInterchangeCount = root.findViewById(R.id.tv_interchange_count);
         TextView tvFare = root.findViewById(R.id.tv_fare);
+
+        MaterialButton btnShare = root.findViewById(R.id.btn_share);
+
+        MaterialButton btnRoutePicture = root.findViewById(R.id.btn_route_picture);
+        MaterialButton btnRouteSave = root.findViewById(R.id.btn_route_save);
+        MaterialButton brnCheckValue = root.findViewById(R.id.btn_check_value);
+
+        btnRoutePicture.setOnClickListener(v -> {
+            // 1. 獲取背景色
+            TypedValue typedValue = new TypedValue();
+            requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+            int backgroundColor = typedValue.data;
+
+            // 2. 徹底解除限制：寬高都使用 UNSPECIFIED 測量
+            int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            routeContainer.measure(widthSpec, heightSpec);
+
+            int measuredWidth = routeContainer.getMeasuredWidth();
+            int measuredHeight = routeContainer.getMeasuredHeight();
+
+            // 設定安全緩衝與最終寬度
+            int buffer = (int) (0 * getResources().getDisplayMetrics().density);
+            int finalWidth = measuredWidth + (buffer * 2);
+
+            // 3. 展開佈局：這一步能確保 draw(canvas) 抓到完整高度
+            routeContainer.layout(0, 0, measuredWidth, measuredHeight);
+
+            try {
+                // 4. 建立 Bitmap
+                Bitmap bitmap = Bitmap.createBitmap(finalWidth, measuredHeight, Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                canvas.drawColor(backgroundColor);
+                canvas.save();
+                canvas.translate(buffer, 0);
+                routeContainer.draw(canvas);
+                canvas.restore();
+
+                // 5. 使用 MediaStore 儲存到 Downloads 資料夾
+                String fileName = "Route_" + System.currentTimeMillis() + ".png";
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+                // 設定路徑為 Downloads/YourAppName (API 29+)
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+                Uri uri = requireContext().getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+
+                if (uri != null) {
+                    OutputStream outputStream = requireContext().getContentResolver().openOutputStream(uri);
+                    boolean success = bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    if (outputStream != null) outputStream.close();
+
+                    if (success) {
+                        Toast.makeText(requireContext(), "已儲存至下載資料夾", Toast.LENGTH_LONG).show();
+                    }
+                }
+
+            } catch (OutOfMemoryError oom) {
+                Toast.makeText(requireContext(), "圖片過大，記憶體不足", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(requireContext(), "儲存失敗：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            } finally {
+                // 重要：儲存完畢後，通知系統重新佈局，避免畫面上原本的 View 跑掉
+                routeContainer.requestLayout();
+            }
+        });
 
         try {
             JSONObject data = new JSONObject(getArguments().getString("route_data"));

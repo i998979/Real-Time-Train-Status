@@ -7,9 +7,8 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="?attr/colorSecondary"
-        android:padding="4dp">
+        android:layout_height="50dp"
+        android:background="?attr/colorSecondary">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_return"
