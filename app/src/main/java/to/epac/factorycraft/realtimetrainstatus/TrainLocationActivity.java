@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textview.MaterialTextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -68,6 +69,40 @@ public class TrainLocationActivity extends AppCompatActivity {
         dataSource = getIntent().getStringExtra("DATA_SOURCE");
         if (dataSource == null) dataSource = "OPENDATA";
         lineConfig = LineConfig.get(this, lineCode);
+
+        MaterialTextView tvUpDir = findViewById(R.id.tv_up_dir);
+        MaterialTextView tvDnDir = findViewById(R.id.tv_dn_dir);
+        if (lineCode.equalsIgnoreCase("ael")) {
+            tvUpDir.setText("博覽館方面");
+            tvDnDir.setText("香港方面");
+        } else if (lineCode.equalsIgnoreCase("drl")) {
+            tvUpDir.setText("欣澳方面");
+            tvDnDir.setText("迪士尼館方面");
+        } else if (lineCode.equalsIgnoreCase("eal")) {
+            tvUpDir.setText("羅湖/落馬洲方面");
+            tvDnDir.setText("金鐘方面");
+        } else if (lineCode.equalsIgnoreCase("isl")) {
+            tvUpDir.setText("柴灣方面");
+            tvDnDir.setText("堅尼地城方面");
+        } else if (lineCode.equalsIgnoreCase("ktl")) {
+            tvUpDir.setText("調景嶺方面");
+            tvDnDir.setText("黃埔方面");
+        } else if (lineCode.equalsIgnoreCase("sil")) {
+            tvUpDir.setText("海怡半島方面");
+            tvDnDir.setText("金鐘方面");
+        } else if (lineCode.equalsIgnoreCase("tcl")) {
+            tvUpDir.setText("東涌方面");
+            tvDnDir.setText("香港方面");
+        } else if (lineCode.equalsIgnoreCase("tkl")) {
+            tvUpDir.setText("寶琳/康城方面");
+            tvDnDir.setText("北角方面");
+        } else if (lineCode.equalsIgnoreCase("tml")) {
+            tvUpDir.setText("屯門方面");
+            tvDnDir.setText("烏溪沙方面");
+        } else if (lineCode.equalsIgnoreCase("twl")) {
+            tvUpDir.setText("荃灣方面");
+            tvDnDir.setText("中環方面");
+        }
 
         stationIdToIndexMap.clear();
         String[] stations = getStationArray();

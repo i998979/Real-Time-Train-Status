@@ -2,4 +2,6 @@
 <resources>
     <color name="widget_background">#000000</color>
     <color name="widget_foreground">#FFFFFF</color>
+
+    <color name="label_bg_tint">#80909090</color>
 </resources>

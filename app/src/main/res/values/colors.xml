@@ -24,4 +24,6 @@
 
     <color name="widget_background">#FFFFFF</color>
     <color name="widget_foreground">#000000</color>
+
+    <color name="label_bg_tint">#80909090</color>
 </resources>
