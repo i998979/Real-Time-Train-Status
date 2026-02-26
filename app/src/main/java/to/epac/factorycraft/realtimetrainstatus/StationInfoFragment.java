@@ -41,7 +41,7 @@ public class StationInfoFragment extends Fragment {
     private final ActivityResultLauncher<Intent> searchLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
-                    updateStationInfoFromCode(result.getData().getStringExtra("selected_station_code"));
+                    updateStationInfoFromCode(result.getData().getStringExtra("selected_code"));
                 }
             });
 
@@ -134,7 +134,7 @@ public class StationInfoFragment extends Fragment {
                     fragment = WebViewFragment.newInstance("https://www.mtr.com.hk/archive/ch/services/maps/" + code + ".pdf");
                     break;
                 case 2:
-                    fragment = LineSelectorFragment.newInstance(code.toUpperCase());
+                    fragment = LineSelectorFragment.newInstance(code.toUpperCase(), false);
                     break;
                 case 3:
                     fragment = WebViewFragment.newInstance("https://www.mtr.com.hk/ch/customer/shops/shop_search.php?query_type=search&start=" + id);

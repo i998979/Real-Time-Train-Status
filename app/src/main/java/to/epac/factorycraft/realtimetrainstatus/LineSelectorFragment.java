@@ -21,14 +21,16 @@ import java.util.List;
 public class LineSelectorFragment extends Fragment {
 
     public static final String ARG_STATION_CODE = "station_code";
+    public static final String ARG_SHOW_HEADER = "show_header";
 
     private ActivityResultLauncher<Intent> searchLauncher;
 
-    public static LineSelectorFragment newInstance(String stationCode) {
+    public static LineSelectorFragment newInstance(String stationCode, boolean showHeader) {
         LineSelectorFragment fragment = new LineSelectorFragment();
 
         Bundle args = new Bundle();
         args.putString(ARG_STATION_CODE, stationCode);
+        args.putBoolean(ARG_SHOW_HEADER, showHeader);
         fragment.setArguments(args);
 
         return fragment;
@@ -37,6 +39,12 @@ public class LineSelectorFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_line_select, container, false);
+
+        View headerBar = view.findViewById(R.id.header_bar);
+        if (headerBar != null && getArguments() != null) {
+            boolean showHeader = getArguments().getBoolean(ARG_SHOW_HEADER, true);
+            headerBar.setVisibility(showHeader ? View.VISIBLE : View.GONE);
+        }
 
         RecyclerView rv = view.findViewById(R.id.rv_line_select);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
