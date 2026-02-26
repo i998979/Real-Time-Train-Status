@@ -105,7 +105,7 @@ public class TrainLocationActivity extends AppCompatActivity {
         if (isMaintenanceTime)
             nthMessage.setVisibility(View.VISIBLE);
         else
-            nthMessage.setVisibility(View.INVISIBLE);
+            nthMessage.setVisibility(View.GONE);
 
 
         NestedScrollView scrollView = findViewById(R.id.nested_scroll_view);

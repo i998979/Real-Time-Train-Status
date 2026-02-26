@@ -28,9 +28,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -77,6 +79,20 @@ public class TrafficNewsFragment extends Fragment {
         layoutNormal = view.findViewById(R.id.layout_normal);
         layoutDelayed = view.findViewById(R.id.layout_delayed);
         progressBar = view.findViewById(R.id.progress_bar);
+
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+        int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+
+        int startTime = 1 * 60 + 30; // 01:30
+        int endTime = 5 * 60;        // 05:00
+
+        boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
+
+        LinearLayout nthMessage = view.findViewById(R.id.nth_message);
+        if (isMaintenanceTime)
+            nthMessage.setVisibility(View.VISIBLE);
+        else
+            nthMessage.setVisibility(View.GONE);
 
         fetchTrafficNews();
 
