@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int TYPE_STATION = 0;
     private static final int TYPE_BETWEEN = 1;
     private static final int TYPE_PARALLEL = 2;
@@ -49,9 +49,9 @@ public class JRLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private final HashMap<Integer, Long> dwellTimeUpMap;
     private final HashMap<Integer, Long> dwellTimeDnMap;
 
-    public JRLineAdapter(Context context, String lineCode, int[] stationCodes, List<Trip> trips,
-                         HashMap<Integer, Long> runTimeUpMap, HashMap<Integer, Long> runTimeDnMap,
-                         HashMap<Integer, Long> dwellTimeUpMap, HashMap<Integer, Long> dwellTimeDnMap) {
+    public TrainLocationAdapter(Context context, String lineCode, int[] stationCodes, List<Trip> trips,
+                                HashMap<Integer, Long> runTimeUpMap, HashMap<Integer, Long> runTimeDnMap,
+                                HashMap<Integer, Long> dwellTimeUpMap, HashMap<Integer, Long> dwellTimeDnMap) {
         this.context = context;
 
         this.lineCode = lineCode;

@@ -26,5 +26,15 @@ public interface SearchHistoryDao {
     List<StationHistory> getRecentStations();
 
     @Query("DELETE FROM station_history WHERE stationId = :stationId")
-    int deleteStationById(int stationId);
+    void deleteStationById(int stationId);
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertLine(LineHistory history);
+
+    @Query("SELECT * FROM line_history ORDER BY timestamp DESC")
+    List<LineHistory> getRecentLines();
+
+    @Query("DELETE FROM line_history WHERE lineId = :lineId")
+    void deleteLineById(int lineId);
 }

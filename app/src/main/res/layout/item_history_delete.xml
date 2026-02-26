@@ -4,18 +4,20 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingTop="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <CheckBox
-            android:id="@+id/cb_item"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_item"
+            style="@style/RadioButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:button="@drawable/baseline_check_circle_outline_24" />
+            android:background="@null" />
 
         <LinearLayout
             android:layout_width="0dp"

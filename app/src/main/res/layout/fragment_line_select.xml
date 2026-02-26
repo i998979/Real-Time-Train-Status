@@ -1,37 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="?attr/colorSecondary"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
         android:paddingHorizontal="16dp">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_search"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            app:icon="@drawable/baseline_search_24"
+            app:iconPadding="0dp"
+            app:iconSize="32dp"
+            app:iconTint="#96ADBB" />
+
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:layout_centerInParent="true"
             android:text="本地網絡"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <Switch
         android:id="@+id/open_data"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
+        android:layout_height="wrap_content" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_line_selector"
+        android:id="@+id/rv_line_select"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"

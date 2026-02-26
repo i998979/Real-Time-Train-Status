@@ -42,7 +42,7 @@ public class TrainLocationActivity extends AppCompatActivity {
 
 
     private RecyclerView rv;
-    private JRLineAdapter adapter;
+    private TrainLocationAdapter adapter;
 
     private final List<Trip> activeTrips = new ArrayList<>();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -124,7 +124,7 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         rv = findViewById(R.id.rv_line);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new JRLineAdapter(this, lineCode, lineConfig.stationIDs, activeTrips,
+        adapter = new TrainLocationAdapter(this, lineCode, lineConfig.stationIDs, activeTrips,
                 lineConfig.runTimeUpMap, lineConfig.runTimeDnMap, lineConfig.dwellTimeUpMap, lineConfig.dwellTimeDnMap);
         rv.setAdapter(adapter);
 

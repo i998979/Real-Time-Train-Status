@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHolder> {
+public class SearchStationAdapter extends RecyclerView.Adapter<SearchStationAdapter.ViewHolder> {
 
     private List<Integer> ids = new ArrayList<>();
     private List<String> names = new ArrayList<>();
@@ -23,7 +23,7 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
         void onStationClick(int id, String name, String code);
     }
 
-    public StationAdapter(OnStationClickListener listener) {
+    public SearchStationAdapter(OnStationClickListener listener) {
         this.listener = listener;
     }
 
@@ -38,7 +38,7 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_station, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_search_station, parent, false);
         return new ViewHolder(view);
     }
 

@@ -33,6 +33,7 @@ public class HistoryManager {
         return instance;
     }
 
+
     public void saveRouteSearch(String oId, String dId, String oName, String dName) {
         executor.execute(() -> {
             SearchHistoryDao dao = db.searchHistoryDao();
@@ -90,12 +91,44 @@ public class HistoryManager {
     }
 
 
+    public void saveLineSearch(int lineId, String lineName) {
+        executor.execute(() -> {
+            SearchHistoryDao dao = db.searchHistoryDao();
+            dao.insertLine(new LineHistory(lineId, lineName));
+        });
+    }
+
+    public void loadLineHistory(OnLineHistoryLoadedListener listener) {
+        executor.execute(() -> {
+            List<LineHistory> history = db.searchHistoryDao().getRecentLines();
+            handler.post(() -> {
+                listener.onLoaded(history);
+            });
+        });
+    }
+
+    public void deleteLines(List<Integer> ids, OnTaskCompleteListener listener) {
+        executor.execute(() -> {
+            for (Integer id : ids) {
+                db.searchHistoryDao().deleteLineById(id);
+            }
+            handler.post(() -> {
+                listener.onComplete();
+            });
+        });
+    }
+
+
     public interface OnHistoryLoadedListener {
         void onLoaded(List<SearchHistory> history);
     }
 
     public interface OnStationHistoryLoadedListener {
         void onLoaded(List<StationHistory> history);
+    }
+
+    public interface OnLineHistoryLoadedListener {
+        void onLoaded(List<LineHistory> history);
     }
 
     public interface OnTaskCompleteListener {

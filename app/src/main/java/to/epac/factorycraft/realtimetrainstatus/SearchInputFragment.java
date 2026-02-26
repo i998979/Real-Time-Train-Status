@@ -88,8 +88,9 @@ public class SearchInputFragment extends Fragment {
         searchLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        int id = result.getData().getIntExtra("selected_station_id", 1);
-                        String name = result.getData().getStringExtra("selected_station_name");
+                        int id = result.getData().getIntExtra("selected_id", 1);
+                        String name = result.getData().getStringExtra("selected_name");
+                        String code = result.getData().getStringExtra("selected_code");
 
                         if (isSelectingOrigin) {
                             selectedOriginID = String.valueOf(id);
@@ -105,7 +106,7 @@ public class SearchInputFragment extends Fragment {
 
         View.OnClickListener searchClick = v -> {
             isSelectingOrigin = (v.getId() == R.id.layout_origin);
-            searchLauncher.launch(new Intent(requireContext(), StationSearchActivity.class));
+            searchLauncher.launch(new Intent(requireContext(), SearchActivity.class));
         };
         layoutOrigin.setOnClickListener(searchClick);
         layoutDest.setOnClickListener(searchClick);

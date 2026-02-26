@@ -80,7 +80,7 @@ public class StationInfoFragment extends Fragment {
         });
 
         View.OnClickListener searchClickListener = v -> {
-            searchLauncher.launch(new Intent(requireContext(), StationSearchActivity.class));
+            searchLauncher.launch(new Intent(requireContext(), SearchActivity.class));
         };
         searchBar.setOnClickListener(searchClickListener);
         tvSearchStation.setOnClickListener(searchClickListener);

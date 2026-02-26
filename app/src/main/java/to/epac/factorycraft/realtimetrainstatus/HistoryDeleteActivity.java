@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.radiobutton.MaterialRadioButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
     public static final String EXTRA_HISTORY_TYPE = "history_type";
     public static final int TYPE_ROUTE = 0;
     public static final int TYPE_STATION = 1;
+    public static final int TYPE_LINE = 2;
 
     private HistoryManager historyManager;
     private final List<Object> historyList = new ArrayList<>();
@@ -37,7 +38,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
     private Set<Integer> selectedIds = new HashSet<>();
 
     private MaterialButton btnClose;
-    private CheckBox cbSelectAll;
+    private MaterialRadioButton rbSelectAll;
     private TextView tvSelectAll;
     private RecyclerView rvDeleteHistory;
     private DeleteAdapter rvAdapter;
@@ -52,9 +53,11 @@ public class HistoryDeleteActivity extends AppCompatActivity {
         historyManager = HistoryManager.getInstance(this);
 
         btnClose = findViewById(R.id.btn_close);
-        btnClose.setOnClickListener(v -> finish());
+        btnClose.setOnClickListener(v -> {
+            finish();
+        });
 
-        cbSelectAll = findViewById(R.id.cb_select_all);
+        rbSelectAll = findViewById(R.id.rb_select_all);
         tvSelectAll = findViewById(R.id.tv_select_all);
         btnDelete = findViewById(R.id.btn_delete);
         rvDeleteHistory = findViewById(R.id.rv_delete_history);
@@ -76,14 +79,20 @@ public class HistoryDeleteActivity extends AppCompatActivity {
             updateUI();
         };
         tvSelectAll.setOnClickListener(selectAllListener);
-        cbSelectAll.setOnClickListener(selectAllListener);
+        rbSelectAll.setOnClickListener(selectAllListener);
 
         btnDelete.setOnClickListener(v -> {
             List<Integer> idsToDelete = new ArrayList<>(selectedIds);
-            if (currentType == TYPE_ROUTE) {
-                historyManager.deleteRoutes(idsToDelete, this::onDeleteComplete);
-            } else {
-                historyManager.deleteStations(idsToDelete, this::onDeleteComplete);
+            switch (currentType) {
+                case TYPE_ROUTE:
+                    historyManager.deleteRoutes(idsToDelete, this::onDeleteComplete);
+                    break;
+                case TYPE_LINE:
+                    historyManager.deleteLines(idsToDelete, this::onDeleteComplete);
+                    break;
+                default:
+                    historyManager.deleteStations(idsToDelete, this::onDeleteComplete);
+                    break;
             }
         });
 
@@ -96,14 +105,24 @@ public class HistoryDeleteActivity extends AppCompatActivity {
     }
 
     private int getIdFromItem(Object item) {
-        if (item instanceof SearchHistory) return ((SearchHistory) item).routeId;
-        if (item instanceof StationHistory) return ((StationHistory) item).stationId;
+        if (item instanceof SearchHistory)
+            return ((SearchHistory) item).routeId;
+        if (item instanceof StationHistory)
+            return ((StationHistory) item).stationId;
+        if (item instanceof LineHistory)
+            return ((LineHistory) item).lineId;
         return -1;
     }
 
     private void loadData() {
         if (currentType == TYPE_ROUTE) {
             historyManager.loadSearchHistory(data -> {
+                historyList.clear();
+                historyList.addAll(data);
+                updateUI();
+            });
+        } else if (currentType == TYPE_LINE) {
+            historyManager.loadLineHistory(data -> {
                 historyList.clear();
                 historyList.addAll(data);
                 updateUI();
@@ -120,13 +139,11 @@ public class HistoryDeleteActivity extends AppCompatActivity {
     private void updateUI() {
         rvAdapter.notifyDataSetChanged();
         boolean isAllSelected = !historyList.isEmpty() && selectedIds.size() == historyList.size();
-        cbSelectAll.setChecked(isAllSelected);
-
+        rbSelectAll.setChecked(isAllSelected);
         tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
 
         btnDelete.setEnabled(!selectedIds.isEmpty());
-        btnDelete.setBackgroundColor(selectedIds.isEmpty() ?
-                Color.parseColor("#2C2C2C") : Color.parseColor("#4CAF50"));
+        btnDelete.setBackgroundColor(selectedIds.isEmpty() ? Color.parseColor("#2C2C2C") : Color.parseColor("#4CAF50"));
     }
 
     private class DeleteAdapter extends RecyclerView.Adapter<DeleteAdapter.ViewHolder> {
@@ -143,15 +160,22 @@ public class HistoryDeleteActivity extends AppCompatActivity {
 
             if (item instanceof SearchHistory) {
                 SearchHistory sh = (SearchHistory) item;
+
                 holder.tvName.setText(sh.originName + " → " + sh.destinationName);
-            } else {
+                formatTime(holder.tvTime, sh.timestamp);
+            } else if (item instanceof LineHistory) {
+                LineHistory lh = (LineHistory) item;
+
+                holder.tvName.setText(lh.lineName);
+                holder.tvTime.setVisibility(View.GONE);
+            } else if (item instanceof StationHistory) {
                 StationHistory st = (StationHistory) item;
+
                 holder.tvName.setText(st.stationName);
                 holder.tvTime.setVisibility(View.GONE);
-                formatTime(holder.tvTime, st.timestamp);
             }
 
-            holder.cbItem.setChecked(selectedIds.contains(id));
+            holder.rbItem.setChecked(selectedIds.contains(id));
 
             View.OnClickListener toggleListener = v -> {
                 if (selectedIds.contains(id)) {
@@ -162,7 +186,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
                 updateUI();
             };
             holder.itemView.setOnClickListener(toggleListener);
-            holder.cbItem.setOnClickListener(toggleListener);
+            holder.rbItem.setOnClickListener(toggleListener);
         }
 
         @Override
@@ -180,13 +204,13 @@ public class HistoryDeleteActivity extends AppCompatActivity {
 
         private class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvName, tvTime;
-            CheckBox cbItem;
+            MaterialRadioButton rbItem;
 
             private ViewHolder(View v) {
                 super(v);
                 tvName = v.findViewById(R.id.tv_name);
                 tvTime = v.findViewById(R.id.tv_time);
-                cbItem = v.findViewById(R.id.cb_item);
+                rbItem = v.findViewById(R.id.rb_item);
             }
         }
     }
