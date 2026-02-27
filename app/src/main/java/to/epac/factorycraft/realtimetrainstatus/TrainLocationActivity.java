@@ -77,7 +77,7 @@ public class TrainLocationActivity extends AppCompatActivity {
             tvDnDir.setText("香港方面");
         } else if (lineCode.equalsIgnoreCase("drl")) {
             tvUpDir.setText("欣澳方面");
-            tvDnDir.setText("迪士尼館方面");
+            tvDnDir.setText("迪士尼方面");
         } else if (lineCode.equalsIgnoreCase("eal")) {
             tvUpDir.setText("羅湖/落馬洲方面");
             tvDnDir.setText("金鐘方面");
