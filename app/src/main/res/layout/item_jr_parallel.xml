@@ -14,11 +14,13 @@
         android:clipChildren="false"
         android:orientation="horizontal">
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_station_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
+            android:drawableEnd="@drawable/ic_white_arrow_in_green_circle"
+            android:drawablePadding="4dp"
             android:text="Fo Tan"
             android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
@@ -133,11 +135,13 @@
                 android:clipChildren="false" />
         </LinearLayout>
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_station_spur"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
+            android:drawableStart="@drawable/ic_white_arrow_in_green_circle"
+            android:drawablePadding="4dp"
             android:text="Racecourse"
             android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"

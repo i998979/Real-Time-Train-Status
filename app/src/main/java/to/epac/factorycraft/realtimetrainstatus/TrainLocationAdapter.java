@@ -1,6 +1,7 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textview.MaterialTextView;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -602,7 +604,18 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             container.addView(iv, 0, params);
         }*/
 
-        h.tvStationName.setText(Utils.getStationName(context, Utils.idToCode(context, code, lineCode), true));
+        h.tvStation.setText(Utils.getStationName(context, Utils.idToCode(context, code, lineCode), true));
+        h.tvStation.setTag(Utils.idToCode(context, code, lineCode));
+
+        View.OnClickListener listener = v -> {
+            String stationCode = (String) v.getTag();
+
+            Intent intent = new Intent(v.getContext(), StationActivity.class);
+            intent.putExtra("station_code", stationCode);
+            v.getContext().startActivity(intent);
+        };
+        h.tvStation.setOnClickListener(listener);
+
         h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
         List<Trip> upTrips = new ArrayList<>();
@@ -783,7 +796,19 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
         h.tvMain.setText(Utils.getStationName(context, Utils.idToCode(context, mainCode, lineCode), true));
+        h.tvMain.setTag(Utils.idToCode(context, mainCode, lineCode));
         h.tvSpur.setText(Utils.getStationName(context, Utils.idToCode(context, spurCode, lineCode), true));
+        h.tvSpur.setTag(Utils.idToCode(context, mainCode, lineCode));
+
+        View.OnClickListener listener = v -> {
+            String stationCode = (String) v.getTag();
+
+            Intent intent = new Intent(v.getContext(), StationActivity.class);
+            intent.putExtra("station_code", stationCode);
+            v.getContext().startActivity(intent);
+        };
+        h.tvMain.setOnClickListener(listener);
+        h.tvSpur.setOnClickListener(listener);
 
 
         List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
@@ -842,13 +867,13 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     private static class StationViewHolder extends RecyclerView.ViewHolder {
         View railLine;
-        TextView tvStationName;
+        MaterialTextView tvStation;
         ViewGroup layoutUp, layoutDn;
 
         StationViewHolder(View v) {
             super(v);
             railLine = v.findViewById(R.id.rail_line);
-            tvStationName = v.findViewById(R.id.tv_station);
+            tvStation = v.findViewById(R.id.tv_station);
             layoutUp = v.findViewById(R.id.layout_train_up);
             layoutDn = v.findViewById(R.id.layout_train_dn);
         }
@@ -885,7 +910,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
     private static class ParallelViewHolder extends RecyclerView.ViewHolder {
         View railLine, railLine2;
         ViewGroup upMain, dnMain, upSpur, dnSpur;
-        TextView tvMain, tvSpur;
+        MaterialTextView tvMain, tvSpur;
 
         ParallelViewHolder(View v) {
             super(v);

@@ -39,7 +39,7 @@
                 android:layout_gravity="center"
                 android:text="中環"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
         </FrameLayout>

@@ -5,15 +5,16 @@
     android:background="?attr/colorSurfaceVariant"
     android:clipChildren="false">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_station"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|start"
-        android:layout_margin="8dp"
+        android:layout_margin="4dp"
+        android:drawableEnd="@drawable/ic_white_arrow_in_green_circle"
+        android:drawablePadding="4dp"
         android:text="Exhibition Centre"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
     <LinearLayout
