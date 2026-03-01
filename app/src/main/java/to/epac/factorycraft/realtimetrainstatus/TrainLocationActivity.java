@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -40,9 +41,9 @@ import java.util.stream.Collectors;
 public class TrainLocationActivity extends AppCompatActivity {
     public static Context context;
 
-
     private RecyclerView rv;
     private TrainLocationAdapter adapter;
+    private FrameLayout lineBanner;
 
     private final List<Trip> activeTrips = new ArrayList<>();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -52,6 +53,8 @@ public class TrainLocationActivity extends AppCompatActivity {
     private String lineCode;
     private String dataSource;
     private LineConfig lineConfig;
+
+    private boolean isBannerCurrentlyHidden = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +66,8 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         MaterialButton btnClose = findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> finish());
+
+        lineBanner = findViewById(R.id.line_banner);
 
         lineCode = getIntent().getStringExtra("LINE_CODE");
         if (lineCode == null) lineCode = "eal";
@@ -144,12 +149,72 @@ public class TrainLocationActivity extends AppCompatActivity {
 
 
         NestedScrollView scrollView = findViewById(R.id.nested_scroll_view);
-        scrollView.post(() -> {
-            scrollView.scrollTo(0, rv.getTop());
-            rv.requestFocus();
+        int threshold = (int) (50 * getResources().getDisplayMetrics().density);
+
+        scrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (scrollY > threshold && !isBannerCurrentlyHidden) {
+                hideTopBar();
+            } else if (scrollY <= threshold && isBannerCurrentlyHidden) {
+                showTopBar();
+            }
         });
 
         startRefreshLoop();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_UP) {
+            View topBarContainer = findViewById(R.id.top_bar_container);
+            View btnClose = findViewById(R.id.btn_close);
+            NestedScrollView scrollView = findViewById(R.id.nested_scroll_view);
+
+            boolean isAtTop = scrollView.getScrollY() <= 5;
+
+            if (isAtTop) {
+                showTopBar();
+            } else {
+                int[] closeLocation = new int[2];
+                btnClose.getLocationOnScreen(closeLocation);
+
+                float x = ev.getRawX();
+                float y = ev.getRawY();
+
+                if (!(x >= closeLocation[0] && x <= (closeLocation[0] + btnClose.getWidth()) &&
+                        y >= closeLocation[1] && y <= (closeLocation[1] + btnClose.getHeight()))) {
+
+                    int[] topBarLocation = new int[2];
+                    topBarContainer.getLocationOnScreen(topBarLocation);
+
+                    if (!(x >= topBarLocation[0] && x <= (topBarLocation[0] + topBarContainer.getWidth()) &&
+                            y >= topBarLocation[1] && y <= (topBarLocation[1] + topBarContainer.getHeight()))) {
+
+                        if (isBannerCurrentlyHidden) {
+                            showTopBar();
+                        } else {
+                            hideTopBar();
+                        }
+                    }
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    private void showTopBar() {
+        isBannerCurrentlyHidden = false;
+        lineBanner.animate()
+                .translationY(0)
+                .setDuration(200)
+                .start();
+    }
+
+    private void hideTopBar() {
+        isBannerCurrentlyHidden = true;
+        lineBanner.animate()
+                .translationY(-lineBanner.getHeight())
+                .setDuration(200)
+                .start();
     }
 
     private void startRefreshLoop() {
