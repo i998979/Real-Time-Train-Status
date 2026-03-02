@@ -112,22 +112,27 @@ public class RouteDetailFragment extends Fragment {
 
 
             // Start and end time calculation
-            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-            int nowMins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
-
-            String firstTimeStr = data.getJSONObject("firstTrain").getString("time");
-            String lastTimeStr = data.getJSONObject("lastTrain").getString("time");
-            int firstMins = Integer.parseInt(firstTimeStr.split(":")[0]) * 60 + Integer.parseInt(firstTimeStr.split(":")[1]);
-            int lastMins = Integer.parseInt(lastTimeStr.split(":")[0]) * 60 + Integer.parseInt(lastTimeStr.split(":")[1]);
-
-            if (lastMins < firstMins) lastMins += 24 * 60;
-
-            boolean isTomorrow = (nowMins > lastMins % 1440 && nowMins < firstMins);
-            if (isTomorrow)
-                cal.add(Calendar.DAY_OF_YEAR, 1);
-
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
             SimpleDateFormat sdf = new SimpleDateFormat("M月d日(E)", Locale.TRADITIONAL_CHINESE);
-            journeyStart.setText(sdf.format(cal.getTime()));
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+
+            int nowMins = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
+            try {
+                String firstTimeStr = data.getJSONObject("firstTrain").getString("time");
+                String lastTimeStr = data.getJSONObject("lastTrain").getString("time");
+                int firstMins = Integer.parseInt(firstTimeStr.split(":")[0]) * 60 + Integer.parseInt(firstTimeStr.split(":")[1]);
+                int lastMins = Integer.parseInt(lastTimeStr.split(":")[0]) * 60 + Integer.parseInt(lastTimeStr.split(":")[1]);
+
+                if (lastMins < firstMins) lastMins += 24 * 60;
+
+                boolean isTomorrow = (nowMins > lastMins % 1440 && nowMins < firstMins);
+                if (isTomorrow)
+                    calendar.add(Calendar.DAY_OF_YEAR, 1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            journeyStart.setText(sdf.format(calendar.getTime()));
 
             String startTime = getArguments().getString("start_time");
             int startH = Integer.parseInt(startTime.split(":")[0]);
