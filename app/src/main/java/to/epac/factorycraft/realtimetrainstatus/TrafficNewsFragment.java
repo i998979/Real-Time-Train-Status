@@ -12,12 +12,12 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,10 +26,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
@@ -54,13 +57,14 @@ public class TrafficNewsFragment extends Fragment {
 
     private HRConfig hrConf;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private TextView tvRefreshTime;
     private FrameLayout trafficNewsLayout;
     private LinearLayout statusContainer;
 
     private ImageView mapImageView;
     private View layoutNormal;
     private View layoutDelayed;
-    private ProgressBar progressBar;
 
     private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(CHECK_STATIONS.size());
     private boolean isFetching = false;
@@ -72,12 +76,17 @@ public class TrafficNewsFragment extends Fragment {
 
         hrConf = HRConfig.getInstance(getContext());
 
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        tvRefreshTime = view.findViewById(R.id.tv_refresh_time);
         trafficNewsLayout = view.findViewById(R.id.layout_traffic_news);
         statusContainer = view.findViewById(R.id.status_container);
         mapImageView = view.findViewById(R.id.iv_system_map);
         layoutNormal = view.findViewById(R.id.layout_normal);
         layoutDelayed = view.findViewById(R.id.layout_delayed);
-        progressBar = view.findViewById(R.id.progress_bar);
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            fetchTrafficNews();
+        });
 
         Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
         int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
@@ -87,7 +96,7 @@ public class TrafficNewsFragment extends Fragment {
 
         boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
 
-        LinearLayout nthMessage = view.findViewById(R.id.nth_message);
+        LinearLayout nthMessage = view.findViewById(R.id.layout_nth);
         if (isMaintenanceTime)
             nthMessage.setVisibility(View.VISIBLE);
         else
@@ -110,10 +119,6 @@ public class TrafficNewsFragment extends Fragment {
     private void fetchTrafficNews() {
         if (isFetching) return;
         isFetching = true;
-
-        new Handler(Looper.getMainLooper()).post(() -> {
-            progressBar.setVisibility(View.VISIBLE);
-        });
 
         new Thread(() -> {
             try {
@@ -164,7 +169,12 @@ public class TrafficNewsFragment extends Fragment {
                 isFetching = false;
 
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("M月d日 HH:mm", Locale.getDefault());
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+                    String currentTime = dateFormat.format(new Date());
+                    tvRefreshTime.setText(currentTime);
                 });
             }
         }).start();

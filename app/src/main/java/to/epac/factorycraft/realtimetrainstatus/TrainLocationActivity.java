@@ -141,7 +141,7 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
 
-        LinearLayout nthMessage = findViewById(R.id.nth_message);
+        LinearLayout nthMessage = findViewById(R.id.layout_nth);
         if (isMaintenanceTime)
             nthMessage.setVisibility(View.VISIBLE);
         else

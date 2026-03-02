@@ -25,97 +25,111 @@
 
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/layout_traffic_news"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_gravity="center"
-            android:visibility="gone" />
-
-        <LinearLayout
-            android:id="@+id/layout_delayed"
+        <FrameLayout
+            android:id="@+id/layout_traffic_news"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="invisible"
-            tools:visibility="visible">
+            android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/iv_system_map"
-                android:layout_width="match_parent"
-                android:layout_height="250dp"
-                android:paddingVertical="6dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/mtr_routemap_510" />
-
-            <ScrollView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingTop="10dp">
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:id="@+id/status_container"
+                <TextView
+                    android:id="@+id/tv_refresh_time"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-            </ScrollView>
-        </LinearLayout>
+                    android:gravity="right"
+                    android:padding="16dp"
+                    android:text="3月2日 23:59" />
 
-        <LinearLayout
-            android:id="@+id/layout_normal"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="gone">
+                <LinearLayout
+                    android:id="@+id/layout_delayed"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="invisible"
+                    tools:visibility="gone">
 
-            <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:src="@drawable/baseline_trip_origin_24"
-                app:tint="#4BAC7F" />
+                    <ImageView
+                        android:id="@+id/iv_system_map"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:paddingVertical="6dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/mtr_routemap_510" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="現時，列車服務運作正常"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingTop="10dp">
 
-        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/status_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+                    </ScrollView>
+                </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/nth_message"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:background="#E14158"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="gone">
+                <LinearLayout
+                    android:id="@+id/layout_normal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingTop="120dp"
+                    android:visibility="visible"
+                    tools:visibility="visible">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="現在是非行車時間"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold" />
+                    <ImageView
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:src="@drawable/baseline_trip_origin_24"
+                        app:tint="#4BAC7F" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="凌晨1時30分~5時正"
-                android:textColor="#FFFFFF" />
-        </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="現時，列車服務運作正常"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_nth"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="#E14158"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="現在是非行車時間"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="凌晨1時30分~5時正"
+                    android:textColor="#FFFFFF" />
+            </LinearLayout>
+
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>
