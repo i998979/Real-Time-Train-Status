@@ -6,7 +6,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -265,9 +264,20 @@ public class TrafficNewsFragment extends Fragment {
                         String cause = msgObj.optString("cause_tc", "");
                         displayMessage = !title.isEmpty() ? title : cause;
 
-                        JSONObject affectedAreaObj = msgObj.optJSONObject("affected_areas").optJSONObject("affected_area");
-                        lineSection = hrConf.getStationName(affectedAreaObj.getString("station_code_fr")) + "~"
-                                + hrConf.getStationName(affectedAreaObj.getString("station_code_to"));
+                        JSONObject affectedAreas = msgObj.optJSONObject("affected_areas");
+                        if (affectedAreas != null) {
+                            JSONObject affectedAreaObj = affectedAreas.optJSONObject("affected_area");
+
+                            if (affectedAreaObj != null) {
+                                String stationFr = affectedAreaObj.optString("station_code_fr");
+                                String stationTo = affectedAreaObj.optString("station_code_to");
+
+                                if (!stationFr.isEmpty() && !stationTo.isEmpty()) {
+                                    lineSection = hrConf.getStationName(Integer.parseInt(stationFr)) + "~"
+                                            + hrConf.getStationName(Integer.parseInt(stationTo));
+                                }
+                            }
+                        }
                     }
                 } else if (messagesObj instanceof String) {
                     String msgStr = (String) messagesObj;

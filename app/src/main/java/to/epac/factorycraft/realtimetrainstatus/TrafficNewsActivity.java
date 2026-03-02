@@ -3,6 +3,9 @@ package to.epac.factorycraft.realtimetrainstatus;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -10,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class TrafficNewsActivity extends AppCompatActivity {
@@ -25,6 +29,7 @@ public class TrafficNewsActivity extends AppCompatActivity {
     TextView tvLineSection;
     TextView tvReason;
     TextView tvDetail;
+    WebView wvDetail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +50,11 @@ public class TrafficNewsActivity extends AppCompatActivity {
         tvLineSection = findViewById(R.id.tv_line_section);
         tvReason = findViewById(R.id.tv_reason);
         tvDetail = findViewById(R.id.tv_detail);
+        wvDetail = findViewById(R.id.wv_detail);
+
+        WebSettings webSettings = wvDetail.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        wvDetail.setWebViewClient(new WebViewClient());
 
         String lineCode = getIntent().getStringExtra("line_code");
         String lineNameTc = getIntent().getStringExtra("line_name_tc");
@@ -57,13 +67,45 @@ public class TrafficNewsActivity extends AppCompatActivity {
             JSONObject msgObj = messagesObj.getJSONObject("message");
 
             tvReason.setText(msgObj.optString("title_tc", ""));
-            tvDetail.setText(msgObj.optString("cause_tc", ""));
+            String cause = msgObj.optString("cause_tc", "");
+            tvDetail.setText(cause.equals("null") ? "" : cause);
 
-            JSONObject affectedAreaObj = msgObj.optJSONObject("affected_areas").optJSONObject("affected_area");
-            String lineSection = hrConf.getStationName(affectedAreaObj.getString("station_code_fr")) + "~"
-                    + hrConf.getStationName(affectedAreaObj.getString("station_code_to"));
+            String url = msgObj.optString("url_tc");
+            if (!url.isEmpty()) {
+                wvDetail.loadUrl(url);
+            }
+
+            String lineSection = "全綫";
+
+            JSONObject affectedAreas = msgObj.optJSONObject("affected_areas");
+            if (affectedAreas != null) {
+                Object affectedArea = affectedAreas.opt("affected_area");
+
+                if (affectedArea instanceof JSONArray) {
+                    JSONArray areaArray = (JSONArray) affectedArea;
+                    if (areaArray.length() > 0) {
+                        JSONObject areaObj = areaArray.getJSONObject(0);
+                        String fr = areaObj.optString("station_code_fr");
+                        String to = areaObj.optString("station_code_to");
+                        if (!fr.isEmpty() && !to.isEmpty()) {
+                            lineSection = hrConf.getStationName(Integer.parseInt(fr)) + "~"
+                                    + hrConf.getStationName(Integer.parseInt(to));
+                        }
+                    }
+                } else if (affectedArea instanceof JSONObject) {
+                    JSONObject areaObj = (JSONObject) affectedArea;
+                    String fr = areaObj.optString("station_code_fr");
+                    String to = areaObj.optString("station_code_to");
+                    if (!fr.isEmpty() && !to.isEmpty()) {
+                        lineSection = hrConf.getStationName(Integer.parseInt(fr)) + "~"
+                                + hrConf.getStationName(Integer.parseInt(to));
+                    }
+                }
+            }
+
             tvLineSection.setText(lineSection);
         } catch (Exception e) {
+            e.printStackTrace();
             tvDetail.setText(messages.isEmpty() ? "現在，列車服務運作正常。" : messages);
         }
 
