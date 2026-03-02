@@ -28,12 +28,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -65,7 +68,14 @@ public class TrainLocationActivity extends AppCompatActivity {
         TrainLocationActivity.context = this;
 
         MaterialButton btnClose = findViewById(R.id.btn_close);
-        btnClose.setOnClickListener(v -> finish());
+        btnClose.setOnClickListener(v -> {
+            finish();
+        });
+
+        MaterialButton btnRefresh = findViewById(R.id.btn_refresh);
+        btnRefresh.setOnClickListener(v -> {
+            fetchData();
+        });
 
         lineBanner = findViewById(R.id.line_banner);
 
@@ -159,7 +169,7 @@ public class TrainLocationActivity extends AppCompatActivity {
             }
         });
 
-        startRefreshLoop();
+        fetchData();
     }
 
     @Override
@@ -167,6 +177,7 @@ public class TrainLocationActivity extends AppCompatActivity {
         if (ev.getAction() == MotionEvent.ACTION_UP) {
             View topBarContainer = findViewById(R.id.top_bar_container);
             View btnClose = findViewById(R.id.btn_close);
+            View btnRefresh = findViewById(R.id.btn_refresh);
             NestedScrollView scrollView = findViewById(R.id.nested_scroll_view);
 
             boolean isAtTop = scrollView.getScrollY() <= 5;
@@ -177,11 +188,19 @@ public class TrainLocationActivity extends AppCompatActivity {
                 int[] closeLocation = new int[2];
                 btnClose.getLocationOnScreen(closeLocation);
 
+                int[] refreshLocation = new int[2];
+                btnRefresh.getLocationOnScreen(refreshLocation);
+
                 float x = ev.getRawX();
                 float y = ev.getRawY();
 
-                if (!(x >= closeLocation[0] && x <= (closeLocation[0] + btnClose.getWidth()) &&
-                        y >= closeLocation[1] && y <= (closeLocation[1] + btnClose.getHeight()))) {
+                boolean clickedClose = (x >= closeLocation[0] && x <= (closeLocation[0] + btnClose.getWidth()) &&
+                        y >= closeLocation[1] && y <= (closeLocation[1] + btnClose.getHeight()));
+
+                boolean clickedRefresh = (x >= refreshLocation[0] && x <= (refreshLocation[0] + btnRefresh.getWidth()) &&
+                        y >= refreshLocation[1] && y <= (refreshLocation[1] + btnRefresh.getHeight()));
+
+                if (!clickedClose && !clickedRefresh) {
 
                     int[] topBarLocation = new int[2];
                     topBarContainer.getLocationOnScreen(topBarLocation);
@@ -215,16 +234,6 @@ public class TrainLocationActivity extends AppCompatActivity {
                 .translationY(-lineBanner.getHeight())
                 .setDuration(200)
                 .start();
-    }
-
-    private void startRefreshLoop() {
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                fetchData();
-                mainHandler.postDelayed(this, 10000);
-            }
-        });
     }
 
     private void fetchData() {
@@ -267,6 +276,14 @@ public class TrainLocationActivity extends AppCompatActivity {
                                 + Utils.idToCode(this, trip.destinationStationCode, lineCode) + " "
                                 + trip.ttnt + " ");
                     }
+
+                    TextView tvRefreshTime = findViewById(R.id.tv_refresh_time);
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("M月d日 HH:mm", Locale.getDefault());
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+                    String currentTime = dateFormat.format(new Date());
+                    tvRefreshTime.setText(currentTime);
+
                     adapter.notifyDataSetChanged();
                 });
             } catch (Exception e) {

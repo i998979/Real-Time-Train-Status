@@ -99,12 +99,21 @@
             app:iconTint="#92ADBB" />
     </FrameLayout>
 
+    <TextView
+        android:id="@+id/tv_refresh_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:gravity="right"
+        android:padding="16dp"
+        android:text="3月2日 23:59" />
+
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_up_dir"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="100dp"
         android:background="@drawable/bg_round_label"
         android:backgroundTint="@color/label_bg_tint"
         android:paddingHorizontal="10dp"
@@ -126,6 +135,24 @@
         android:text="金鐘方面"
         android:textColor="?attr/colorOnSurface"
         android:textSize="14sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_refresh"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:backgroundTint="#4CAF50"
+        app:cornerRadius="28dp"
+        app:icon="@drawable/baseline_refresh_24"
+        app:iconPadding="0dp"
+        app:iconSize="40dp"
+        app:iconTint="@android:color/white"
+        app:strokeColor="@android:color/white"
+        app:strokeWidth="4dp" />
 
     <LinearLayout
         android:id="@+id/layout_nth"
