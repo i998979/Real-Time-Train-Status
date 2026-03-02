@@ -47,7 +47,6 @@ public class StationActivity extends AppCompatActivity {
 
         tabLayout = findViewById(R.id.tab_layout);
         pagerContent = findViewById(R.id.pager_content);
-        pagerContent.setUserInputEnabled(false);
 
         pagerContent.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
