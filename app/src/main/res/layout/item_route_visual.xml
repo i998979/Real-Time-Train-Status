@@ -42,13 +42,19 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/layout_visual_segments"
+        <FrameLayout
+            android:id="@+id/visual_segments_wrapper"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorSurfaceVariant"
-            android:gravity="center_horizontal"
-            android:orientation="vertical" />
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/layout_visual_segments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurfaceVariant"
+                android:gravity="center_horizontal"
+                android:orientation="vertical" />
+        </FrameLayout>
 
         <LinearLayout
             android:id="@+id/footer"

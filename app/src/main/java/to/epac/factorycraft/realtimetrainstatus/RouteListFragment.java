@@ -2,6 +2,7 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -149,7 +151,7 @@ public class RouteListFragment extends Fragment {
     private void fetchData(String origin, String dest) {
         new Thread(() -> {
             try {
-                URL url = new URL("https://www.mtr.com.hk/share/customer/jp/api/HRRoutes/?o=" + origin + "&d=" + dest);
+                URL url = new URL("https://www.mtr.com.hk/share/customer/jp/api/HRRoutes/?o=" + origin + "&d=" + dest + "&lang=C");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();
@@ -162,6 +164,9 @@ public class RouteListFragment extends Fragment {
                 // Update Tab Layout data, background (if not drawn), adapter data
                 requireActivity().runOnUiThread(() -> {
                     List<JSONObject> routes = new ArrayList<>();
+
+                    // Show last train designated route when 1 hour before last train
+                    checkAndShowLastTrain();
 
                     // Find longest journey time route
                     try {
@@ -184,15 +189,14 @@ public class RouteListFragment extends Fragment {
 
 
                     // Calculate journey start time based on first/last train
+                    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+                    int nowMins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
                     try {
                         String[] ft = routeData.getJSONObject("firstTrain").getString("time").split(":");
                         String[] lt = routeData.getJSONObject("lastTrain").getString("time").split(":");
 
                         int firstMins = Integer.parseInt(ft[0]) * 60 + Integer.parseInt(ft[1]);
                         int lastMins = Integer.parseInt(lt[0]) * 60 + Integer.parseInt(lt[1]);
-
-                        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-                        int nowMins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
 
                         boolean isAfterLast;
                         if (lastMins < firstMins)
@@ -206,9 +210,9 @@ public class RouteListFragment extends Fragment {
                             cal.set(Calendar.HOUR_OF_DAY, firstMins / 60);
                             cal.set(Calendar.MINUTE, firstMins % 60);
                         }
-                        startAt = cal;
                     } catch (Exception e) {
                     }
+                    startAt = cal;
 
 
                     // Find min time, min interchange, min fare
@@ -236,6 +240,162 @@ public class RouteListFragment extends Fragment {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    private void checkAndShowLastTrain() {
+        try {
+            JSONObject lastTrain = routeData.getJSONObject("lastTrain");
+            String time = lastTrain.getString("time");
+            String[] timeParts = time.split(":");
+            int lastTrainMinutes = Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1]);
+
+            Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+            int nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+
+            int diff = lastTrainMinutes - nowMinutes;
+            if (diff >= 0 && diff <= 60) {
+                updateNoticeCard();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateNoticeCard() {
+        CardView noticeCard = getView().findViewById(R.id.notice_card);
+        LinearLayout layoutSegments = getView().findViewById(R.id.layout_card_segments);
+        TextView tvTitle = getView().findViewById(R.id.tv_card_title);
+        TextView tvRemark = getView().findViewById(R.id.tv_card_remark);
+        MaterialButton btnClose = getView().findViewById(R.id.btn_close);
+
+        try {
+            JSONObject lastTrain = routeData.getJSONObject("lastTrain");
+            String remark = routeData.getString("firstLastTrainRemark");
+            String time = lastTrain.getString("time");
+            JSONArray interchanges = lastTrain.optJSONArray("interchange");
+            JSONArray links = lastTrain.getJSONArray("links");
+
+            tvTitle.setText("尾班車: " + time);
+            tvRemark.setText(remark);
+
+            layoutSegments.removeAllViews();
+
+            String originId = getArguments().getString("o");
+            String destId = getArguments().getString("d");
+
+            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(originId)), false);
+
+            int interchangePointer = 0;
+            String currentStationId = originId;
+
+            for (int i = 0; i < links.length(); i++) {
+                String lineCode = links.getString(i);
+
+                if (interchanges != null && interchangePointer < interchanges.length()) {
+                    String nextId = interchanges.getString(interchangePointer);
+
+                    if ((currentStationId.equals("3") && nextId.equals("80")) ||
+                            (currentStationId.equals("80") && nextId.equals("3"))) {
+
+                        addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(nextId)), true);
+                        currentStationId = nextId;
+                        interchangePointer++;
+                    }
+                }
+
+                HRConfig.Line line = hrConf.getLineByAlias(lineCode);
+                addTrainSegmentViewToCard(layoutSegments, line);
+
+                if (i < links.length() - 1 && interchanges != null && interchangePointer < interchanges.length()) {
+                    if (interchangePointer + 1 < interchanges.length()) {
+                        String s1 = interchanges.getString(interchangePointer);
+                        String s2 = interchanges.getString(interchangePointer + 1);
+
+                        if ((s1.equals("1") && s2.equals("44")) || (s1.equals("44") && s2.equals("1"))) {
+                            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(s1)), false);
+                            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(s2)), true);
+                            currentStationId = s2;
+                            interchangePointer += 2;
+                            continue;
+                        }
+                    }
+
+                    String stationId = interchanges.getString(interchangePointer);
+                    addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(stationId)), false);
+                    currentStationId = stationId;
+                    interchangePointer++;
+                }
+            }
+
+            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(destId)), false);
+
+            btnClose.setOnClickListener(v -> noticeCard.setVisibility(View.GONE));
+            noticeCard.setVisibility(View.VISIBLE);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            noticeCard.setVisibility(View.GONE);
+        }
+    }
+
+    private void addStationViewToCard(LinearLayout container, String stationName, boolean walk) {
+        if (walk) {
+            TextView tvWalk = new TextView(requireContext());
+            LinearLayout.LayoutParams walkParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            walkParams.gravity = Gravity.CENTER_VERTICAL;
+            tvWalk.setLayoutParams(walkParams);
+
+            tvWalk.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
+            tvWalk.setCompoundDrawablePadding(0);
+            tvWalk.setGravity(Gravity.CENTER);
+
+            tvWalk.setCompoundDrawableTintList(ColorStateList.valueOf(Color.WHITE));
+
+            container.addView(tvWalk);
+        }
+
+        TextView tv = new TextView(requireContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.CENTER_VERTICAL;
+        tv.setPadding(dpToPx(6), 0, dpToPx(6), 0);
+        tv.setLayoutParams(params);
+        tv.setText(stationName);
+        tv.setTextSize(12);
+        tv.setGravity(Gravity.CENTER);
+        tv.setTextColor(Color.WHITE);
+        container.addView(tv);
+    }
+
+    private void addTrainSegmentViewToCard(LinearLayout container, HRConfig.Line line) {
+        FrameLayout segmentContainer = new FrameLayout(requireContext());
+        segmentContainer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        FrameLayout badgeContainer = new FrameLayout(requireContext());
+        FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(dpToPx(32), dpToPx(32));
+        badgeParams.gravity = Gravity.CENTER;
+        badgeContainer.setLayoutParams(badgeParams);
+
+        GradientDrawable badgeBg = new GradientDrawable();
+        badgeBg.setShape(GradientDrawable.RECTANGLE);
+        badgeBg.setCornerRadius(dpToPx(4));
+        badgeBg.setColor(Color.parseColor("#" + line.color));
+        badgeContainer.setBackground(badgeBg);
+
+        TextView tvLineCode = new TextView(requireContext());
+        FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(dpToPx(26), dpToPx(26));
+        textParams.gravity = Gravity.CENTER;
+        tvLineCode.setBackgroundColor(Color.WHITE);
+        tvLineCode.setLayoutParams(textParams);
+        tvLineCode.setText(line.alias);
+        tvLineCode.setTextColor(Color.BLACK);
+        tvLineCode.setTextSize(10);
+        tvLineCode.setTypeface(null, Typeface.BOLD);
+        tvLineCode.setGravity(Gravity.CENTER);
+        badgeContainer.addView(tvLineCode);
+        segmentContainer.addView(badgeContainer);
+
+        container.addView(segmentContainer);
     }
 
     private void updateBackground() {
@@ -464,6 +624,7 @@ public class RouteListFragment extends Fragment {
                 }
             }
 
+            int neededSpaceForCircle = interchangeSize + dpToPx(10);
             boolean shouldShowInterchange = availableContentPx - totalStaticPx >= dpToPx(60);
 
             int finalAvailableContentPx = availableContentPx - (shouldShowInterchange ? interchangeSize : 0);
@@ -521,12 +682,17 @@ public class RouteListFragment extends Fragment {
             }
 
             if (shouldShowInterchange) {
-                View interchangeView = createInterchangeCircleView(rideCount - 1);
-                LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(interchangeSize, interchangeSize);
-                circleParams.gravity = Gravity.CENTER;
-                circleParams.topMargin = dpToPx(5);
-                circleParams.bottomMargin = dpToPx(5);
-                holder.layoutVisualSegments.addView(interchangeView, circleParams);
+                View interchangeView = createInterchangeCircleView(Math.max(rideCount - 1, 0));
+
+                if (holder.layoutVisualSegments.getParent() instanceof FrameLayout) {
+                    FrameLayout container = (FrameLayout) holder.layoutVisualSegments.getParent();
+
+                    FrameLayout.LayoutParams circleParams = new FrameLayout.LayoutParams(interchangeSize, interchangeSize);
+                    circleParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+                    circleParams.topMargin = dpToPx(5);
+                    circleParams.bottomMargin = dpToPx(5);
+                    container.addView(interchangeView, circleParams);
+                }
             }
 
             ViewGroup.LayoutParams segmentParams = holder.layoutVisualSegments.getLayoutParams();
