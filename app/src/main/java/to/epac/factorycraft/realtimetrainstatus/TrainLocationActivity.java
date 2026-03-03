@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 public class TrainLocationActivity extends AppCompatActivity {
     public static Context context;
 
-    private RecyclerView rv;
+    private RecyclerView rvTrainLoc;
     private TrainLocationAdapter adapter;
     private FrameLayout lineBanner;
 
@@ -137,11 +137,11 @@ public class TrainLocationActivity extends AppCompatActivity {
         codeBadge.setBackgroundColor(color);
         tvCode.setText(lineCode.toUpperCase());
 
-        rv = findViewById(R.id.rv_line);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        rvTrainLoc = findViewById(R.id.rv_line);
+        rvTrainLoc.setLayoutManager(new LinearLayoutManager(this));
         adapter = new TrainLocationAdapter(this, lineCode, lineConfig.stationIDs, activeTrips,
                 lineConfig.runTimeUpMap, lineConfig.runTimeDnMap, lineConfig.dwellTimeUpMap, lineConfig.dwellTimeDnMap);
-        rv.setAdapter(adapter);
+        rvTrainLoc.setAdapter(adapter);
 
         Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
         int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);

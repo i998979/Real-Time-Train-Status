@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -47,6 +48,8 @@ public class RecentViewedFragment extends Fragment {
 
         rvHistory = view.findViewById(R.id.rv_history);
         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvHistory.getContext(), LinearLayoutManager.VERTICAL);
+        rvHistory.addItemDecoration(dividerItemDecoration);
         adapter = new RecentViewedAdapter(historyList, item -> {
             RouteListFragment routeListFragment = new RouteListFragment();
             Bundle args = new Bundle();

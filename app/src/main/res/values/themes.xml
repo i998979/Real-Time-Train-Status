@@ -51,7 +51,7 @@
         <item name="android:backgroundTint">?attr/colorOnSurfaceInverse</item>
         <item name="android:paddingVertical">16dp</item>
         <item name="android:paddingEnd">10dp</item>
-        <item name="android:button">@drawable/selector_radio_check</item>
+        <item name="android:button">@drawable/baseline_check_circle_outline_24</item>
         <item name="buttonTint">@color/selector_radio_tint</item>
         <item name="useMaterialThemeColors">false</item>
         <item name="android:drawablePadding">12dp</item>

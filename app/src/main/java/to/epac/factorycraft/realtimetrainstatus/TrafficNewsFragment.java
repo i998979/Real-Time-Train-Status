@@ -264,7 +264,7 @@ public class TrafficNewsFragment extends Fragment {
                 String status = lineObj.getString("status");
                 String lineSection = "全綫";
 
-                String displayMessage = "服務正常";
+                String displayMessage = "沒有任何延誤";
                 Object messagesObj = lineObj.opt("messages");
 
                 if (messagesObj instanceof JSONObject) {

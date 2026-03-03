@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,7 +34,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private EditText etSearch;
     private View layoutHistoryHeader;
-    private RecyclerView rv;
+    private RecyclerView rvSearch;
     private RecyclerView.Adapter adapter;
 
     @Override
@@ -84,8 +85,10 @@ public class SearchActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        rv = findViewById(R.id.rv_station_results);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        rvSearch = findViewById(R.id.rv_station_results);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvSearch.getContext(), LinearLayoutManager.VERTICAL);
+        rvSearch.addItemDecoration(dividerItemDecoration);
+        rvSearch.setLayoutManager(new LinearLayoutManager(this));
 
         if (currentMode == TYPE_LINE) {
             adapter = new SearchLineAdapter((id, name, code) -> {
@@ -98,7 +101,7 @@ public class SearchActivity extends AppCompatActivity {
                 returnResult(id, name, code);
             });
         }
-        rv.setAdapter(adapter);
+        rvSearch.setAdapter(adapter);
 
         showHistory();
     }

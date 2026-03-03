@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -60,9 +61,11 @@ public class HistoryDeleteActivity extends AppCompatActivity {
         rbSelectAll = findViewById(R.id.rb_select_all);
         tvSelectAll = findViewById(R.id.tv_select_all);
         btnDelete = findViewById(R.id.btn_delete);
+
         rvDeleteHistory = findViewById(R.id.rv_delete_history);
         rvDeleteHistory.setLayoutManager(new LinearLayoutManager(this));
-
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvDeleteHistory.getContext(), LinearLayoutManager.VERTICAL);
+        rvDeleteHistory.addItemDecoration(dividerItemDecoration);
         rvAdapter = new DeleteAdapter();
         rvDeleteHistory.setAdapter(rvAdapter);
 
