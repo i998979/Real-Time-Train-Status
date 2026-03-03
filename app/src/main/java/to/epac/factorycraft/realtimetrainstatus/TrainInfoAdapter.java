@@ -86,14 +86,14 @@ public class TrainInfoAdapter implements GoogleMap.InfoWindowAdapter {
                 // If the train has 9 compartments and is 1st class
                 if (has1st && i == first) {
                     if (Integer.parseInt(carData[1]) < 70)
-                        passengerCount.setBackgroundColor(Color.parseColor("#FF4CAF50"));
+                        passengerCount.setBackgroundColor(Color.parseColor("#FF6ec08d"));
                     else if (Integer.parseInt(carData[1]) < 150)
                         passengerCount.setBackgroundColor(Color.parseColor("#FFCDDC39"));
                     else
                         passengerCount.setBackgroundColor(Color.parseColor("#FFF44336"));
                 } else {
                     if (Integer.parseInt(carData[1]) < 110)
-                        passengerCount.setBackgroundColor(Color.parseColor("#FF4CAF50"));
+                        passengerCount.setBackgroundColor(Color.parseColor("#FF6ec08d"));
                     else if (Integer.parseInt(carData[1]) < 250)
                         passengerCount.setBackgroundColor(Color.parseColor("#FFCDDC39"));
                     else

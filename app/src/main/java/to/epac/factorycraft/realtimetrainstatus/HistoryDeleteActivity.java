@@ -146,7 +146,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
         tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
 
         btnDelete.setEnabled(!selectedIds.isEmpty());
-        btnDelete.setBackgroundColor(selectedIds.isEmpty() ? Color.parseColor("#2C2C2C") : Color.parseColor("#4CAF50"));
+        btnDelete.setBackgroundColor(selectedIds.isEmpty() ? Color.parseColor("#2C2C2C") : Color.parseColor("#6ec08d"));
     }
 
     private class DeleteAdapter extends RecyclerView.Adapter<DeleteAdapter.ViewHolder> {

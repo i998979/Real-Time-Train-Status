@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="23:59"
-        android:textColor="#4CAF50"
+        android:textColor="#6ec08d"
         android:textSize="17sp"
         android:textStyle="bold" />
 
