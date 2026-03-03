@@ -169,6 +169,8 @@ public class TrainLocationActivity extends AppCompatActivity {
             }
         });
 
+        TextView tvRefreshTime = findViewById(R.id.tv_refresh_time);
+        tvRefreshTime.setText("");
         fetchData();
     }
 
@@ -266,6 +268,8 @@ public class TrainLocationActivity extends AppCompatActivity {
                 cleanList.sort(Comparator.comparingLong(t -> t.time));
 
                 mainHandler.post(() -> {
+                    TextView tvRefreshTime = findViewById(R.id.tv_refresh_time);
+
                     activeTrips.clear();
                     activeTrips.addAll(cleanList);
                     Log.d("JR_LOG", "Valid Trains: " + activeTrips.size());
@@ -276,8 +280,6 @@ public class TrainLocationActivity extends AppCompatActivity {
                                 + Utils.idToCode(this, trip.destinationStationCode, lineCode) + " "
                                 + trip.ttnt + " ");
                     }
-
-                    TextView tvRefreshTime = findViewById(R.id.tv_refresh_time);
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("M月d日 HH:mm", Locale.getDefault());
                     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));

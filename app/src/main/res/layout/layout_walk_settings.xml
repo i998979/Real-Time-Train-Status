@@ -5,25 +5,25 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingHorizontal="20dp"
-    android:paddingTop="20dp"
-    android:paddingBottom="80dp">
+    android:paddingTop="20dp">
 
     <LinearLayout
+        style="@style/Widget.Material3.BottomSheet"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="80dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-        <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:background="#444444" />
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="24dp"
+            android:paddingBottom="0dp" />
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -62,7 +62,7 @@
                 style="@style/RadioButtonStyle"
                 android:background="@drawable/bg_platform_border"
                 android:backgroundTint="?attr/colorOnSurfaceInverse"
-                android:drawableLeft="@drawable/baseline_directions_walk_24"
+                android:drawableLeft="@drawable/baseline_directions_run_24"
                 android:text="快速\n在轉乘路綫沒有疑慮時" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
@@ -78,7 +78,7 @@
                 style="@style/RadioButtonStyle"
                 android:background="@drawable/bg_platform_border"
                 android:backgroundTint="?attr/colorOnSurfaceInverse"
-                android:drawableLeft="@drawable/baseline_directions_walk_24"
+                android:drawableLeft="@drawable/baseline_elderly_24"
                 android:text="慢速\n需要更多時間移動時" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
@@ -86,7 +86,7 @@
                 style="@style/RadioButtonStyle"
                 android:background="@drawable/bg_platform_border"
                 android:backgroundTint="?attr/colorOnSurfaceInverse"
-                android:drawableLeft="@drawable/baseline_directions_walk_24"
+                android:drawableLeft="@drawable/baseline_accessible_24"
                 android:text="很慢\n帶著大型行李或行動不便時" />
         </RadioGroup>
 

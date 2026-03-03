@@ -48,17 +48,21 @@
                     android:layout_toEndOf="@id/img_train_icon"
                     android:orientation="vertical">
 
-                    <TextView
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/tv_service_type"
+                        style="@style/Widget.Material3.Chip.Assist"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_platform_border"
-                        android:backgroundTint="#FF4CAF50"
-                        android:paddingHorizontal="16dp"
+                        android:clickable="false"
                         android:text="普通"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        app:chipBackgroundColor="#2C6483"
+                        app:chipCornerRadius="4dp"
+                        app:chipMinHeight="18dp"
+                        app:chipStrokeWidth="0dp"
+                        app:ensureMinTouchTargetSize="false" />
 
                     <TextView
                         android:id="@+id/tv_train_consist"
@@ -87,36 +91,44 @@
 
                 </LinearLayout>
 
-                <TextView
+                <com.google.android.material.chip.Chip
                     android:id="@+id/tv_car_count"
+                    style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_platform_border"
-                    android:backgroundTint="#444444"
-                    android:paddingHorizontal="6dp"
-                    android:paddingVertical="2dp"
+                    android:clickable="false"
                     android:text="9 両"
-                    android:textColor="#FFFFFF"
                     android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:chipBackgroundColor="?attr/colorOutlineVariant"
+                    app:chipCornerRadius="4dp"
+                    app:chipMinHeight="22dp"
+                    app:chipStrokeWidth="0dp"
+                    app:textEndPadding="0dp"
+                    app:textStartPadding="0dp" />
             </RelativeLayout>
 
-            <TextView
+            <com.google.android.material.chip.Chip
                 android:id="@+id/tv_delay_status"
+                style="@style/Widget.Material3.Chip.Assist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_platform_border"
-                android:backgroundTint="#4BAF4F"
-                android:gravity="center"
+                android:clickable="false"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="4dp"
                 android:text="準時運行"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:chipBackgroundColor="@color/button_green"
+                app:chipCornerRadius="12dp"
+                app:chipEndPadding="2dp"
+                app:chipMinHeight="24dp"
+                app:chipStartPadding="2dp"
+                app:chipStrokeWidth="0dp"
+                app:ensureMinTouchTargetSize="false" />
 
             <LinearLayout
                 android:id="@+id/crowd_layout"
@@ -191,7 +203,7 @@
                 android:background="@drawable/bg_platform_border"
                 android:backgroundTint="?attr/colorOnSurfaceInverse"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:paddingVertical="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"

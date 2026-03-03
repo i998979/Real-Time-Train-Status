@@ -13,7 +13,7 @@
         android:id="@+id/widget_icon"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:src="@drawable/baseline_credit_card_24"
+        android:src="@drawable/outline_payment_card_24"
         app:tint="@color/widget_foreground" />
 
     <TextView

@@ -133,8 +133,8 @@ public class SearchInputFragment extends Fragment {
         updateButtonStates();
 
         int[] btnIds = {R.id.btn_option_walk, R.id.btn_option_fare};
-        int[] iconRes = {R.drawable.baseline_directions_walk_24, R.drawable.baseline_credit_card_24};
-        int[] colors = {Color.parseColor("#6ec08d"), Color.parseColor("#6ec08d")};
+        int[] iconRes = {R.drawable.baseline_directions_walk_24, R.drawable.outline_payment_card_24};
+        int greenColor = ContextCompat.getColor(requireContext(), R.color.button_green);
         int[] layoutIds = {R.layout.layout_walk_settings, R.layout.layout_fare_settings};
 
         for (int i = 0; i < btnIds.length; i++) {
@@ -150,7 +150,7 @@ public class SearchInputFragment extends Fragment {
                     currentStatus = "車票設定";
                     break;
             }
-            renderOptionButton(settingsBtn, currentStatus, colors[index], iconRes[index]);
+            renderOptionButton(settingsBtn, currentStatus, greenColor, iconRes[index]);
 
             BottomSheetDialog bottomSheet = new BottomSheetDialog(getContext());
             bottomSheet.setContentView(layoutIds[index]);
@@ -197,7 +197,7 @@ public class SearchInputFragment extends Fragment {
                         prefs.edit()
                                 .putString(MainActivity.KEY_WALK_SPEED, selected)
                                 .apply();
-                        renderOptionButton(settingsBtn, selected, colors[index], iconRes[index]);
+                        renderOptionButton(settingsBtn, selected, greenColor, iconRes[index]);
                     });
                 }
                 if (index == 1) {
@@ -309,7 +309,7 @@ public class SearchInputFragment extends Fragment {
         btnGo.setAlpha(canGo ? 1.0f : 0.5f);
         btnGo.setEnabled(canGo);
 
-        int activeColor = Color.parseColor("#6EC08D");
+        int activeColor = ContextCompat.getColor(requireContext(), R.color.button_green);
         int greyColor = Color.parseColor("#BDBDBD");
         btnGo.setBackgroundTintList(ColorStateList.valueOf(canGo ? activeColor : greyColor));
 

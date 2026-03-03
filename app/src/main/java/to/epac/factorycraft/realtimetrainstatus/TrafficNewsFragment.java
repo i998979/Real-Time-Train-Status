@@ -102,6 +102,7 @@ public class TrafficNewsFragment extends Fragment {
         else
             nthMessage.setVisibility(View.GONE);
 
+        tvRefreshTime.setText("");
         fetchTrafficNews();
 
         return view;

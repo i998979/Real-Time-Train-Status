@@ -1,48 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="72dp"
+    android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="8dp"
-    android:background="@drawable/bg_platform_border"
-    android:backgroundTint="?attr/colorOnSurfaceInverse"
-    android:gravity="center_vertical"
-    android:paddingHorizontal="16dp">
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
-    <FrameLayout
-        android:id="@+id/line_color_badge"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="#5DE2FF">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp">
+
+        <FrameLayout
+            android:id="@+id/line_color_badge"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="#5DE2FF">
+
+            <TextView
+                android:id="@+id/tv_line_code_badge"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:background="#FFFFFF"
+                android:gravity="center"
+                android:text="EAL"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </FrameLayout>
 
         <TextView
-            android:id="@+id/tv_line_code_badge"
-            android:layout_width="26dp"
-            android:layout_height="26dp"
-            android:layout_gravity="center"
-            android:background="#FFFFFF"
-            android:gravity="center"
-            android:text="EAL"
-            android:textColor="#000000"
-            android:textSize="12sp"
+            android:id="@+id/tv_line"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:text="東鐵綫"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="18sp"
             android:textStyle="bold" />
-    </FrameLayout>
 
-    <TextView
-        android:id="@+id/tv_line"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_weight="1"
-        android:text="東鐵綫"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/baseline_keyboard_arrow_right_24"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
 
-    <ImageView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:src="@drawable/baseline_keyboard_arrow_right_24"
-        app:tint="#888888" />
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

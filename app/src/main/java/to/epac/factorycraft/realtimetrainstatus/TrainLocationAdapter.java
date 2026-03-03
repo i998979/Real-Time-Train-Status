@@ -445,7 +445,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 tvSvcType.setText(viaRacecourse ? "經馬場" : "普通");
                 GradientDrawable typeBg = new GradientDrawable();
                 typeBg.setCornerRadius(10f);
-                typeBg.setColor(viaRacecourse ? 0xCD5DE2FF : 0xFF4CAF50);
+                typeBg.setColor(viaRacecourse ? 0x2C6483FF : 0xFF4CAF50);
                 tvSvcType.setBackground(typeBg);
 
                 if (trip.isOpenData) {

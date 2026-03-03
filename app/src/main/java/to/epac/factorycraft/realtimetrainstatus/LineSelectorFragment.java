@@ -11,7 +11,6 @@ import android.widget.Switch;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -72,8 +71,6 @@ public class LineSelectorFragment extends Fragment {
 
         RecyclerView rvLineSelect = view.findViewById(R.id.rv_line_select);
         rvLineSelect.setLayoutManager(new LinearLayoutManager(getContext()));
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvLineSelect.getContext(), LinearLayoutManager.VERTICAL);
-        rvLineSelect.addItemDecoration(dividerItemDecoration);
 
         HRConfig config = HRConfig.getInstance(getContext());
         String stationCode = getArguments() != null ? getArguments().getString(ARG_STATION_CODE) : null;
