@@ -50,8 +50,8 @@ public class TrafficNewsActivity extends AppCompatActivity {
         tvLineSection = findViewById(R.id.tv_line_section);
         tvReason = findViewById(R.id.tv_reason);
         tvDetail = findViewById(R.id.tv_detail);
-        wvDetail = findViewById(R.id.wv_detail);
 
+        wvDetail = findViewById(R.id.wv_detail);
         WebSettings webSettings = wvDetail.getSettings();
         webSettings.setJavaScriptEnabled(true);
         wvDetail.setWebViewClient(new WebViewClient());
@@ -62,101 +62,124 @@ public class TrafficNewsActivity extends AppCompatActivity {
         String status = getIntent().getStringExtra("status");
         String messages = getIntent().getStringExtra("messages");
 
-        try {
-            JSONObject messagesObj = new JSONObject(messages);
-            JSONObject msgObj = messagesObj.getJSONObject("message");
-
-            tvReason.setText(msgObj.optString("title_tc", ""));
-            String cause = msgObj.optString("cause_tc", "");
-            tvDetail.setText(cause.equals("null") ? "" : cause);
-
-            String url = msgObj.optString("url_tc");
-            if (!url.isEmpty()) {
-                wvDetail.loadUrl(url);
-            }
-
-            String lineSection = "全綫";
-
-            JSONObject affectedAreas = msgObj.optJSONObject("affected_areas");
-            if (affectedAreas != null) {
-                Object affectedArea = affectedAreas.opt("affected_area");
-
-                if (affectedArea instanceof JSONArray) {
-                    JSONArray areaArray = (JSONArray) affectedArea;
-                    if (areaArray.length() > 0) {
-                        JSONObject areaObj = areaArray.getJSONObject(0);
-                        String fr = areaObj.optString("station_code_fr");
-                        String to = areaObj.optString("station_code_to");
-                        if (!fr.isEmpty() && !to.isEmpty()) {
-                            lineSection = hrConf.getStationName(Integer.parseInt(fr)) + "~"
-                                    + hrConf.getStationName(Integer.parseInt(to));
-                        }
-                    }
-                } else if (affectedArea instanceof JSONObject) {
-                    JSONObject areaObj = (JSONObject) affectedArea;
-                    String fr = areaObj.optString("station_code_fr");
-                    String to = areaObj.optString("station_code_to");
-                    if (!fr.isEmpty() && !to.isEmpty()) {
-                        lineSection = hrConf.getStationName(Integer.parseInt(fr)) + "~"
-                                + hrConf.getStationName(Integer.parseInt(to));
-                    }
-                }
-            }
-
-            tvLineSection.setText(lineSection);
-        } catch (Exception e) {
-            e.printStackTrace();
-            tvDetail.setText(messages.isEmpty() ? "現在，列車服務運作正常。" : messages);
-        }
-
         lineColorBadge.setBackgroundColor(Color.parseColor(lineColor));
         tvLineCodeBadge.setText(lineCode);
         tvBannerName.setText(lineNameTc);
 
+        parseTrafficMessages(messages);
+        applyStatusUI(status);
+    }
+
+    private void parseTrafficMessages(String messages) {
+        String reason = "";
+        String detail = "";
+
+        if (messages == null || messages.trim().isEmpty()) {
+            detail = "現在，列車服務運作正常。";
+        } else if (messages.trim().startsWith("{")) {
+            try {
+                JSONObject root = new JSONObject(messages);
+                JSONObject msgObj = root.optJSONObject("message");
+                if (msgObj != null) {
+                    reason = msgObj.optString("title_tc", "").trim();
+
+                    String cause = msgObj.optString("cause_tc", "").trim();
+                    detail = cause.equalsIgnoreCase("null") ? "" : cause;
+
+                    String url = msgObj.optString("url_tc", "").trim();
+                    if (!url.isEmpty())
+                        wvDetail.loadUrl(url);
+
+                    parseAffectedAreas(msgObj.optJSONObject("affected_areas"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            detail = messages;
+        }
+
+        tvReason.setText(reason);
+        tvDetail.setText(detail);
+    }
+
+    private void parseAffectedAreas(JSONObject affectedAreas) {
+        if (affectedAreas == null) {
+            tvLineSection.setText("全綫");
+            return;
+        }
+
+        try {
+            Object area = affectedAreas.opt("affected_area");
+            JSONObject targetArea = null;
+
+            if (area instanceof JSONArray && ((JSONArray) area).length() > 0) {
+                targetArea = ((JSONArray) area).getJSONObject(0);
+            } else if (area instanceof JSONObject) {
+                targetArea = (JSONObject) area;
+            }
+
+            if (targetArea != null) {
+                String fr = targetArea.optString("station_code_fr");
+                String to = targetArea.optString("station_code_to");
+                if (!fr.isEmpty() && !to.isEmpty()) {
+                    String section = hrConf.getStationName(Integer.parseInt(fr)) + "~"
+                            + hrConf.getStationName(Integer.parseInt(to));
+                    tvLineSection.setText(section);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        tvLineSection.setText("全綫");
+    }
+
+    private void applyStatusUI(String status) {
+        if (status == null) return;
+
+        String currentReason = tvReason.getText().toString();
+        String displayStatus;
+        int iconRes;
+        int iconColor;
 
         switch (status.toLowerCase()) {
-            case "green":
-                tvStatus.setText("服務正常");
-                if (tvReason.getText().toString().isEmpty())
-                    tvReason.setText("服務正常");
-                ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
-                ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
-                break;
             case "yellow":
-                tvStatus.setText("服務延誤");
-                if (tvReason.getText().toString().isEmpty())
-                    tvReason.setText("服務延誤");
-                ivIcon.setImageResource(R.drawable.outline_exclamation_24);
-                ivIcon.setColorFilter(Color.parseColor("#FFA500"));
+                displayStatus = "服務延誤";
+                iconRes = R.drawable.outline_exclamation_24;
+                iconColor = Color.parseColor("#FFA500");
                 break;
             case "red":
-                tvStatus.setText("服務受阻");
-                if (tvReason.getText().toString().isEmpty())
-                    tvReason.setText("服務受阻");
-                ivIcon.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-                ivIcon.setColorFilter(Color.parseColor("#FF0000"));
+                displayStatus = "服務受阻";
+                iconRes = android.R.drawable.ic_menu_close_clear_cancel;
+                iconColor = Color.RED;
                 break;
             case "pink":
-                tvStatus.setText("服務延誤或受阻");
-                if (tvReason.getText().toString().isEmpty())
-                    tvReason.setText("服務延誤或受阻");
-                ivIcon.setImageResource(R.drawable.baseline_warning_24);
-                ivIcon.setColorFilter(Color.parseColor("#FF69B4"));
+                displayStatus = "服務延誤或受阻";
+                iconRes = R.drawable.baseline_warning_24;
+                iconColor = Color.parseColor("#FF69B4");
                 break;
             case "typhoon":
-                tvStatus.setText("熱帶氣旋警告信號生效");
-                if (tvReason.getText().toString().isEmpty())
-                    tvReason.setText("熱帶氣旋警告信號生效");
-                ivIcon.setImageResource(R.drawable.baseline_storm_24);
-                ivIcon.setColorFilter(Color.parseColor("#00BCD4"));
+                displayStatus = "熱帶氣旋警告信號生效";
+                iconRes = R.drawable.baseline_storm_24;
+                iconColor = Color.parseColor("#00BCD4");
                 break;
             case "grey":
-                tvStatus.setText("非服務時間");
-                if (tvReason.getText().toString().isEmpty())
-                    tvReason.setText("非服務時間");
-                ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
-                ivIcon.setColorFilter(Color.GRAY);
+                displayStatus = "非服務時間";
+                iconRes = R.drawable.baseline_trip_origin_24;
+                iconColor = Color.GRAY;
+                break;
+            case "green":
+            default:
+                displayStatus = "服務正常";
+                iconRes = R.drawable.baseline_trip_origin_24;
+                iconColor = Color.parseColor("#49AD7F");
                 break;
         }
+
+        tvStatus.setText(displayStatus);
+        ivIcon.setImageResource(iconRes);
+        ivIcon.setColorFilter(iconColor);
+        if (currentReason.isEmpty()) tvReason.setText(displayStatus);
     }
 }
