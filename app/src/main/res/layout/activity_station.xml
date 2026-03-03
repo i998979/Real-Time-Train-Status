@@ -48,7 +48,7 @@
         android:layout_height="56dp"
         android:background="?attr/colorSurface"
         app:tabGravity="fill"
-        app:tabIndicatorColor="#6ec08d"
+        app:tabIndicatorColor="@color/button_green"
         app:tabIndicatorGravity="bottom"
         app:tabIndicatorHeight="4dp"
         app:tabMaxWidth="0dp"

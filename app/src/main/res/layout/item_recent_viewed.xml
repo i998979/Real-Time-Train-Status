@@ -47,7 +47,7 @@
             android:insetBottom="0dp"
             android:padding="0dp"
             android:text="現在\nGO!"
-            android:textColor="#6ec08d"
+            android:textColor="@color/button_green"
             android:textSize="14sp"
             android:textStyle="bold"
             app:backgroundTint="?attr/colorSurfaceVariant" />

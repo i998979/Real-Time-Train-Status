@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -146,7 +147,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
         tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
 
         btnDelete.setEnabled(!selectedIds.isEmpty());
-        btnDelete.setBackgroundColor(selectedIds.isEmpty() ? Color.parseColor("#2C2C2C") : Color.parseColor("#6ec08d"));
+        btnDelete.setBackgroundColor(selectedIds.isEmpty() ? Color.parseColor("#2C2C2C") : ContextCompat.getColor(this, R.color.button_green));
     }
 
     private class DeleteAdapter extends RecyclerView.Adapter<DeleteAdapter.ViewHolder> {

@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -329,7 +330,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         tvArrvTime.setText(Instant.ofEpochMilli(currentTime + minutes * 60000L)
                 .atZone(ZoneId.of("GMT+8"))
                 .format(DateTimeFormatter.ofPattern("HH:mm")));
-        tvArrvTime.setTextColor(0xFF6ec08d);
+        tvArrvTime.setTextColor(ContextCompat.getColor(context, R.color.button_green));
 
         tvStaName.setText(Utils.getStationName(context, Utils.idToCode(context, stationCode, lineCode), true));
 
@@ -445,7 +446,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 tvSvcType.setText(viaRacecourse ? "經馬場" : "普通");
                 GradientDrawable typeBg = new GradientDrawable();
                 typeBg.setCornerRadius(10f);
-                typeBg.setColor(viaRacecourse ? 0x2C6483FF : 0xFF6ec08d);
+                typeBg.setColor(viaRacecourse ? 0x2C6483FF : ContextCompat.getColor(context, R.color.button_green));
                 tvSvcType.setBackground(typeBg);
 
                 if (trip.isOpenData) {

@@ -22,7 +22,7 @@
             android:gravity="right|center_vertical"
             android:paddingHorizontal="16dp"
             android:text="刪除"
-            android:textColor="#6ec08d"
+            android:textColor="@color/button_green"
             android:textSize="16sp"
             android:textStyle="bold" />
 

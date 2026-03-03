@@ -122,7 +122,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:chipBackgroundColor="#6ec08d"
+                app:chipBackgroundColor="@color/button_green"
                 app:chipCornerRadius="12dp"
                 app:chipEndPadding="2dp"
                 app:chipMinHeight="24dp"

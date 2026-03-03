@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="出發地"
-                android:textColor="#6ec08d"
+                android:textColor="@color/button_green"
                 android:textSize="48sp"
                 android:textStyle="bold" />
 
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="目的地"
-                android:textColor="#6ec08d"
+                android:textColor="@color/button_green"
                 android:textSize="48sp"
                 android:textStyle="bold" />
 
@@ -96,7 +96,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_marginTop="50dp"
-            android:backgroundTint="#6ec08d"
+            android:backgroundTint="@color/button_green"
             android:enabled="false"
             android:gravity="center"
             android:insetTop="0dp"

@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="全選"
-            android:textColor="#6ec08d"
+            android:textColor="@color/button_green"
             android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>
