@@ -11,10 +11,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class LineConfig {
-    public String apiUrl = "";
-    public String apiKey = "";
+    private static final HashMap<String, LineConfig> cache = new HashMap<>();
+
     public int[] stationIDs = new int[0];
     public String[] stationCodes = new String[0];
+
+    public String apiUrl = "";
+    public String apiKey = "";
 
     public HashMap<Integer, Long> runTimeUpMap = new HashMap<>();
     public HashMap<Integer, Long> runTimeDnMap = new HashMap<>();
@@ -22,9 +25,11 @@ public class LineConfig {
     public HashMap<Integer, Long> dwellTimeDnMap = new HashMap<>();
 
     public static LineConfig get(Context context, String lineCode) {
-        LineConfig config = new LineConfig();
         String key = lineCode.toLowerCase();
 
+        if (cache.containsKey(key)) return cache.get(key);
+
+        LineConfig config = new LineConfig();
         try {
             InputStream is = context.getResources().openRawResource(R.raw.line_config);
             int size = is.available();
@@ -53,6 +58,8 @@ public class LineConfig {
                 parseMap(lineJson, "DwellTimeUp", config.dwellTimeUpMap);
                 parseMap(lineJson, "RunTimeDn", config.runTimeDnMap);
                 parseMap(lineJson, "DwellTimeDn", config.dwellTimeDnMap);
+
+                cache.put(key, config);
             }
         } catch (Exception e) {
             e.printStackTrace();
