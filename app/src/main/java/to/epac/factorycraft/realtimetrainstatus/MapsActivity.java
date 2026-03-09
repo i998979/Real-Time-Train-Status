@@ -276,14 +276,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         findViewById(R.id.trainsLayout).setOnClickListener(v -> {
             List<String> eal_trains = ealTrips.stream()
                     .map(trip -> trip.trainId + "(T" + (Integer.parseInt(trip.trainId) / 3) + ") " + trip.td + " "
-                            + Utils.idToCode(this, trip.currentStationCode, line) + " to " + Utils.idToCode(this, trip.nextStationCode, line)
-                            + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, trip.destinationStationCode, line) + ")" : ""))
+                            + Utils.idToCode(this, line, trip.currentStationCode) + " to " + Utils.idToCode(this, line, trip.nextStationCode)
+                            + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, line, trip.destinationStationCode) + ")" : ""))
                     .sorted().collect(Collectors.toList());
 
             List<String> tml_trains = tmlTrips.stream()
                     .map(trip -> trip.trainId + " "
-                            + Utils.idToCode(this, trip.currentStationCode, line) + " to " + Utils.idToCode(this, trip.nextStationCode, line)
-                            + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, trip.destinationStationCode, line) + ")" : ""))
+                            + Utils.idToCode(this, line, trip.currentStationCode) + " to " + Utils.idToCode(this, line, trip.nextStationCode)
+                            + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, line, trip.destinationStationCode) + ")" : ""))
                     .sorted().collect(Collectors.toList());
 
 
@@ -845,8 +845,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     }
 
                                     String snippet = trip.trainId + " "
-                                            + Utils.idToCode(this, trip.currentStationCode, "TML") + " to " + Utils.idToCode(this, trip.nextStationCode, "TML")
-                                            + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, trip.destinationStationCode, "TML") + ")" : "")
+                                            + Utils.idToCode(this, "TML", trip.currentStationCode) + " to " + Utils.idToCode(this, "TML", trip.nextStationCode)
+                                            + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, "TML", trip.destinationStationCode) + ")" : "")
                                             + " " + trip.trainSpeed + "km/h;";
                                     for (Car car : trip.listCars) {
                                         snippet += car.carName + "," + car.passengerCount + "," + trip.td + ";";
@@ -865,8 +865,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             runOnUiThread(() -> {
                 if (line.equals("TML")) {
                     List<String> tml_trains = tmlTrips.stream()
-                            .map(trip -> trip.trainId + " " + Utils.idToCode(this, trip.currentStationCode, line) + " to " + Utils.idToCode(this, trip.nextStationCode, line)
-                                    + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, trip.destinationStationCode, line) + ")" : ""))
+                            .map(trip -> trip.trainId + " " + Utils.idToCode(this, line, trip.currentStationCode) + " to " + Utils.idToCode(this, line, trip.nextStationCode)
+                                    + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, line, trip.destinationStationCode) + ")" : ""))
                             .sorted().collect(Collectors.toList());
 
                     if (!tml_trains.isEmpty()) {
@@ -931,8 +931,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                             // Pass data to adapter
                                             String snippet = trip.trainId + "(T" + (Integer.parseInt(trip.trainId) / 3) + ") " + trip.td + " "
-                                                    + Utils.idToCode(this, trip.currentStationCode, "EAL") + " to " + Utils.idToCode(this, trip.nextStationCode, "EAL")
-                                                    + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, trip.destinationStationCode, "EAL") + ")" : "")
+                                                    + Utils.idToCode(this, "EAL", trip.currentStationCode) + " to " + Utils.idToCode(this, "EAL", trip.nextStationCode)
+                                                    + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, "EAL", trip.destinationStationCode) + ")" : "")
                                                     + " " + trip.trainSpeed + "km/h;";
                                             for (Car car : trip.listCars) {
                                                 snippet += car.carName + "," + car.passengerCount + "," + trip.td + ";";
@@ -954,8 +954,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (line.equals("EAL")) {
                     List<String> eal_trains = tripMap.values().stream()
                             .map(trip -> trip.trainId + "(T" + (Integer.parseInt(trip.trainId) / 3) + ") " + trip.td + " "
-                                    + Utils.idToCode(this, trip.currentStationCode, line) + " to " + Utils.idToCode(this, trip.nextStationCode, line)
-                                    + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, trip.destinationStationCode, line) + ")" : ""))
+                                    + Utils.idToCode(this, line, trip.currentStationCode) + " to " + Utils.idToCode(this, line, trip.nextStationCode)
+                                    + (trip.destinationStationCode > 0 ? "(" + Utils.idToCode(this, line, trip.destinationStationCode) + ")" : ""))
                             .sorted().collect(Collectors.toList());
 
                     if (!eal_trains.isEmpty()) {

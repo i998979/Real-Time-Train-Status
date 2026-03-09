@@ -15,46 +15,35 @@ import java.util.Map;
 
 public class Utils {
 
-    public static String idToCode(Context context, int code, String line) {
+    public static String idToCode(Context context, String line, int id) {
+        LineConfig config = LineConfig.get(context, line);
+
+        Log.d("tagg", line + " " + id);
+
         if (line.equalsIgnoreCase("eal")) {
-            if (code == 14) return "LMC";
-            if (code == 7) return "RAC";
+            if (id == 14) return "LMC";
+            if (id == 7) return "RAC";
         }
-        try {
-            int idRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_id", "string", context.getPackageName());
-            int codeRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_code", "string", context.getPackageName());
 
-            String[] ids = context.getString(idRes).split("\\s+");
-            String[] codes = context.getString(codeRes).split("\\s+");
+        if (config.stationIDs == null) return String.valueOf(id);
 
-            for (int i = 0; i < ids.length; i++) {
-                if (Integer.parseInt(ids[i]) == code) {
-                    return codes[i];
-                }
+        for (int i = 0; i < config.stationIDs.length; i++) {
+            if (config.stationIDs[i] == id) {
+                return config.stationCodes[i];
             }
-        } catch (Exception e) {
         }
-        return String.valueOf(code);
+        return String.valueOf(id);
     }
 
     public static int codeToId(Context context, String line, String code) {
-        if (line.equalsIgnoreCase("eal")) {
-            if (code.equalsIgnoreCase("LMC")) return 14;
-            if (code.equalsIgnoreCase("RAC")) return 7;
-        }
-        try {
-            int idRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_id", "string", context.getPackageName());
-            int codeRes = context.getResources().getIdentifier(line.toLowerCase() + "_station_code", "string", context.getPackageName());
+        LineConfig config = LineConfig.get(context, line);
 
-            String[] ids = context.getString(idRes).split("\\s+");
-            String[] codes = context.getString(codeRes).split("\\s+");
+        if (config.stationCodes == null || code == null) return -1;
 
-            for (int i = 0; i < codes.length; i++) {
-                if (codes[i].equalsIgnoreCase(code)) {
-                    return Integer.parseInt(ids[i]);
-                }
+        for (int i = 0; i < config.stationCodes.length; i++) {
+            if (config.stationCodes[i].equalsIgnoreCase(code)) {
+                return config.stationIDs[i];
             }
-        } catch (Exception e) {
         }
         return -1;
     }

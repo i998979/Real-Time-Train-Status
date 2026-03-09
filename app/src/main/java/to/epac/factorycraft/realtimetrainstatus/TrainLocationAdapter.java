@@ -176,7 +176,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                 tvId.setText("不載客");
             } else {
-                String destName = Utils.getStationName(context, Utils.idToCode(context, trip.destinationStationCode, lineCode), true);
+                String destName = Utils.getStationName(context, Utils.idToCode(context, lineCode, trip.destinationStationCode), true);
                 boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
                 tvId.setText((viaRacecourse ? "經馬場" : "普通") + " " + destName);
             }
@@ -332,7 +332,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 .format(DateTimeFormatter.ofPattern("HH:mm")));
         tvArrvTime.setTextColor(ContextCompat.getColor(context, R.color.button_green));
 
-        tvStaName.setText(Utils.getStationName(context, Utils.idToCode(context, stationCode, lineCode), true));
+        tvStaName.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, stationCode), true));
 
         if (isLast) {
             bottomHalf.setVisibility(View.INVISIBLE);
@@ -432,7 +432,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                     tvDest.setText("不載客列車");
                 } else {
-                    String destName = Utils.getStationName(context, Utils.idToCode(context, trip.destinationStationCode, lineCode), true);
+                    String destName = Utils.getStationName(context, Utils.idToCode(context, lineCode, trip.destinationStationCode), true);
                     tvDest.setText(destName + " 行");
                 }
 
@@ -609,8 +609,8 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             container.addView(iv, 0, params);
         }*/
 
-        h.tvStation.setText(Utils.getStationName(context, Utils.idToCode(context, code, lineCode), true));
-        h.tvStation.setTag(Utils.idToCode(context, code, lineCode));
+        h.tvStation.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, code), true));
+        h.tvStation.setTag(Utils.idToCode(context, lineCode, code));
 
         View.OnClickListener listener = v -> {
             String stationCode = (String) v.getTag();
@@ -800,10 +800,10 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
         h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
-        h.tvMain.setText(Utils.getStationName(context, Utils.idToCode(context, mainCode, lineCode), true));
-        h.tvMain.setTag(Utils.idToCode(context, mainCode, lineCode));
-        h.tvSpur.setText(Utils.getStationName(context, Utils.idToCode(context, spurCode, lineCode), true));
-        h.tvSpur.setTag(Utils.idToCode(context, mainCode, lineCode));
+        h.tvMain.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, mainCode), true));
+        h.tvMain.setTag(Utils.idToCode(context, lineCode, mainCode));
+        h.tvSpur.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, spurCode), true));
+        h.tvSpur.setTag(Utils.idToCode(context, lineCode, mainCode));
 
         View.OnClickListener listener = v -> {
             String stationCode = (String) v.getTag();

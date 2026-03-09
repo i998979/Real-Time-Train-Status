@@ -188,9 +188,9 @@ public class MapUtils {
         int targetDistance = trip.targetDistance;
         int startDistance = trip.startDistance;
 
-        int currResId = context.getResources().getIdentifier(Utils.idToCode(context, currentStationCode, line).toLowerCase(), "string", context.getPackageName());
-        int nextResId = context.getResources().getIdentifier(Utils.idToCode(context, nextStationCode, line).toLowerCase(), "string", context.getPackageName());
-        int targResId = context.getResources().getIdentifier(Utils.idToCode(context, destinationStationCode, line).toLowerCase(), "string", context.getPackageName());
+        int currResId = context.getResources().getIdentifier(Utils.idToCode(context, line, currentStationCode).toLowerCase(), "string", context.getPackageName());
+        int nextResId = context.getResources().getIdentifier(Utils.idToCode(context, line, nextStationCode).toLowerCase(), "string", context.getPackageName());
+        int targResId = context.getResources().getIdentifier(Utils.idToCode(context, line, destinationStationCode).toLowerCase(), "string", context.getPackageName());
 
         LatLng currLatLng = currResId > 0 ? Utils.getLatLng(context.getResources().getString(currResId)) : null;
         LatLng nextLatLng = nextResId > 0 ? Utils.getLatLng(context.getResources().getString(nextResId)) : null;
@@ -245,8 +245,8 @@ public class MapUtils {
 
         String[] stations = context.getResources().getString(R.string.tml_stations).split(" ");
         for (int i = 0; i < stations.length; i++) {
-            if (stations[i].equals(Utils.idToCode(context, curr, "TML").toLowerCase())) currIndex = i;
-            if (stations[i].equals(Utils.idToCode(context, next, "TML").toLowerCase())) nextIndex = i;
+            if (stations[i].equals(Utils.idToCode(context, "TML", curr).toLowerCase())) currIndex = i;
+            if (stations[i].equals(Utils.idToCode(context, "TML", next).toLowerCase())) nextIndex = i;
 
             if (currIndex != -1 && nextIndex != -1) break;
         }
