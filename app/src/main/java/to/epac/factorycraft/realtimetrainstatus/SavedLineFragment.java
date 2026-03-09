@@ -6,25 +6,30 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.radiobutton.MaterialRadioButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,8 +42,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -117,12 +124,12 @@ public class SavedLineFragment extends Fragment {
         if (savedCsv.isEmpty()) {
             layoutEmptyState.setVisibility(View.VISIBLE);
             layoutSavedLines.setVisibility(View.GONE);
-            swipeRefreshLayout.setEnabled(false); // 沒路線不給下拉刷新
+            swipeRefreshLayout.setEnabled(false);
         } else {
             layoutEmptyState.setVisibility(View.GONE);
             layoutSavedLines.setVisibility(View.VISIBLE);
             swipeRefreshLayout.setEnabled(true);
-            fetchSavedLinesData(); // 載入資料 (P5)
+            fetchSavedLinesData();
         }
     }
 
@@ -144,58 +151,94 @@ public class SavedLineFragment extends Fragment {
     // ==========================================
     private void showEditBottomSheet() {
         BottomSheetDialog editDialog = new BottomSheetDialog(requireContext());
-        // 動態建立 P2 的佈局以減少檔案
-        LinearLayout rootLayout = new LinearLayout(getContext());
-        rootLayout.setOrientation(LinearLayout.VERTICAL);
-        rootLayout.setPadding(32, 32, 32, 64);
+        View sheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_edit, null);
+        editDialog.setContentView(sheetView);
 
-        // --- 頂部 Title 與關閉按鈕 ---
-        // (此處省略部分基礎佈局代碼以保持精簡，實際中你可以直接 Inflate 一個寫好的 XML，例如 bottom_sheet_edit.xml)
-        TextView title = new TextView(getContext());
-        title.setText("編輯常用路線");
-        title.setTextSize(20);
-        title.setPadding(0, 0, 0, 32);
-        rootLayout.addView(title);
+        View parent = (View) sheetView.getParent();
+        BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(parent);
 
-        // --- P2 中間的「新增路線 (放大鏡)」按鈕 ---
-        MaterialCardView btnAdd = new MaterialCardView(getContext());
-        btnAdd.setCardBackgroundColor(Color.parseColor("#333333"));
-        btnAdd.setRadius(24);
-        TextView tvAdd = new TextView(getContext());
-        tvAdd.setText("🔍 追加路線");
-        tvAdd.setTextColor(Color.WHITE);
-        tvAdd.setPadding(48, 32, 48, 32);
-        btnAdd.addView(tvAdd);
-        rootLayout.addView(btnAdd);
+        int heightInPx = (int) (200 * getResources().getDisplayMetrics().density);
+        behavior.setPeekHeight(heightInPx);
 
-        btnAdd.setOnClickListener(v -> {
+        ViewGroup.LayoutParams layoutParams = parent.getLayoutParams();
+        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+
+        parent.setLayoutParams(layoutParams);
+        behavior.setSkipCollapsed(true);
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        TextView btnAddLine = sheetView.findViewById(R.id.btn_add_line);
+        MaterialRadioButton rbSelectAll = sheetView.findViewById(R.id.rb_select_all);
+        TextView tvSelectAll = sheetView.findViewById(R.id.tv_select_all);
+        MaterialButton btnDelete = sheetView.findViewById(R.id.btn_delete);
+        RecyclerView rvLines = sheetView.findViewById(R.id.rv_saved_lines);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvLines.getContext(), LinearLayoutManager.VERTICAL);
+        rvLines.addItemDecoration(dividerItemDecoration);
+        rvLines.setLayoutManager(new LinearLayoutManager(getContext()));
+        MaterialButton btnClose = sheetView.findViewById(R.id.btn_close);
+
+        btnClose.setOnClickListener(v -> editDialog.cancel());
+
+        List<String> currentSaved = getSavedLinesList();
+        Set<String> selectedForDelete = new HashSet<>();
+
+        Runnable updateUIState = () -> {
+            if (rvLines.getAdapter() != null) rvLines.getAdapter().notifyDataSetChanged();
+
+            boolean isAllSelected = !currentSaved.isEmpty() && selectedForDelete.size() == currentSaved.size();
+            rbSelectAll.setChecked(isAllSelected);
+            rbSelectAll.setText(isAllSelected ? "取消全選" : "全選");
+
+            btnDelete.setEnabled(!selectedForDelete.isEmpty());
+            int btnColor = selectedForDelete.isEmpty() ? Color.parseColor("#2C2C2C") : ContextCompat.getColor(requireContext(), R.color.button_green);
+            btnDelete.setBackgroundColor(btnColor);
+        };
+
+        btnAddLine.setOnClickListener(v -> {
             editDialog.dismiss();
-            showAddLineBottomSheet(); // 開啟 P3
+            showSearchBottomSheet();
         });
 
-        // --- P4 的 RecyclerView (支援 Drag and Drop) ---
-        RecyclerView recyclerView = new RecyclerView(getContext());
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        List<String> currentSaved = getSavedLinesList();
-
-        // 極簡內聯 Adapter
-        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = new RecyclerView.Adapter<>() {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                TextView tv = new TextView(getContext());
-                tv.setPadding(32, 48, 32, 48);
-                tv.setTextSize(18);
-                tv.setTextColor(Color.WHITE);
-                return new RecyclerView.ViewHolder(tv) {
+                return new RecyclerView.ViewHolder(getLayoutInflater().inflate(R.layout.item_edit_line, parent, false)) {
                 };
             }
 
             @Override
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
                 String lineCode = currentSaved.get(position);
-                // 這裡可以透過 HRConfig 拿線路名稱，這裡簡化處理
-                ((TextView) holder.itemView).setText("≡  " + hrConf.getLineByAlias(lineCode));
+                HRConfig.Line line = hrConf.getLineByAlias(lineCode);
+
+                MaterialRadioButton rbItem = holder.itemView.findViewById(R.id.cb_select); // 這裡是 item 裡的 RadioButton
+                TextView tvCode = holder.itemView.findViewById(R.id.tv_line_code_badge);
+                View badgeBg = holder.itemView.findViewById(R.id.line_color_badge);
+                TextView tvName = holder.itemView.findViewById(R.id.tv_line_name);
+
+                if (line != null) {
+                    tvName.setText(line.name);
+                    tvCode.setText(line.alias);
+                    badgeBg.setBackgroundColor(Color.parseColor("#" + line.color));
+                }
+
+                rbItem.setChecked(selectedForDelete.contains(lineCode));
+
+                // 統一點擊邏輯
+                View.OnClickListener toggleListener = v -> {
+                    if (selectedForDelete.contains(lineCode)) {
+                        selectedForDelete.remove(lineCode);
+                    } else {
+                        selectedForDelete.add(lineCode);
+                    }
+                    updateUIState.run();
+                };
+
+                holder.itemView.setOnClickListener(toggleListener);
+                rbItem.setOnClickListener(toggleListener);
+
+                // 處理拖曳 (ItemTouchHelper 會用到 holder)
             }
 
             @Override
@@ -203,17 +246,37 @@ public class SavedLineFragment extends Fragment {
                 return currentSaved.size();
             }
         };
-        recyclerView.setAdapter(adapter);
+        rvLines.setAdapter(adapter);
 
-        // 加入 Drag & Drop (P4 邏輯)
+        View.OnClickListener selectAllListener = v -> {
+            boolean isCurrentlyAllSelected = (selectedForDelete.size() == currentSaved.size() && !currentSaved.isEmpty());
+            selectedForDelete.clear();
+            if (!isCurrentlyAllSelected) {
+                selectedForDelete.addAll(currentSaved);
+            }
+            updateUIState.run();
+        };
+        rbSelectAll.setOnClickListener(selectAllListener);
+        tvSelectAll.setOnClickListener(selectAllListener);
+
+        // --- 刪除事件 ---
+        btnDelete.setOnClickListener(v -> {
+            currentSaved.removeAll(selectedForDelete);
+            saveLinesList(currentSaved);
+            selectedForDelete.clear();
+            updateUIState.run();
+            if (currentSaved.isEmpty()) editDialog.dismiss();
+        });
+
+        // 拖曳排序邏輯維持不變，但在 onMove 時要小心處理 List 同步
         ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                int fromPos = viewHolder.getAdapterPosition();
-                int toPos = target.getAdapterPosition();
+            public boolean onMove(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder from, @NonNull RecyclerView.ViewHolder to) {
+                int fromPos = from.getAdapterPosition();
+                int toPos = to.getAdapterPosition();
                 Collections.swap(currentSaved, fromPos, toPos);
                 adapter.notifyItemMoved(fromPos, toPos);
-                saveLinesList(currentSaved); // 每次排序完即時儲存
+                saveLinesList(currentSaved);
                 return true;
             }
 
@@ -221,59 +284,134 @@ public class SavedLineFragment extends Fragment {
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
             }
         });
-        touchHelper.attachToRecyclerView(recyclerView);
+        touchHelper.attachToRecyclerView(rvLines);
 
-        rootLayout.addView(recyclerView);
-
-        editDialog.setContentView(rootLayout);
-        editDialog.setOnDismissListener(dialog -> refreshUIState()); // 關閉時重整主畫面
+        editDialog.setOnDismissListener(dialog -> refreshUIState());
         editDialog.show();
+
+        // 初始化 UI 狀態
+        updateUIState.run();
     }
 
-    // ==========================================
-    // UI 邏輯：P3 選擇新增路線 BottomSheet
-    // ==========================================
-    private void showAddLineBottomSheet() {
-        BottomSheetDialog addDialog = new BottomSheetDialog(requireContext());
-        LinearLayout rootLayout = new LinearLayout(getContext());
-        rootLayout.setOrientation(LinearLayout.VERTICAL);
-        rootLayout.setPadding(32, 32, 32, 64);
 
-        TextView title = new TextView(getContext());
-        title.setText("選擇想加入的路線");
-        title.setTextSize(20);
-        title.setPadding(0, 0, 0, 32);
-        rootLayout.addView(title);
+    // ==========================================
+    // P3: 搜尋與新增的 BottomSheet (整合 SearchActivity)
+    // ==========================================
+    private void showSearchBottomSheet() {
+        BottomSheetDialog searchDialog = new BottomSheetDialog(requireContext());
+        View sheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_search, null);
+        searchDialog.setContentView(sheetView);
 
-        // 讀取所有可用的路線 (排除 HSR 高鐵)
+        View parent = (View) sheetView.getParent();
+        BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(parent);
+
+        int heightInPx = (int) (200 * getResources().getDisplayMetrics().density);
+        behavior.setPeekHeight(heightInPx);
+
+        ViewGroup.LayoutParams layoutParams = parent.getLayoutParams();
+        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        ;
+        parent.setLayoutParams(layoutParams);
+        behavior.setSkipCollapsed(true);          // 跳過摺疊狀態，直接進入展開
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED); // 強制設定為展開狀態
+
+        EditText etSearch = sheetView.findViewById(R.id.et_line_search);
+        RecyclerView rvResults = sheetView.findViewById(R.id.rv_search_results);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvResults.getContext(), LinearLayoutManager.VERTICAL);
+        rvResults.addItemDecoration(dividerItemDecoration);
+        rvResults.setLayoutManager(new LinearLayoutManager(getContext()));
+        MaterialButton btnClose = sheetView.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> {
+            searchDialog.cancel();
+        });
+
+        // 初始化所有可用路線 (排除高鐵等)
         List<HRConfig.Line> allLines = new ArrayList<>();
-        // 此處假設 HRConfig 有取得所有路線的列表
-        for (HRConfig.Line l : hrConf.getAllLines()) {
-            if (!l.alias.equals("HSR")) allLines.add(l);
+        for (HRConfig.Line line : hrConf.getLineMap().values()) {
+            if (!"HSR".equalsIgnoreCase(line.alias)) {
+                allLines.add(line);
+            }
         }
 
-        // 動態產生清單 (取代 Adapter)
-        for (HRConfig.Line line : allLines) {
-            TextView tv = new TextView(getContext());
-            tv.setText(line.name + " (" + line.alias + ")");
-            tv.setPadding(32, 48, 32, 48);
-            tv.setTextSize(18);
+        // 用來顯示的過濾結果
+        List<HRConfig.Line> filteredLines = new ArrayList<>(allLines);
+        List<String> currentSaved = getSavedLinesList();
 
-            tv.setOnClickListener(v -> {
-                List<String> currentSaved = getSavedLinesList();
-                if (!currentSaved.contains(line.alias)) {
-                    currentSaved.add(line.alias);
-                    saveLinesList(currentSaved);
-                    Toast.makeText(getContext(), "已加入: " + line.name, Toast.LENGTH_SHORT).show();
+        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = new RecyclerView.Adapter<>() {
+            @NonNull
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                // 這裡可以重用 item_edit_line.xml，只需隱藏 Checkbox 和 Drag 圖標，顯示箭頭即可
+                View v = getLayoutInflater().inflate(R.layout.item_edit_line, parent, false);
+                v.findViewById(R.id.cb_select).setVisibility(View.GONE);
+                v.findViewById(R.id.iv_drag_handle).setVisibility(View.GONE);
+                ((ImageView) v.findViewById(R.id.iv_drag_handle)).setImageResource(R.drawable.baseline_keyboard_arrow_right_24);
+                return new RecyclerView.ViewHolder(v) {
+                };
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                HRConfig.Line line = filteredLines.get(position);
+
+                TextView tvCode = holder.itemView.findViewById(R.id.tv_line_code_badge);
+                View badgeBg = holder.itemView.findViewById(R.id.line_color_badge);
+                TextView tvName = holder.itemView.findViewById(R.id.tv_line_name);
+                MaterialRadioButton cbSelect = holder.itemView.findViewById(R.id.cb_select);
+
+                tvName.setText(line.name);
+                tvCode.setText(line.alias);
+                badgeBg.setBackgroundColor(Color.parseColor("#" + line.color)); // 依據你的 Config 設定顏色
+
+                holder.itemView.setOnClickListener(v -> {
+                    if (!currentSaved.contains(line.alias)) {
+                        currentSaved.add(line.alias);
+                        saveLinesList(currentSaved);
+                        // HistoryManager.getInstance(getContext()).saveLineSearch(line.id, line.name); // 若需儲存搜尋歷史
+                    }
+                    searchDialog.dismiss();
+                    showEditBottomSheet(); // 點擊後回到編輯畫面
+                });
+            }
+
+            @Override
+            public int getItemCount() {
+                return filteredLines.size();
+            }
+        };
+        rvResults.setAdapter(adapter);
+
+        // 搜尋過濾邏輯 (完全移植自你的 SearchActivity)
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().toLowerCase().trim();
+                filteredLines.clear();
+
+                if (query.isEmpty()) {
+                    filteredLines.addAll(allLines); // 如果為空，顯示全部 (或你想顯示歷史紀錄)
+                } else {
+                    for (HRConfig.Line line : allLines) {
+                        if (line.name.toLowerCase().contains(query) ||
+                                (line.nameEN != null && line.nameEN.toLowerCase().contains(query)) ||
+                                line.alias.toLowerCase().contains(query)) {
+                            filteredLines.add(line);
+                        }
+                    }
                 }
-                addDialog.dismiss();
-                showEditBottomSheet(); // 返回 P4
-            });
-            rootLayout.addView(tv);
-        }
+                adapter.notifyDataSetChanged();
+            }
 
-        addDialog.setContentView(rootLayout);
-        addDialog.show();
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        searchDialog.show();
     }
 
 
@@ -403,6 +541,7 @@ public class SavedLineFragment extends Fragment {
                 View vBadgeLayout = itemView.findViewById(R.id.line_color_badge);
                 TextView tvLineCode = itemView.findViewById(R.id.tv_line_code_badge);
                 TextView tvLineName = itemView.findViewById(R.id.tv_line);
+                TextView tvLineSection = itemView.findViewById(R.id.tv_line_section);
                 TextView tvMessage = itemView.findViewById(R.id.tv_message);
                 TextView tvStatus = itemView.findViewById(R.id.tv_status);
                 ImageView ivIcon = itemView.findViewById(R.id.iv_status_icon);
@@ -419,6 +558,7 @@ public class SavedLineFragment extends Fragment {
                     tvStatus.setText("服務正常");
                     ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
                     ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
+                    tvLineSection.setVisibility(View.GONE);
                 } else if (status.equalsIgnoreCase("yellow")) {
                     tvStatus.setText("服務延誤");
                     ivIcon.setImageResource(R.drawable.outline_exclamation_24); // 假設有這個 icon

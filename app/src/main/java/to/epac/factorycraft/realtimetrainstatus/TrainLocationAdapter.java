@@ -555,6 +555,10 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             }
         }
 
+        if (lineCode.equalsIgnoreCase("tml")) {
+            return Utils.covertStationOrder(trip.currentStationCode) < Utils.covertStationOrder(trip.destinationStationCode);
+        }
+
         return false;
     }
 
