@@ -11,6 +11,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -91,14 +92,42 @@ public class RouteDetailFragment extends Fragment {
 
         MaterialButton btnShare = root.findViewById(R.id.btn_share);
         btnShare.setOnClickListener(v -> {
-            Bitmap routeBitmap = bitmapFromView(routeContainer);
-            shareBitmap(routeBitmap);
+            try {
+                JSONObject data = new JSONObject(getArguments().getString("route_data"));
+                JSONObject selected = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
+
+                String startStr = ((TextView) root.findViewById(R.id.tv_start_time)).getText().toString();
+                String endStr = ((TextView) root.findViewById(R.id.tv_end_time)).getText().toString();
+
+                View headerView = getHeaderView(selected, startStr, endStr);
+                View footerView = getFooterView();
+
+                Bitmap finalBitmap = combineViewsToBitmap(headerView, routeContainer, footerView);
+                shareBitmap(finalBitmap);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
 
         MaterialButton btnRoutePicture = root.findViewById(R.id.btn_route_picture);
         btnRoutePicture.setOnClickListener(v -> {
-            Bitmap routeBitmap = bitmapFromView(routeContainer);
-            saveBitmapToDCIM(routeBitmap);
+            try {
+                JSONObject data = new JSONObject(getArguments().getString("route_data"));
+                JSONObject selected = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
+
+                String startStr = ((TextView) root.findViewById(R.id.tv_start_time)).getText().toString();
+                String endStr = ((TextView) root.findViewById(R.id.tv_end_time)).getText().toString();
+
+                View headerView = getHeaderView(selected, startStr, endStr);
+                View footerView = getFooterView();
+
+                Bitmap finalBitmap = combineViewsToBitmap(headerView, routeContainer, footerView);
+                saveBitmapToDCIM(finalBitmap);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
         MaterialButton btnRouteSave = root.findViewById(R.id.btn_route_save);
         MaterialButton btnCheckValue = root.findViewById(R.id.btn_check_value);
@@ -443,28 +472,94 @@ public class RouteDetailFragment extends Fragment {
     }
 
 
-    private Bitmap bitmapFromView(View targetView) {
+    private View getHeaderView(JSONObject selectedRoute, String startTime, String endTime) {
+        View headerView = getLayoutInflater().inflate(R.layout.item_route_header, null);
+
+        TextView tvStartTime = headerView.findViewById(R.id.tv_start_time);
+        TextView tvEndTime = headerView.findViewById(R.id.tv_end_time);
+        TextView tvJourneyStart = headerView.findViewById(R.id.tv_journey_start);
+        TextView tvJourneyTime = headerView.findViewById(R.id.tv_journey_time);
+        TextView tvInterchange = headerView.findViewById(R.id.tv_interchange_count);
+        TextView tvFare = headerView.findViewById(R.id.tv_fare);
+
+        tvStartTime.setText(startTime);
+        tvEndTime.setText(endTime);
+        tvInterchange.setText(selectedRoute.optString("interchangeStationsNo"));
+
+        try {
+            tvFare.setText(String.valueOf(getFare(selectedRoute)));
+
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+            SimpleDateFormat sdf = new SimpleDateFormat("M月d日(E)", Locale.TRADITIONAL_CHINESE);
+            tvJourneyStart.setText(sdf.format(calendar.getTime()));
+
+            int startH = Integer.parseInt(startTime.split(":")[0]);
+            int startM = Integer.parseInt(startTime.split(":")[1]);
+            int endH = Integer.parseInt(endTime.split(":")[0]);
+            int endM = Integer.parseInt(endTime.split(":")[1]);
+            int total = (endH * 60 + endM) - (startH * 60 + startM);
+            if (total < 0) total += 1440;
+            tvJourneyTime.setText(total + "");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return headerView;
+    }
+
+    private View getFooterView() {
+        return getLayoutInflater().inflate(R.layout.item_route_footer, null);
+    }
+
+    private Bitmap combineViewsToBitmap(View headerView, View contentContainer, View footerView) {
+        Context context = contentContainer.getContext();
+
         TypedValue typedValue = new TypedValue();
-        requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
-        int backgroundColor = typedValue.data;
+        context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
+        int secondaryBgColor = typedValue.data;
 
-        int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        targetView.measure(widthSpec, heightSpec);
+        context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+        int contentBgColor = typedValue.data;
 
-        int measuredWidth = targetView.getMeasuredWidth();
-        int measuredHeight = targetView.getMeasuredHeight();
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(contentContainer.getWidth(), View.MeasureSpec.EXACTLY);
+        int heightUnspecified = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 
-        targetView.layout(0, 0, measuredWidth, measuredHeight);
+        headerView.measure(widthSpec, heightUnspecified);
+        headerView.layout(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight());
 
-        Bitmap bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(backgroundColor);
-        targetView.draw(canvas);
+        footerView.measure(widthSpec, heightUnspecified);
+        footerView.layout(0, 0, footerView.getMeasuredWidth(), footerView.getMeasuredHeight());
 
-        targetView.requestLayout();
+        int hHeight = headerView.getMeasuredHeight();
+        int cHeight = contentContainer.getHeight();
+        int fHeight = footerView.getMeasuredHeight();
+        int totalWidth = contentContainer.getWidth();
+        int totalHeight = hHeight + cHeight + fHeight;
 
-        return bitmap;
+        Bitmap resultBitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(resultBitmap);
+        Paint bgPaint = new Paint();
+
+        bgPaint.setColor(secondaryBgColor);
+        canvas.drawRect(0, 0, totalWidth, hHeight, bgPaint);
+        headerView.draw(canvas);
+
+        canvas.save();
+        canvas.translate(0, hHeight);
+        bgPaint.setColor(contentBgColor);
+        canvas.drawRect(0, 0, totalWidth, cHeight, bgPaint);
+        contentContainer.draw(canvas);
+        canvas.restore();
+
+        canvas.save();
+        canvas.translate(0, hHeight + cHeight);
+        bgPaint.setColor(secondaryBgColor);
+        canvas.drawRect(0, 0, totalWidth, fHeight, bgPaint);
+        footerView.draw(canvas);
+        canvas.restore();
+
+        return resultBitmap;
     }
 
     private void shareBitmap(Bitmap bitmap) {

@@ -51,7 +51,7 @@
         <FrameLayout
             android:layout_width="14dp"
             android:layout_height="match_parent"
-            android:layout_marginLeft="-4dp">
+            android:layout_marginStart="-4dp">
 
             <View
                 android:id="@+id/rail_line"
@@ -90,7 +90,7 @@
         <FrameLayout
             android:layout_width="14dp"
             android:layout_height="match_parent"
-            android:layout_marginRight="-4dp">
+            android:layout_marginEnd="-4dp">
 
             <View
                 android:id="@+id/rail_line2"
