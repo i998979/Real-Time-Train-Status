@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Real Time Train Status</string>
+    <string name="app_name">Transit アプリ</string>
     <string name="title_activity_maps">MapsActivity</string>
 
     <string name="widget_octopus_description">快速查看八達通卡餘額。</string>
