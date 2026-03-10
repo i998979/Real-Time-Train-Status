@@ -36,6 +36,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textview.MaterialTextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -188,8 +189,13 @@ public class RouteDetailFragment extends Fragment {
             // Show Destination Station Section
             if (i == segments.size() - 1) {
                 View lastStationView = inflater.inflate(R.layout.item_route_step, container, false);
-                TextView tvStation = lastStationView.findViewById(R.id.tv_station);
+                MaterialTextView tvStation = lastStationView.findViewById(R.id.tv_station);
                 tvStation.setText(hrConf.getStationName(seg.endNode.optInt("ID")));
+                tvStation.setOnClickListener(v -> {
+                    Intent intent = new Intent(v.getContext(), StationActivity.class);
+                    intent.putExtra("station_code", hrConf.getStationAlias(seg.endNode.optInt("ID")));
+                    v.getContext().startActivity(intent);
+                });
 
                 View layoutNearby = lastStationView.findViewById(R.id.layout_nearby);
                 layoutNearby.setVisibility(View.VISIBLE);
@@ -237,6 +243,11 @@ public class RouteDetailFragment extends Fragment {
 
         TextView tvStation = view.findViewById(R.id.tv_station);
         tvStation.setText(hrConf.getStationName(node.optInt("ID")));
+        tvStation.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), StationActivity.class);
+            intent.putExtra("station_code", hrConf.getStationAlias(node.optInt("ID")));
+            v.getContext().startActivity(intent);
+        });
 
         container.addView(view);
     }

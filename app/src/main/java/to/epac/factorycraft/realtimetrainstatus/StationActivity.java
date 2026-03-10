@@ -2,6 +2,7 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseArray;
 import android.widget.TextView;
 

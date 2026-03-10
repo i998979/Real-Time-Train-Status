@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -803,11 +804,10 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         h.tvMain.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, mainCode), true));
         h.tvMain.setTag(Utils.idToCode(context, lineCode, mainCode));
         h.tvSpur.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, spurCode), true));
-        h.tvSpur.setTag(Utils.idToCode(context, lineCode, mainCode));
+        h.tvSpur.setTag(Utils.idToCode(context, lineCode, spurCode));
 
         View.OnClickListener listener = v -> {
             String stationCode = (String) v.getTag();
-
             Intent intent = new Intent(v.getContext(), StationActivity.class);
             intent.putExtra("station_code", stationCode);
             v.getContext().startActivity(intent);
