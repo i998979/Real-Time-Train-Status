@@ -11,6 +11,8 @@
 
         <item name="android:statusBarColor">@color/bar_bright</item>
         <item name="android:navigationBarColor">@color/bar_bright</item>
+
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <style name="TabText" parent="TextAppearance.Design.Tab">
