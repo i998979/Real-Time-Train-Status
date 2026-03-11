@@ -41,10 +41,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -67,20 +65,6 @@ public class SavedLineFragment extends Fragment {
     private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(10);
     private HRConfig hrConf;
 
-    // 定義需交叉比對 nexttrain API 的車站
-    private static final Map<String, String> CHECK_STATIONS = new HashMap<>() {{
-        put("EAL", "TAW");
-        put("TML", "HUH");
-        put("KTL", "PRE");
-        put("AEL", "HOK");
-        put("DRL", "SUN");
-        put("ISL", "ADM");
-        put("TCL", "HOK");
-        put("TKL", "TIK");
-        put("TWL", "ADM");
-        put("SIL", "ADM");
-    }};
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -97,11 +81,15 @@ public class SavedLineFragment extends Fragment {
         btnEditLines = view.findViewById(R.id.btn_edit_lines);
 
         // 如果點擊空狀態的「登錄」或已儲存列表的「編輯」，都會開啟同一個編輯 BottomSheet (P2 / P4)
-        View.OnClickListener openEditSheet = v -> showEditBottomSheet();
+        View.OnClickListener openEditSheet = v -> {
+            showEditBottomSheet();
+        };
         btnRegisterEmpty.setOnClickListener(openEditSheet);
         btnEditLines.setOnClickListener(openEditSheet);
 
-        swipeRefreshLayout.setOnRefreshListener(this::fetchSavedLinesData);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            fetchSavedLinesData();
+        });
 
         refreshUIState();
 
@@ -464,7 +452,7 @@ public class SavedLineFragment extends Fragment {
                         crossCheckExecutor.execute(() -> {
                             try {
                                 String code = tLine.getString("line_code").toUpperCase();
-                                String sta = CHECK_STATIONS.getOrDefault(code, "ADM"); // 防呆
+                                String sta = MainActivity.NEXTTRAIN_CHECK_STATIONS.getOrDefault(code, "ADM"); // 防呆
                                 URL url2 = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=" + code + "&sta=" + sta);
                                 HttpURLConnection c2 = (HttpURLConnection) url2.openConnection();
                                 c2.setConnectTimeout(3000);

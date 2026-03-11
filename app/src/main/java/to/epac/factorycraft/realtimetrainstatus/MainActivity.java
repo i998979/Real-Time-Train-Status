@@ -12,6 +12,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
 
     public static final String PREFS_NAME = "route_prefs";
@@ -34,6 +37,19 @@ public class MainActivity extends AppCompatActivity {
     public static final String OCTOPUS_PACKAGE = "com.octopuscards.nfc_reader";
     public static final String MTRMOBILE_PACKAGE = "com.mtr.mtrmobile";
 
+
+    public static final Map<String, String> NEXTTRAIN_CHECK_STATIONS = new HashMap<>() {{
+        put("EAL", "TAW");
+        put("TML", "HUH");
+        put("KTL", "PRE");
+        put("AEL", "HOK");
+        put("DRL", "SUN");
+        put("ISL", "ADM");
+        put("TCL", "HOK");
+        put("TKL", "TIK");
+        put("TWL", "LAK");
+        put("SIL", "SOH");
+    }};
 
     private BottomNavigationView bottomNavigationView;
 

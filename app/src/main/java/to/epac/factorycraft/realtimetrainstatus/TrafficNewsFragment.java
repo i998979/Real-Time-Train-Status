@@ -42,19 +42,6 @@ import java.util.concurrent.TimeUnit;
 
 public class TrafficNewsFragment extends Fragment {
 
-    private static final Map<String, String> CHECK_STATIONS = new HashMap<>() {{
-        put("EAL", "TAW");
-        put("TML", "HUH");
-        put("KTL", "PRE");
-        put("AEL", "HOK");
-        put("DRL", "SUN");
-        put("ISL", "ADM");
-        put("TCL", "HOK");
-        put("TKL", "TIK");
-        put("TWL", "ADM");
-        put("SIL", "ADM");
-    }};
-
     private HRConfig hrConf;
 
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -66,7 +53,7 @@ public class TrafficNewsFragment extends Fragment {
     private View layoutNormal;
     private View layoutDelayed;
 
-    private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(CHECK_STATIONS.size());
+    private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(MainActivity.NEXTTRAIN_CHECK_STATIONS.size());
     private boolean isFetching = false;
 
     @Nullable
@@ -213,7 +200,7 @@ public class TrafficNewsFragment extends Fragment {
                 HttpURLConnection conn = null;
                 try {
                     String lineCode = line.getString("line_code").toUpperCase();
-                    String sta = CHECK_STATIONS.get(lineCode);
+                    String sta = MainActivity.NEXTTRAIN_CHECK_STATIONS.get(lineCode);
 
                     URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=" + lineCode + "&sta=" + sta);
 

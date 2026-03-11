@@ -16,11 +16,14 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -36,22 +39,31 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textview.MaterialTextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class RouteDetailFragment extends Fragment {
 
@@ -340,27 +352,83 @@ public class RouteDetailFragment extends Fragment {
         TextView tvDirection = view.findViewById(R.id.tv_direction);
         String towards = seg.startNode.optString("towards");
         if (!towards.isEmpty()) {
-            String[] stationIds = towards.split("/");
-            StringBuilder combinedNames = new StringBuilder();
+            String[] ids = towards.split("/");
+            String direction = hrConf.getStationName(Integer.parseInt(ids[0].trim()));
+            if (ids.length > 1)
+                direction += "/" + hrConf.getStationName(Integer.parseInt(ids[1].trim()));
 
-            for (int i = 0; i < stationIds.length; i++) {
-                try {
-                    int stationId = Integer.parseInt(stationIds[i].trim());
-                    String stationName = hrConf.getStationName(stationId);
-
-                    combinedNames.append(stationName);
-
-                    if (i < stationIds.length - 1) combinedNames.append("/");
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-            }
-            tvDirection.setText(combinedNames + " 方面");
+            tvDirection.setText(direction + " 方面");
         }
 
         TextView tvCarsCount = view.findViewById(R.id.tv_car_count);
         String alias = hrConf.getLineById(seg.lineID).alias;
         tvCarsCount.setText(alias.equals("EAL") ? "9両" : alias.equals("SIL") ? "3両" : alias.equals("DRL") ? "4両" : "8両");
+
+
+        MaterialCardView trafficCard = view.findViewById(R.id.v_traffic_news);
+        String currentLineCode = hrConf.getLineById(seg.lineID).alias;
+        fetchTrafficNewsFeed(trafficNews -> {
+            if (trafficNews == null || getActivity() == null) return;
+
+            try {
+                for (int i = 0; i < trafficNews.length(); i++) {
+                    JSONObject lineObj = trafficNews.getJSONObject(i);
+                    String lineCode = lineObj.getString("line_code").toUpperCase();
+
+                    if (lineCode.equals(currentLineCode)) {
+                        String status = lineObj.getString("status").toLowerCase();
+
+                        if (!status.equals("green") && !status.equals("grey")) {
+                            trafficCard.setVisibility(View.VISIBLE);
+
+                            TextView tvStatus = view.findViewById(R.id.tv_status);
+                            TextView tvMessage = view.findViewById(R.id.tv_message);
+                            TextView tvLineSection = view.findViewById(R.id.tv_line_section);
+                            ImageView ivIcon = view.findViewById(R.id.iv_status_icon);
+
+                            updateStatusUI(status, tvStatus, ivIcon);
+
+                            String displayMessage = "服務受阻";
+                            String lineSectionText = "全綫";
+                            Object messagesObj = lineObj.opt("messages");
+
+                            if (messagesObj instanceof JSONObject) {
+                                JSONObject msgObj = ((JSONObject) messagesObj).optJSONObject("message");
+                                if (msgObj != null) {
+                                    displayMessage = msgObj.optString("title_tc", msgObj.optString("cause_tc", ""));
+                                    JSONObject affectedArea = msgObj.optJSONObject("affected_areas");
+                                    if (affectedArea != null) {
+                                        JSONObject area = affectedArea.optJSONObject("affected_area");
+                                        if (area != null) {
+                                            lineSectionText = hrConf.getStationName(area.optInt("station_code_fr")) + "~"
+                                                    + hrConf.getStationName(area.optInt("station_code_to"));
+                                        }
+                                    }
+                                }
+                            } else if (messagesObj instanceof String) {
+                                displayMessage = (String) messagesObj;
+                            }
+
+                            tvMessage.setText(displayMessage);
+                            tvLineSection.setText(lineSectionText);
+
+                            trafficCard.setOnClickListener(v -> {
+                                android.content.Intent intent = new android.content.Intent(getActivity(), TrafficNewsActivity.class);
+                                intent.putExtra("line_code", lineCode);
+                                intent.putExtra("line_name_tc", hrConf.getLineByAlias(lineCode).name);
+                                intent.putExtra("line_color", lineObj.optString("line_color", seg.lineColor));
+                                intent.putExtra("status", status);
+                                intent.putExtra("messages", messagesObj != null ? messagesObj.toString() : "");
+                                startActivity(intent);
+                            });
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
 
         // Intermediate station
@@ -814,5 +882,131 @@ public class RouteDetailFragment extends Fragment {
             }
         }
         return totalFare;
+    }
+
+
+    private interface TrafficCallback {
+        void onDone(JSONArray result);
+    }
+
+    private void fetchTrafficNewsFeed(TrafficCallback callback) {
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL("https://tnews.mtr.com.hk/alert/ryg_line_status.json");
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    reader.close();
+
+                    JSONObject root = new JSONObject(response.toString());
+                    JSONArray lines = root.getJSONObject("ryg_status").getJSONArray("line");
+
+                    fetchNextTrain(lines);
+
+                    if (getActivity() != null) {
+                        new Handler(Looper.getMainLooper()).post(() -> callback.onDone(lines));
+                    }
+                } else {
+                    if (getActivity() != null) {
+                        new Handler(Looper.getMainLooper()).post(() -> callback.onDone(null));
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (getActivity() != null) {
+                    new Handler(Looper.getMainLooper()).post(() -> callback.onDone(null));
+                }
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(MainActivity.NEXTTRAIN_CHECK_STATIONS.size());
+
+    private void fetchNextTrain(JSONArray lines) throws Exception {
+        CountDownLatch latch = new CountDownLatch(lines.length());
+
+        for (int i = 0; i < lines.length(); i++) {
+            final JSONObject line = lines.getJSONObject(i);
+            crossCheckExecutor.execute(() -> {
+                HttpURLConnection conn = null;
+                try {
+                    String lineCode = line.getString("line_code").toUpperCase();
+                    String sta = MainActivity.NEXTTRAIN_CHECK_STATIONS.get(lineCode);
+
+                    URL url = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=" + lineCode + "&sta=" + sta);
+
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(3000);
+                    conn.setReadTimeout(3000);
+
+                    try (BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                        StringBuilder sb = new StringBuilder();
+                        String l;
+                        while ((l = r.readLine()) != null) sb.append(l);
+
+                        JSONObject rtData = new JSONObject(sb.toString());
+
+                        boolean isApiDelay = rtData.optString("isdelay", "N").equals("Y");
+                        boolean isTimeBlank = rtData.optString("sys_time", "").equals("-") ||
+                                rtData.optString("curr_time", "").equals("-");
+
+                        if (isApiDelay || isTimeBlank) {
+                            String currentStatus = line.getString("status").toLowerCase();
+                            if (currentStatus.equals("green")) {
+                                line.put("status", "yellow");
+                                String original = line.optString("messages", "");
+                                String nexttrain = "列車服務可能受阻，詳情請留意官方發出的最新車務資訊。";
+                                line.put("messages", !original.isEmpty() ? original : nexttrain);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                } finally {
+                    if (conn != null) conn.disconnect();
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await(6, TimeUnit.SECONDS);
+    }
+
+    private void updateStatusUI(String status, TextView tvStatus, ImageView ivIcon) {
+        switch (status.toLowerCase()) {
+            case "yellow":
+                tvStatus.setText("服務延誤");
+                ivIcon.setImageResource(R.drawable.outline_exclamation_24);
+                ivIcon.setColorFilter(Color.parseColor("#FFA500"));
+                break;
+            case "red":
+                tvStatus.setText("服務受阻");
+                ivIcon.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+                ivIcon.setColorFilter(Color.parseColor("#FF0000"));
+                break;
+            case "pink":
+                tvStatus.setText("服務延誤或受阻");
+                ivIcon.setImageResource(R.drawable.baseline_warning_24);
+                ivIcon.setColorFilter(Color.parseColor("#FF69B4"));
+                break;
+            case "typhoon":
+                tvStatus.setText("熱帶氣旋警告生效");
+                ivIcon.setImageResource(R.drawable.baseline_storm_24);
+                ivIcon.setColorFilter(Color.parseColor("#00BCD4"));
+                break;
+        }
     }
 }
