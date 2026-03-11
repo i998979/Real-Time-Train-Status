@@ -64,7 +64,7 @@ public class OperationInfoFragment extends Fragment {
 
         if (getActivity() != null && getActivity().getIntent() != null) {
             Intent intent = getActivity().getIntent();
-            if (intent.getStringExtra("target_fragment").equals("saved_route")) {
+            if ("saved_route".equals(intent.getStringExtra("target_fragment"))) {
                 pagerContent.post(() -> {
                     pagerContent.setCurrentItem(0, true);
                     intent.removeExtra("target_fragment");

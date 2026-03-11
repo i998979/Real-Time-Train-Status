@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleWidgetIntent(Intent intent) {
-        if (intent != null && intent.getStringExtra("target_fragment").equals("saved_route")) {
+        if (intent != null && "saved_route".equals(intent.getStringExtra("target_fragment"))) {
             bottomNavigationView.setSelectedItemId(R.id.nav_operation);
 
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
