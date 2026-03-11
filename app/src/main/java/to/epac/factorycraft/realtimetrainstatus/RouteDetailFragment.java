@@ -16,10 +16,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.MediaStore;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -367,10 +364,13 @@ public class RouteDetailFragment extends Fragment {
 
         MaterialCardView trafficCard = view.findViewById(R.id.v_traffic_news);
         String currentLineCode = hrConf.getLineById(seg.lineID).alias;
-        fetchTrafficNewsFeed(trafficNews -> {
-            if (trafficNews == null || getActivity() == null) return;
 
+        String tNews = getArguments().getString("traffic_news", "");
+        if (!tNews.isEmpty()) {
             try {
+                JSONObject tJson = new JSONObject(tNews);
+                JSONArray trafficNews = tJson.getJSONObject("ryg_status").getJSONArray("line");
+
                 for (int i = 0; i < trafficNews.length(); i++) {
                     JSONObject lineObj = trafficNews.getJSONObject(i);
                     String lineCode = lineObj.getString("line_code").toUpperCase();
@@ -428,7 +428,7 @@ public class RouteDetailFragment extends Fragment {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        });
+        }
 
 
         // Intermediate station
@@ -519,9 +519,7 @@ public class RouteDetailFragment extends Fragment {
     }
 
     private void openNearbySearchSheet(String url) {
-        TypedValue typedValue = new TypedValue();
-        requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true);
-        int surfaceColor = typedValue.data;
+        int surfaceColor = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurface);
         CustomTabColorSchemeParams colorParams = new CustomTabColorSchemeParams.Builder()
                 .setToolbarColor(surfaceColor)
                 .build();
@@ -583,12 +581,8 @@ public class RouteDetailFragment extends Fragment {
     private Bitmap combineViewsToBitmap(View headerView, View contentContainer, View footerView) {
         Context context = contentContainer.getContext();
 
-        TypedValue typedValue = new TypedValue();
-        context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
-        int secondaryBgColor = typedValue.data;
-
-        context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
-        int contentBgColor = typedValue.data;
+        int contentBgColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnPrimary);
+        int secondaryBgColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
 
         int widthSpec = View.MeasureSpec.makeMeasureSpec(contentContainer.getWidth(), View.MeasureSpec.EXACTLY);
         int heightUnspecified = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
@@ -884,55 +878,6 @@ public class RouteDetailFragment extends Fragment {
         return totalFare;
     }
 
-
-    private interface TrafficCallback {
-        void onDone(JSONArray result);
-    }
-
-    private void fetchTrafficNewsFeed(TrafficCallback callback) {
-        new Thread(() -> {
-            HttpURLConnection connection = null;
-            try {
-                URL url = new URL("https://tnews.mtr.com.hk/alert/ryg_line_status.json");
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setConnectTimeout(5000);
-                connection.setReadTimeout(5000);
-
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    reader.close();
-
-                    JSONObject root = new JSONObject(response.toString());
-                    JSONArray lines = root.getJSONObject("ryg_status").getJSONArray("line");
-
-                    fetchNextTrain(lines);
-
-                    if (getActivity() != null) {
-                        new Handler(Looper.getMainLooper()).post(() -> callback.onDone(lines));
-                    }
-                } else {
-                    if (getActivity() != null) {
-                        new Handler(Looper.getMainLooper()).post(() -> callback.onDone(null));
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (getActivity() != null) {
-                    new Handler(Looper.getMainLooper()).post(() -> callback.onDone(null));
-                }
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        }).start();
-    }
 
     private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(MainActivity.NEXTTRAIN_CHECK_STATIONS.size());
 

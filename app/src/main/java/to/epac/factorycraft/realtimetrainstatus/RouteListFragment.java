@@ -56,6 +56,7 @@ public class RouteListFragment extends Fragment {
     private TabLayout tabLayout;
 
     private List<String> alertLineCodes = new ArrayList<>();
+    private String trafficNews = "";
 
     private JSONObject routeData;
     private List<JSONObject> fullRouteList = new ArrayList<>();
@@ -164,7 +165,9 @@ public class RouteListFragment extends Fragment {
                     String tLine;
                     while ((tLine = tReader.readLine()) != null) tSb.append(tLine);
 
-                    JSONObject tJson = new JSONObject(tSb.toString());
+                    trafficNews = tSb.toString();
+
+                    JSONObject tJson = new JSONObject(trafficNews);
                     JSONArray lines = tJson.getJSONObject("ryg_status").getJSONArray("line");
 
                     synchronized (alertLineCodes) {
@@ -612,6 +615,7 @@ public class RouteListFragment extends Fragment {
                     bundle.putInt("selected_route", position);
                     bundle.putString("start_time", String.format(Locale.getDefault(), "%02d:%02d",
                             startAt.get(Calendar.HOUR_OF_DAY), startAt.get(Calendar.MINUTE)));
+                    bundle.putString("traffic_news", trafficNews);
                     detailFragment.setArguments(bundle);
 
                     requireActivity().getSupportFragmentManager().beginTransaction()

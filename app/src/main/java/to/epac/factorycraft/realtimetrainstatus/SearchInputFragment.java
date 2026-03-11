@@ -13,7 +13,6 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -236,9 +235,7 @@ public class SearchInputFragment extends Fragment {
     }
 
     private void updateCard(View card, boolean selected) {
-        TypedValue tv = new TypedValue();
-        requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSurface, tv, true);
-        int colorOnSurface = tv.data;
+        int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
 
         ImageView iv = card.findViewWithTag("iv_check_mark");
         iv.setImageResource(selected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
