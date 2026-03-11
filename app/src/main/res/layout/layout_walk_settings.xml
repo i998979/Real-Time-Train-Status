@@ -50,45 +50,249 @@
                 app:layout_constraintTop_toTopOf="parent" />
         </RelativeLayout>
 
-        <RadioGroup
-            android:id="@+id/rg_walk_speed"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/rb_fast"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checkedButton="@id/rb_normal"
-            android:showDividers="middle">
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginVertical="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
 
-            <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/rb_fast"
-                style="@style/RadioButtonStyle"
-                android:background="@drawable/bg_platform_border"
-                android:backgroundTint="?attr/colorOnSurfaceInverse"
-                android:drawableLeft="@drawable/baseline_directions_run_24"
-                android:text="快速\n在轉乘路綫沒有疑慮時" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
 
-            <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/rb_normal"
-                style="@style/RadioButtonStyle"
-                android:background="@drawable/bg_platform_border"
-                android:backgroundTint="?attr/colorOnSurfaceInverse"
-                android:drawableLeft="@drawable/baseline_directions_walk_24"
-                android:text="普通\n可以不迷路移動時" />
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/baseline_directions_run_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
-            <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/rb_slow"
-                style="@style/RadioButtonStyle"
-                android:background="@drawable/bg_platform_border"
-                android:backgroundTint="?attr/colorOnSurfaceInverse"
-                android:drawableLeft="@drawable/baseline_elderly_24"
-                android:text="慢速\n需要更多時間移動時" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
 
-            <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/rb_veryslow"
-                style="@style/RadioButtonStyle"
-                android:background="@drawable/bg_platform_border"
-                android:backgroundTint="?attr/colorOnSurfaceInverse"
-                android:drawableLeft="@drawable/baseline_accessible_24"
-                android:text="很慢\n帶著大型行李或行動不便時" />
-        </RadioGroup>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="快速"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="在轉乘路綫沒有疑慮時"
+                        android:textColor="?attr/colorOutline"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <ImageView
+                    android:tag="iv_check_mark"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/outline_circle_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/rb_normal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginVertical="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/baseline_directions_walk_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="普通"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="可以不迷路移動時"
+                        android:textColor="?attr/colorOutline"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <ImageView
+                    android:tag="iv_check_mark"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/outline_circle_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/rb_slow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginVertical="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/baseline_elderly_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="慢速"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="需要更多時間移動時"
+                        android:textColor="?attr/colorOutline"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <ImageView
+                    android:tag="iv_check_mark"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/outline_circle_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/rb_veryslow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginVertical="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/baseline_accessible_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="很慢"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="帶著大型行李或行動不便時"
+                        android:textColor="?attr/colorOutline"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <ImageView
+                    android:tag="iv_check_mark"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/outline_circle_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </ScrollView>

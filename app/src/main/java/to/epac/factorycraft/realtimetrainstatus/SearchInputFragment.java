@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -14,11 +13,12 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
@@ -32,7 +32,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.radiobutton.MaterialRadioButton;
+import com.google.android.material.card.MaterialCardView;
 
 public class SearchInputFragment extends Fragment {
     private SharedPreferences prefs;
@@ -142,132 +142,107 @@ public class SearchInputFragment extends Fragment {
             MaterialButton settingsBtn = view.findViewById(btnIds[i]);
 
             String currentStatus = "";
-            switch (index) {
-                case 0:
-                    currentStatus = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
-                    break;
-                case 1:
-                    currentStatus = "車票設定";
-                    break;
+            if (index == 0) {
+                currentStatus = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
+            } else {
+                currentStatus = "車票設定";
             }
             renderOptionButton(settingsBtn, currentStatus, greenColor, iconRes[index]);
 
             BottomSheetDialog bottomSheet = new BottomSheetDialog(getContext());
             bottomSheet.setContentView(layoutIds[index]);
+            View bottomSheetInternal = bottomSheet.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheetInternal);
 
             settingsBtn.setOnClickListener(v -> {
-                if (index == 0) {
-                    MaterialButton closeBtn = bottomSheet.findViewById(R.id.btn_close);
-                    closeBtn.setOnClickListener(v1 -> {
-                        bottomSheet.dismiss();
-                    });
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setSkipCollapsed(true);
 
-                    RadioGroup rg = bottomSheet.findViewById(R.id.rg_walk_speed);
+                MaterialButton closeBtn = bottomSheet.findViewById(R.id.btn_close);
+                closeBtn.setOnClickListener(v1 -> {
+                    bottomSheet.dismiss();
+                });
 
-                    String saved = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
+                Runnable refreshUI = () -> {
+                    if (index == 0) {
+                        String saved = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
+                        int[] ids = {R.id.rb_fast, R.id.rb_normal, R.id.rb_slow, R.id.rb_veryslow};
+                        String[] vals = {"快速", "普通", "慢速", "很慢"};
 
+                        for (int j = 0; j < ids.length; j++) {
+                            updateCard(bottomSheet.findViewById(ids[j]), vals[j].equals(saved));
+                        }
+                    } else if (index == 1) {
+                        String curT = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
+                        String curF = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
 
-                    for (int j = 0; j < rg.getChildCount(); j++) {
-                        View child = rg.getChildAt(j);
+                        if (curT.equals("sj") && (curF.equals("concessionelderly") || curF.equals("joyyousixty") || curF.equals("concessionpwd") || curF.equals("student"))) {
+                            curF = "adult";
+                            prefs.edit().putString(MainActivity.KEY_FARE_TYPE, curF).apply();
+                        }
 
-                        if (child instanceof MaterialRadioButton) {
-                            MaterialRadioButton rb = (MaterialRadioButton) child;
+                        updateCard(bottomSheet.findViewById(R.id.rb_octopus), curT.equals("octopus"));
+                        updateCard(bottomSheet.findViewById(R.id.rb_sj), curT.equals("sj"));
 
-                            // Reformat text with smaller and gray 2nd line
-                            String rawText = rb.getText().toString();
-                            String title = rawText.split("\n")[0];
+                        int[] fIds = {R.id.rb_adult, R.id.rb_concessionchild, R.id.rb_concessionchild2, R.id.rb_concessionelderly, R.id.rb_joyyousixty, R.id.rb_concessionpwd, R.id.rb_student};
+                        String[] fVals = {"adult", "concessionchild", "concessionchild2", "concessionelderly", "joyyousixty", "concessionpwd", "student"};
+                        for (int j = 0; j < fIds.length; j++) {
+                            MaterialCardView card = bottomSheet.findViewById(fIds[j]);
 
-                            int lineBreak = rawText.indexOf("\n");
-                            if (lineBreak != -1) {
-                                SpannableString ss = new SpannableString(rawText);
-                                ss.setSpan(new StyleSpan(Typeface.BOLD), 0, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                ss.setSpan(new ForegroundColorSpan(Color.GRAY), lineBreak + 1, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                ss.setSpan(new RelativeSizeSpan(0.8f), lineBreak + 1, rawText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                rb.setText(ss);
-                            }
-
-                            if (title.equals(saved)) rg.check(rb.getId());
+                            card.setVisibility(curT.equals("sj") && j >= 3 ? View.GONE : View.VISIBLE);
+                            updateCard(card, fVals[j].equals(curF));
                         }
                     }
+                };
 
-                    rg.setOnCheckedChangeListener((group, checkedId) -> {
-                        MaterialRadioButton rb = group.findViewById(checkedId);
-
-                        String selected = rb.getText().toString().split("\n")[0];
-                        prefs.edit()
-                                .putString(MainActivity.KEY_WALK_SPEED, selected)
-                                .apply();
-                        renderOptionButton(settingsBtn, selected, greenColor, iconRes[index]);
-                    });
-                }
-                if (index == 1) {
-                    MaterialButton closeBtn = bottomSheet.findViewById(R.id.btn_close);
-                    closeBtn.setOnClickListener(v1 -> {
-                        bottomSheet.dismiss();
-                    });
-
-                    RadioGroup rgTicketType = bottomSheet.findViewById(R.id.rg_ticket_type);
-                    RadioGroup rgFareType = bottomSheet.findViewById(R.id.rg_fare_type);
-
-                    String ticketType = prefs.getString(MainActivity.KEY_TICKET_TYPE, "octopus");
-                    String fareType = prefs.getString(MainActivity.KEY_FARE_TYPE, "adult");
-
-                    int fareRbId = R.id.rb_adult;
-                    if (fareType.equals("adult"))
-                        fareRbId = R.id.rb_adult;
-                    else if (fareType.equals("concessionchild"))
-                        fareRbId = R.id.rb_concessionchild;
-                    else if (fareType.equals("concessionchild2"))
-                        fareRbId = R.id.rb_concessionchild2;
-                    else if (fareType.equals("concessionelderly"))
-                        fareRbId = R.id.rb_concessionelderly;
-                    else if (fareType.equals("joyyousixty"))
-                        fareRbId = R.id.rb_joyyousixty;
-                    else if (fareType.equals("concessionpwd"))
-                        fareRbId = R.id.rb_concessionpwd;
-                    else if (fareType.equals("student"))
-                        fareRbId = R.id.rb_student;
-
-                    rgTicketType.check(ticketType.equals("sj") ? R.id.rb_sj : R.id.rb_octopus);
-                    rgFareType.check(fareRbId);
-
-                    Runnable updateFareVisibility = () -> {
-                        boolean isSJ = rgTicketType.getCheckedRadioButtonId() == R.id.rb_sj;
-
-                        int[] octopusOnly = {R.id.rb_concessionelderly, R.id.rb_joyyousixty, R.id.rb_concessionpwd, R.id.rb_student};
-                        for (int id : octopusOnly) {
-                            View rb = rgFareType.findViewById(id);
-                            rb.setVisibility(isSJ ? View.GONE : View.VISIBLE);
-
-                            if (isSJ && rgFareType.getCheckedRadioButtonId() == id)
-                                rgFareType.check(R.id.rb_adult);
+                View.OnClickListener listener = cv -> {
+                    if (index == 0) {
+                        String[] vals = {"快速", "普通", "慢速", "很慢"};
+                        int[] ids = {R.id.rb_fast, R.id.rb_normal, R.id.rb_slow, R.id.rb_veryslow};
+                        for (int j = 0; j < ids.length; j++) {
+                            if (cv.getId() == ids[j]) {
+                                prefs.edit().putString(MainActivity.KEY_WALK_SPEED, vals[j]).apply();
+                                renderOptionButton(settingsBtn, vals[j], greenColor, iconRes[index]);
+                            }
                         }
-                    };
+                    } else if (index == 1) {
+                        if (cv.getId() == R.id.rb_octopus)
+                            prefs.edit().putString(MainActivity.KEY_TICKET_TYPE, "octopus").apply();
+                        else if (cv.getId() == R.id.rb_sj)
+                            prefs.edit().putString(MainActivity.KEY_TICKET_TYPE, "sj").apply();
+                        else {
+                            String[] fVals = {"adult", "concessionchild", "concessionchild2", "concessionelderly", "joyyousixty", "concessionpwd", "student"};
+                            int[] fIds = {R.id.rb_adult, R.id.rb_concessionchild, R.id.rb_concessionchild2, R.id.rb_concessionelderly, R.id.rb_joyyousixty, R.id.rb_concessionpwd, R.id.rb_student};
+                            for (int j = 0; j < fIds.length; j++)
+                                if (cv.getId() == fIds[j])
+                                    prefs.edit().putString(MainActivity.KEY_FARE_TYPE, fVals[j]).apply();
+                        }
+                    }
+                    refreshUI.run();
+                };
 
-                    rgTicketType.setOnCheckedChangeListener((group, checkedId) -> {
-                        updateFareVisibility.run();
-                        saveFareState(rgTicketType, rgFareType);
-                    });
-                    rgFareType.setOnCheckedChangeListener((group, checkedId) -> {
-                        saveFareState(rgTicketType, rgFareType);
-                    });
-
-                    updateFareVisibility.run();
+                int[] ids = {R.id.rb_fast, R.id.rb_normal, R.id.rb_slow, R.id.rb_veryslow, R.id.rb_octopus, R.id.rb_sj, R.id.rb_adult, R.id.rb_concessionchild, R.id.rb_concessionchild2, R.id.rb_concessionelderly, R.id.rb_joyyousixty, R.id.rb_concessionpwd, R.id.rb_student};
+                for (int id : ids) {
+                    View card = bottomSheet.findViewById(id);
+                    if (card != null) card.setOnClickListener(listener);
                 }
 
+                refreshUI.run();
                 bottomSheet.show();
-
-                View bottomSheetInternal = bottomSheet.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-                if (bottomSheetInternal != null) {
-                    BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheetInternal);
-
-                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    behavior.setSkipCollapsed(true);
-                }
             });
         }
 
         return view;
+    }
+
+    private void updateCard(View card, boolean selected) {
+        TypedValue tv = new TypedValue();
+        requireContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSurface, tv, true);
+        int colorOnSurface = tv.data;
+
+        ImageView iv = card.findViewWithTag("iv_check_mark");
+        iv.setImageResource(selected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
+        iv.setImageTintList(ColorStateList.valueOf(selected ? ContextCompat.getColor(requireContext(), R.color.button_green) : colorOnSurface));
     }
 
     private void saveFareState(RadioGroup rgTicketType, RadioGroup rgFareType) {
