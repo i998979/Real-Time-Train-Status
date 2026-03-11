@@ -42,7 +42,7 @@ public class RecentViewedFragment extends Fragment {
         tvDelete = view.findViewById(R.id.tv_delete);
         tvDelete.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), HistoryDeleteActivity.class);
-            intent.putExtra(HistoryDeleteActivity.EXTRA_HISTORY_TYPE, HistoryDeleteActivity.TYPE_ROUTE);
+            intent.putExtra("history_type", HistoryDeleteActivity.TYPE_ROUTE);
             startActivity(intent);
         });
 

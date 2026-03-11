@@ -20,17 +20,14 @@ import java.util.List;
 
 public class LineSelectorFragment extends Fragment {
 
-    public static final String ARG_STATION_CODE = "station_code";
-    public static final String ARG_SHOW_HEADER = "show_header";
-
     private ActivityResultLauncher<Intent> searchLauncher;
 
     public static LineSelectorFragment newInstance(String stationCode, boolean showHeader) {
         LineSelectorFragment fragment = new LineSelectorFragment();
 
         Bundle args = new Bundle();
-        args.putString(ARG_STATION_CODE, stationCode);
-        args.putBoolean(ARG_SHOW_HEADER, showHeader);
+        args.putString("station_code", stationCode);
+        args.putBoolean("show_header", showHeader);
         fragment.setArguments(args);
 
         return fragment;
@@ -42,7 +39,7 @@ public class LineSelectorFragment extends Fragment {
 
         View headerBar = view.findViewById(R.id.header_bar);
         if (headerBar != null && getArguments() != null) {
-            boolean showHeader = getArguments().getBoolean(ARG_SHOW_HEADER, true);
+            boolean showHeader = getArguments().getBoolean("show_header", true);
             headerBar.setVisibility(showHeader ? View.VISIBLE : View.GONE);
         }
 
@@ -65,7 +62,7 @@ public class LineSelectorFragment extends Fragment {
         );
         btnSearch.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), SearchActivity.class);
-            intent.putExtra(SearchActivity.SEARCH_TYPE, SearchActivity.TYPE_LINE);
+            intent.putExtra("search_type", SearchActivity.TYPE_LINE);
             searchLauncher.launch(intent);
         });
 
@@ -73,7 +70,7 @@ public class LineSelectorFragment extends Fragment {
         rvLineSelect.setLayoutManager(new LinearLayoutManager(getContext()));
 
         HRConfig config = HRConfig.getInstance(getContext());
-        String stationCode = getArguments() != null ? getArguments().getString(ARG_STATION_CODE) : null;
+        String stationCode = getArguments() != null ? getArguments().getString("station_code") : null;
 
         List<HRConfig.Line> display;
         if (stationCode == null || stationCode.isEmpty()) {

@@ -15,7 +15,7 @@ public class SavedRouteWidget extends AppWidgetProvider {
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_saved_route);
 
             Intent intent = new Intent(context, MainActivity.class);
-            intent.putExtra("TARGET_FRAGMENT", "SAVED_ROUTE");
+            intent.putExtra("target_fragment", "saved_route");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             PendingIntent pendingIntent = PendingIntent.getActivity(

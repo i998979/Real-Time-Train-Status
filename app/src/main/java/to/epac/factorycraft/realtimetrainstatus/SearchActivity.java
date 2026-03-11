@@ -19,7 +19,6 @@ import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
 
-    public static final String SEARCH_TYPE = "SEARCH_TYPE";
     public static final int TYPE_STATION = 0;
     public static final int TYPE_LINE = 1;
 
@@ -42,7 +41,7 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        currentMode = getIntent().getIntExtra(SEARCH_TYPE, TYPE_STATION);
+        currentMode = getIntent().getIntExtra("search_type", TYPE_STATION);
 
         historyManager = HistoryManager.getInstance(this);
         hrConfig = HRConfig.getInstance(this);
@@ -80,7 +79,7 @@ public class SearchActivity extends AppCompatActivity {
         TextView tvDelete = findViewById(R.id.tv_delete);
         tvDelete.setOnClickListener(v -> {
             Intent intent = new Intent(this, HistoryDeleteActivity.class);
-            intent.putExtra(HistoryDeleteActivity.EXTRA_HISTORY_TYPE,
+            intent.putExtra("history_type",
                     currentMode == TYPE_LINE ? HistoryDeleteActivity.TYPE_LINE : HistoryDeleteActivity.TYPE_STATION);
             startActivity(intent);
         });

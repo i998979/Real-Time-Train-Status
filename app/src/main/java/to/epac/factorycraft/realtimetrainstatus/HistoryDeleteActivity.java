@@ -28,7 +28,6 @@ import java.util.TimeZone;
 
 public class HistoryDeleteActivity extends AppCompatActivity {
 
-    public static final String EXTRA_HISTORY_TYPE = "history_type";
     public static final int TYPE_ROUTE = 0;
     public static final int TYPE_STATION = 1;
     public static final int TYPE_LINE = 2;
@@ -51,7 +50,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history_delete);
 
-        currentType = getIntent().getIntExtra(EXTRA_HISTORY_TYPE, TYPE_ROUTE);
+        currentType = getIntent().getIntExtra("history_type", TYPE_ROUTE);
         historyManager = HistoryManager.getInstance(this);
 
         btnClose = findViewById(R.id.btn_close);

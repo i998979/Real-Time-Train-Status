@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleWidgetIntent(Intent intent) {
-        if (intent != null && "SAVED_ROUTE".equals(intent.getStringExtra("TARGET_FRAGMENT"))) {
+        if (intent != null && "saved_route".equals(intent.getStringExtra("target_fragment"))) {
             // 1. 切換 BottomNavigationView 到「運行情報」分頁
             bottomNavigationView.setSelectedItemId(R.id.nav_operation);
 
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 ViewPager2 pager = currentFragment.getView().findViewById(R.id.pager_content);
                 if (pager != null) {
                     pager.setCurrentItem(0, true);
-                    intent.removeExtra("TARGET_FRAGMENT");
+                    intent.removeExtra("target_fragment");
                 }
             }
         }
