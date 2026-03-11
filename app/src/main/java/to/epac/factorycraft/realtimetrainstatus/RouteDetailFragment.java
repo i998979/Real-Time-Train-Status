@@ -660,7 +660,7 @@ public class RouteDetailFragment extends Fragment {
         if (bitmap == null) return;
 
         String fileName = "screenshot_" + System.currentTimeMillis() + ".png";
-        String subFolderName = Environment.DIRECTORY_DCIM + File.separator + getString(R.string.app_name);
+        String subFolderName = Environment.DIRECTORY_DCIM + File.separator + "Transit App";
 
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
