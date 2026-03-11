@@ -14,11 +14,13 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -55,8 +57,8 @@ public class SavedLineFragment extends Fragment {
     private static final String KEY_SAVED_LINES = "saved_lines_csv"; // 用逗號分隔的線路碼 (e.g. "EAL,TML")
 
     private SwipeRefreshLayout swipeRefreshLayout;
-    private LinearLayout layoutEmptyState;
-    private LinearLayout layoutSavedLines;
+    private RelativeLayout layoutEmptyState;
+    private NestedScrollView vSavedLines;
     private LinearLayout statusContainer;
     private MaterialButton btnRegisterEmpty;
     private TextView btnEditLines;
@@ -75,7 +77,7 @@ public class SavedLineFragment extends Fragment {
 
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
         layoutEmptyState = view.findViewById(R.id.layout_empty_state);
-        layoutSavedLines = view.findViewById(R.id.layout_saved_lines);
+        vSavedLines = view.findViewById(R.id.v_saved_lines);
         statusContainer = view.findViewById(R.id.status_container);
         btnRegisterEmpty = view.findViewById(R.id.btn_register_empty);
         btnEditLines = view.findViewById(R.id.btn_edit_lines);
@@ -111,11 +113,11 @@ public class SavedLineFragment extends Fragment {
         String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
         if (savedCsv.isEmpty()) {
             layoutEmptyState.setVisibility(View.VISIBLE);
-            layoutSavedLines.setVisibility(View.GONE);
+            vSavedLines.setVisibility(View.GONE);
             swipeRefreshLayout.setEnabled(false);
         } else {
             layoutEmptyState.setVisibility(View.GONE);
-            layoutSavedLines.setVisibility(View.VISIBLE);
+            vSavedLines.setVisibility(View.VISIBLE);
             swipeRefreshLayout.setEnabled(true);
             fetchSavedLinesData();
         }
