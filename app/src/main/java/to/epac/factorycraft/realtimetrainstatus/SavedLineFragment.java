@@ -2,6 +2,7 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,7 +32,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.radiobutton.MaterialRadioButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,14 +54,14 @@ import java.util.concurrent.TimeUnit;
 public class SavedLineFragment extends Fragment {
 
     private SharedPreferences prefs;
-    private static final String KEY_SAVED_LINES = "saved_lines_csv"; // 用逗號分隔的線路碼 (e.g. "EAL,TML")
+    private static final String KEY_SAVED_LINES = "saved_lines_csv";
 
     private SwipeRefreshLayout swipeRefreshLayout;
-    private RelativeLayout layoutEmptyState;
+    private RelativeLayout layoutEmpty;
     private NestedScrollView vSavedLines;
     private LinearLayout statusContainer;
-    private MaterialButton btnRegisterEmpty;
-    private TextView btnEditLines;
+    private MaterialButton btnRegister;
+    private TextView btnEdit;
 
     private boolean isFetching = false;
     private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(10);
@@ -76,18 +76,17 @@ public class SavedLineFragment extends Fragment {
         hrConf = HRConfig.getInstance(getContext());
 
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
-        layoutEmptyState = view.findViewById(R.id.layout_empty_state);
+        layoutEmpty = view.findViewById(R.id.layout_empty);
         vSavedLines = view.findViewById(R.id.v_saved_lines);
         statusContainer = view.findViewById(R.id.status_container);
-        btnRegisterEmpty = view.findViewById(R.id.btn_register_empty);
-        btnEditLines = view.findViewById(R.id.btn_edit_lines);
+        btnRegister = view.findViewById(R.id.btn_register);
+        btnEdit = view.findViewById(R.id.btn_edit);
 
-        // 如果點擊空狀態的「登錄」或已儲存列表的「編輯」，都會開啟同一個編輯 BottomSheet (P2 / P4)
         View.OnClickListener openEditSheet = v -> {
             showEditBottomSheet();
         };
-        btnRegisterEmpty.setOnClickListener(openEditSheet);
-        btnEditLines.setOnClickListener(openEditSheet);
+        btnRegister.setOnClickListener(openEditSheet);
+        btnEdit.setOnClickListener(openEditSheet);
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
             fetchSavedLinesData();
@@ -106,39 +105,7 @@ public class SavedLineFragment extends Fragment {
         }
     }
 
-    /**
-     * 檢查 SharedPreferences 中的狀態，決定顯示 P1 還是 P5。
-     */
-    private void refreshUIState() {
-        String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
-        if (savedCsv.isEmpty()) {
-            layoutEmptyState.setVisibility(View.VISIBLE);
-            vSavedLines.setVisibility(View.GONE);
-            swipeRefreshLayout.setEnabled(false);
-        } else {
-            layoutEmptyState.setVisibility(View.GONE);
-            vSavedLines.setVisibility(View.VISIBLE);
-            swipeRefreshLayout.setEnabled(true);
-            fetchSavedLinesData();
-        }
-    }
 
-    /**
-     * 讀取暫存於 SharedPreferences 的清單
-     */
-    private List<String> getSavedLinesList() {
-        String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
-        if (savedCsv.isEmpty()) return new ArrayList<>();
-        return new ArrayList<>(Arrays.asList(savedCsv.split(",")));
-    }
-
-    private void saveLinesList(List<String> list) {
-        prefs.edit().putString(KEY_SAVED_LINES, String.join(",", list)).apply();
-    }
-
-    // ==========================================
-    // UI 邏輯：P2 / P4 編輯路線 BottomSheet
-    // ==========================================
     private void showEditBottomSheet() {
         BottomSheetDialog editDialog = new BottomSheetDialog(requireContext());
         View sheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_edit, null);
@@ -158,7 +125,7 @@ public class SavedLineFragment extends Fragment {
         behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
         TextView btnAddLine = sheetView.findViewById(R.id.btn_add_line);
-        MaterialRadioButton rbSelectAll = sheetView.findViewById(R.id.rb_select_all);
+        ImageView rbSelectAll = sheetView.findViewById(R.id.rb_select_all);
         TextView tvSelectAll = sheetView.findViewById(R.id.tv_select_all);
         MaterialButton btnDelete = sheetView.findViewById(R.id.btn_delete);
         RecyclerView rvLines = sheetView.findViewById(R.id.rv_saved_lines);
@@ -167,7 +134,9 @@ public class SavedLineFragment extends Fragment {
         rvLines.setLayoutManager(new LinearLayoutManager(getContext()));
         MaterialButton btnClose = sheetView.findViewById(R.id.btn_close);
 
-        btnClose.setOnClickListener(v -> editDialog.cancel());
+        btnClose.setOnClickListener(v -> {
+            editDialog.cancel();
+        });
 
         List<String> currentSaved = getSavedLinesList();
         Set<String> selectedForDelete = new HashSet<>();
@@ -176,8 +145,12 @@ public class SavedLineFragment extends Fragment {
             if (rvLines.getAdapter() != null) rvLines.getAdapter().notifyDataSetChanged();
 
             boolean isAllSelected = !currentSaved.isEmpty() && selectedForDelete.size() == currentSaved.size();
-            rbSelectAll.setChecked(isAllSelected);
-            rbSelectAll.setText(isAllSelected ? "取消全選" : "全選");
+            tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
+            int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
+
+            rbSelectAll.setImageResource(isAllSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
+            rbSelectAll.setImageTintList(ColorStateList.valueOf(isAllSelected ? ContextCompat.getColor(requireContext(), R.color.button_green) : colorOnSurface));
+
 
             btnDelete.setEnabled(!selectedForDelete.isEmpty());
             int btnColor = selectedForDelete.isEmpty() ? Color.parseColor("#2C2C2C") : ContextCompat.getColor(requireContext(), R.color.button_green);
@@ -185,7 +158,6 @@ public class SavedLineFragment extends Fragment {
         };
 
         btnAddLine.setOnClickListener(v -> {
-            editDialog.dismiss();
             showSearchBottomSheet();
         });
 
@@ -202,18 +174,22 @@ public class SavedLineFragment extends Fragment {
                 String lineCode = currentSaved.get(position);
                 HRConfig.Line line = hrConf.getLineByAlias(lineCode);
 
-                MaterialRadioButton rbItem = holder.itemView.findViewById(R.id.cb_select); // 這裡是 item 裡的 RadioButton
+                ImageView rbItem = holder.itemView.findViewById(R.id.cb_select);
                 TextView tvCode = holder.itemView.findViewById(R.id.tv_line_code_badge);
                 View badgeBg = holder.itemView.findViewById(R.id.line_color_badge);
                 TextView tvName = holder.itemView.findViewById(R.id.tv_line_name);
+                ImageView ivDragHandle = holder.itemView.findViewById(R.id.iv_drag_handle);
+                ivDragHandle.setVisibility(View.VISIBLE);
 
-                if (line != null) {
-                    tvName.setText(line.name);
-                    tvCode.setText(line.alias);
-                    badgeBg.setBackgroundColor(Color.parseColor("#" + line.color));
-                }
+                tvName.setText(line.name);
+                tvCode.setText(line.alias);
+                badgeBg.setBackgroundColor(Color.parseColor("#" + line.color));
 
-                rbItem.setChecked(selectedForDelete.contains(lineCode));
+                int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
+
+                rbItem.setImageResource(selectedForDelete.contains(lineCode) ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
+                rbItem.setImageTintList(ColorStateList.valueOf(selectedForDelete.contains(lineCode) ? ContextCompat.getColor(requireContext(), R.color.button_green) : colorOnSurface));
+
 
                 // 統一點擊邏輯
                 View.OnClickListener toggleListener = v -> {
@@ -283,10 +259,6 @@ public class SavedLineFragment extends Fragment {
         updateUIState.run();
     }
 
-
-    // ==========================================
-    // P3: 搜尋與新增的 BottomSheet (整合 SearchActivity)
-    // ==========================================
     private void showSearchBottomSheet() {
         BottomSheetDialog searchDialog = new BottomSheetDialog(requireContext());
         View sheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_search, null);
@@ -347,7 +319,7 @@ public class SavedLineFragment extends Fragment {
                 TextView tvCode = holder.itemView.findViewById(R.id.tv_line_code_badge);
                 View badgeBg = holder.itemView.findViewById(R.id.line_color_badge);
                 TextView tvName = holder.itemView.findViewById(R.id.tv_line_name);
-                MaterialRadioButton cbSelect = holder.itemView.findViewById(R.id.cb_select);
+                ImageView cbSelect = holder.itemView.findViewById(R.id.cb_select);
 
                 tvName.setText(line.name);
                 tvCode.setText(line.alias);
@@ -405,10 +377,31 @@ public class SavedLineFragment extends Fragment {
     }
 
 
-    // ==========================================
-    // API 邏輯：P5 獲取資料並渲染卡片
-    // 此段邏輯高度借鑒 TrafficNewsFragment
-    // ==========================================
+    private void refreshUIState() {
+        String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
+        if (savedCsv.isEmpty()) {
+            layoutEmpty.setVisibility(View.VISIBLE);
+            vSavedLines.setVisibility(View.GONE);
+            swipeRefreshLayout.setEnabled(false);
+        } else {
+            layoutEmpty.setVisibility(View.GONE);
+            vSavedLines.setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setEnabled(true);
+            fetchSavedLinesData();
+        }
+    }
+
+    private List<String> getSavedLinesList() {
+        String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
+        if (savedCsv.isEmpty()) return new ArrayList<>();
+
+        return new ArrayList<>(Arrays.asList(savedCsv.split(",")));
+    }
+
+    private void saveLinesList(List<String> list) {
+        prefs.edit().putString(KEY_SAVED_LINES, String.join(",", list)).apply();
+    }
+
     private void fetchSavedLinesData() {
         if (isFetching) return;
         List<String> savedLines = getSavedLinesList();
@@ -422,7 +415,6 @@ public class SavedLineFragment extends Fragment {
 
         new Thread(() -> {
             try {
-                // 1. 抓取 Tnews 大表
                 URL url = new URL("https://tnews.mtr.com.hk/alert/ryg_line_status.json");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
@@ -438,7 +430,6 @@ public class SavedLineFragment extends Fragment {
                     JSONObject root = new JSONObject(response.toString());
                     JSONArray linesArray = root.getJSONObject("ryg_status").getJSONArray("line");
 
-                    // 2. 過濾出使用者儲存的路線
                     JSONArray targetLines = new JSONArray();
                     for (int i = 0; i < linesArray.length(); i++) {
                         JSONObject obj = linesArray.getJSONObject(i);
@@ -447,39 +438,52 @@ public class SavedLineFragment extends Fragment {
                         }
                     }
 
-                    // 3. 交叉比對 nexttrain (直接內聯 CountDownLatch 處理)
                     CountDownLatch latch = new CountDownLatch(targetLines.length());
                     for (int i = 0; i < targetLines.length(); i++) {
                         final JSONObject tLine = targetLines.getJSONObject(i);
                         crossCheckExecutor.execute(() -> {
+                            HttpURLConnection conn = null;
                             try {
-                                String code = tLine.getString("line_code").toUpperCase();
-                                String sta = MainActivity.NEXTTRAIN_CHECK_STATIONS.getOrDefault(code, "ADM"); // 防呆
-                                URL url2 = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=" + code + "&sta=" + sta);
-                                HttpURLConnection c2 = (HttpURLConnection) url2.openConnection();
-                                c2.setConnectTimeout(3000);
-                                try (BufferedReader r2 = new BufferedReader(new InputStreamReader(c2.getInputStream()))) {
-                                    StringBuilder sb2 = new StringBuilder();
-                                    String l2;
-                                    while ((l2 = r2.readLine()) != null) sb2.append(l2);
-                                    JSONObject rtData = new JSONObject(sb2.toString());
+                                String lineCode = tLine.getString("line_code").toUpperCase();
+                                String sta = MainActivity.NEXTTRAIN_CHECK_STATIONS.get(lineCode);
+
+                                URL url2 = new URL("https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=" + lineCode + "&sta=" + sta);
+
+                                conn = (HttpURLConnection) url2.openConnection();
+                                conn.setConnectTimeout(3000);
+                                conn.setReadTimeout(3000);
+
+                                try (BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                                    StringBuilder sb = new StringBuilder();
+                                    String l;
+                                    while ((l = r.readLine()) != null) sb.append(l);
+
+                                    JSONObject rtData = new JSONObject(sb.toString());
 
                                     boolean isApiDelay = rtData.optString("isdelay", "N").equals("Y");
-                                    if (isApiDelay && tLine.getString("status").equalsIgnoreCase("green")) {
-                                        tLine.put("status", "yellow");
-                                        tLine.put("messages", "列車服務可能受阻。");
+                                    boolean isTimeBlank = rtData.optString("sys_time", "").equals("-") ||
+                                            rtData.optString("curr_time", "").equals("-");
+
+                                    if (isApiDelay || isTimeBlank) {
+                                        String currentStatus = tLine.getString("status").toLowerCase();
+                                        if (currentStatus.equals("green")) {
+                                            tLine.put("status", "yellow");
+                                            String original = tLine.optString("messages", "");
+                                            String nexttrain = "列車服務可能受阻，詳情請留意官方發出的最新車務資訊。";
+                                            tLine.put("messages", !original.isEmpty() ? original : nexttrain);
+                                        }
                                     }
                                 }
-                                c2.disconnect();
-                            } catch (Exception ignored) {
+                            } catch (Exception e) {
                             } finally {
+                                if (conn != null) conn.disconnect();
                                 latch.countDown();
                             }
                         });
                     }
+
                     latch.await(6, TimeUnit.SECONDS);
 
-                    // 4. 將抓到的順序依據 SharedPreferences 中的自訂排序 (Drag&Drop的結果) 重新排列
                     JSONArray sortedLines = new JSONArray();
                     for (String sCode : savedLines) {
                         for (int i = 0; i < targetLines.length(); i++) {
@@ -491,8 +495,7 @@ public class SavedLineFragment extends Fragment {
                         }
                     }
 
-                    // 5. 更新 UI
-                    new Handler(Looper.getMainLooper()).post(() -> renderCards(sortedLines));
+                    new Handler(Looper.getMainLooper()).post(() -> updateUI(sortedLines));
                 }
                 connection.disconnect();
             } catch (Exception e) {
@@ -504,25 +507,49 @@ public class SavedLineFragment extends Fragment {
         }).start();
     }
 
-    /**
-     * 重用你提供的 item_line_status.xml 樣式，動態插入到 statusContainer 中。
-     */
-    private void renderCards(JSONArray lines) {
-        if (!isAdded() || getView() == null) return;
-        statusContainer.removeAllViews();
 
+    private void updateUI(JSONArray lines) {
         try {
+            statusContainer.removeAllViews();
             for (int i = 0; i < lines.length(); i++) {
                 JSONObject lineObj = lines.getJSONObject(i);
+
                 String lineCode = lineObj.getString("line_code");
                 String lineNameTc = lineObj.getString("line_name_tc");
                 String lineColor = lineObj.getString("line_color");
                 String status = lineObj.getString("status");
+                String lineSection = "全綫";
 
-                // 抓取訊息邏輯與 TrafficNewsFragment 一致，此處簡化處理字串提取
                 String displayMessage = "沒有任何延誤";
-                if (!status.equals("green") && !status.equals("grey")) {
-                    displayMessage = lineObj.optString("messages", "有延誤訊息"); // 實務可擴充為複雜解析
+                Object messagesObj = lineObj.opt("messages");
+
+                if (messagesObj instanceof JSONObject) {
+                    JSONObject msgObj = ((JSONObject) messagesObj).optJSONObject("message");
+                    if (msgObj != null) {
+                        String title = msgObj.optString("title_tc", "");
+                        String cause = msgObj.optString("cause_tc", "");
+                        displayMessage = !title.isEmpty() ? title : cause;
+
+                        JSONObject affectedAreas = msgObj.optJSONObject("affected_areas");
+                        if (affectedAreas != null) {
+                            JSONObject affectedAreaObj = affectedAreas.optJSONObject("affected_area");
+
+                            if (affectedAreaObj != null) {
+                                String stationFr = affectedAreaObj.optString("station_code_fr");
+                                String stationTo = affectedAreaObj.optString("station_code_to");
+
+                                if (!stationFr.isEmpty() && !stationTo.isEmpty()) {
+                                    lineSection = hrConf.getStationName(Integer.parseInt(stationFr)) + "~"
+                                            + hrConf.getStationName(Integer.parseInt(stationTo));
+                                }
+                            }
+                        }
+                    }
+                } else if (messagesObj instanceof String) {
+                    String msgStr = (String) messagesObj;
+                    if (!msgStr.isEmpty()) {
+                        displayMessage = msgStr;
+                    }
                 }
 
                 View itemView = LayoutInflater.from(getContext()).inflate(R.layout.item_line_status, statusContainer, false);
@@ -532,36 +559,69 @@ public class SavedLineFragment extends Fragment {
                 TextView tvLineCode = itemView.findViewById(R.id.tv_line_code_badge);
                 TextView tvLineName = itemView.findViewById(R.id.tv_line);
                 TextView tvLineSection = itemView.findViewById(R.id.tv_line_section);
-                TextView tvMessage = itemView.findViewById(R.id.tv_message);
                 TextView tvStatus = itemView.findViewById(R.id.tv_status);
+                TextView tvMessage = itemView.findViewById(R.id.tv_message);
                 ImageView ivIcon = itemView.findViewById(R.id.iv_status_icon);
 
-                int cInt = Color.parseColor(lineColor);
-                vColorBar.setBackgroundColor(cInt);
-                vBadgeLayout.setBackgroundColor(cInt);
+                int colorInt = Color.parseColor(lineColor);
+                vColorBar.setBackgroundColor(colorInt);
+                vBadgeLayout.setBackgroundColor(colorInt);
                 tvLineCode.setText(lineCode);
                 tvLineName.setText(lineNameTc);
+                tvLineSection.setText(lineSection);
                 tvMessage.setText(displayMessage);
 
-                // 狀態 icon 邏輯
-                if (status.equalsIgnoreCase("green")) {
-                    tvStatus.setText("服務正常");
-                    ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
-                    ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
-                    tvLineSection.setVisibility(View.GONE);
-                } else if (status.equalsIgnoreCase("yellow")) {
-                    tvStatus.setText("服務延誤");
-                    ivIcon.setImageResource(R.drawable.outline_exclamation_24); // 假設有這個 icon
-                    ivIcon.setColorFilter(Color.parseColor("#FFA500"));
-                } else {
-                    tvStatus.setText("服務受阻");
-                    ivIcon.setColorFilter(Color.RED);
-                }
+                updateStatusUI(status, tvStatus, ivIcon);
+
+                itemView.setOnClickListener(v -> {
+                    android.content.Intent intent = new android.content.Intent(getActivity(), TrafficNewsActivity.class);
+                    intent.putExtra("line_code", lineCode);
+                    intent.putExtra("line_name_tc", lineNameTc);
+                    intent.putExtra("line_color", lineColor);
+                    intent.putExtra("status", status);
+                    intent.putExtra("messages", messagesObj.toString());
+                    startActivity(intent);
+                });
 
                 statusContainer.addView(itemView);
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void updateStatusUI(String status, TextView tvStatus, ImageView ivIcon) {
+        switch (status.toLowerCase()) {
+            case "green":
+                tvStatus.setText("服務正常");
+                ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
+                ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
+                break;
+            case "yellow":
+                tvStatus.setText("服務延誤");
+                ivIcon.setImageResource(R.drawable.outline_exclamation_24);
+                ivIcon.setColorFilter(Color.parseColor("#FFA500"));
+                break;
+            case "red":
+                tvStatus.setText("服務受阻");
+                ivIcon.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+                ivIcon.setColorFilter(Color.parseColor("#FF0000"));
+                break;
+            case "pink":
+                tvStatus.setText("服務延誤或受阻");
+                ivIcon.setImageResource(R.drawable.baseline_warning_24);
+                ivIcon.setColorFilter(Color.parseColor("#FF69B4"));
+                break;
+            case "typhoon":
+                tvStatus.setText("熱帶氣旋警告信號生效");
+                ivIcon.setImageResource(R.drawable.baseline_storm_24);
+                ivIcon.setColorFilter(Color.parseColor("#00BCD4"));
+                break;
+            case "grey":
+                tvStatus.setText("非服務時間");
+                ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
+                ivIcon.setColorFilter(Color.GRAY);
+                break;
         }
     }
 }

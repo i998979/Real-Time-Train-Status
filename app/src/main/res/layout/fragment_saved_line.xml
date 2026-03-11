@@ -33,7 +33,7 @@
             android:layout_height="match_parent">
 
             <RelativeLayout
-                android:id="@+id/layout_empty_state"
+                android:id="@+id/layout_empty"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingBottom="32dp"
@@ -58,14 +58,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="已登錄路線的\n運行狀況一目了然！"
+                        android:text="已登錄路綫的\n運行狀況一目了然！"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="18sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_register_empty"
+                    android:id="@+id/btn_register"
                     android:layout_width="300dp"
                     android:layout_height="50dp"
                     android:layout_alignParentBottom="true"
@@ -96,7 +96,7 @@
                         android:layout_marginBottom="16dp">
 
                         <TextView
-                            android:id="@+id/btn_edit_lines"
+                            android:id="@+id/btn_edit"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
