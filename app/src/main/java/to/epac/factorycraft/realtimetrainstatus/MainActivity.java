@@ -149,14 +149,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleWidgetIntent(Intent intent) {
-        if (intent != null && "saved_route".equals(intent.getStringExtra("target_fragment"))) {
-            // 1. 切換 BottomNavigationView 到「運行情報」分頁
+        if (intent != null && intent.getStringExtra("target_fragment").equals("saved_route")) {
             bottomNavigationView.setSelectedItemId(R.id.nav_operation);
 
-            // 2. 嘗試尋找當前 Fragment
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
 
-            // 如果 Fragment 已經存在（例如 App 原本就在後台打開著）
             if (currentFragment instanceof OperationInfoFragment) {
                 ViewPager2 pager = currentFragment.getView().findViewById(R.id.pager_content);
                 if (pager != null) {
