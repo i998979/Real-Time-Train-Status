@@ -13,7 +13,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +20,7 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -54,6 +54,8 @@ public class RouteListFragment extends Fragment {
     private RecyclerView recyclerView;
     private RouteAdapter adapter;
     private TabLayout tabLayout;
+
+    private List<String> alertLineCodes = new ArrayList<>();
 
     private JSONObject routeData;
     private List<JSONObject> fullRouteList = new ArrayList<>();
@@ -149,6 +151,41 @@ public class RouteListFragment extends Fragment {
     }
 
     private void fetchData(String origin, String dest) {
+        new Thread(() -> {
+            try {
+                URL trafficUrl = new URL("https://tnews.mtr.com.hk/alert/ryg_line_status.json");
+                HttpURLConnection tConn = (HttpURLConnection) trafficUrl.openConnection();
+                tConn.setConnectTimeout(3000);
+                tConn.setReadTimeout(3000);
+
+                if (tConn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    BufferedReader tReader = new BufferedReader(new InputStreamReader(tConn.getInputStream()));
+                    StringBuilder tSb = new StringBuilder();
+                    String tLine;
+                    while ((tLine = tReader.readLine()) != null) tSb.append(tLine);
+
+                    JSONObject tJson = new JSONObject(tSb.toString());
+                    JSONArray lines = tJson.getJSONObject("ryg_status").getJSONArray("line");
+
+                    synchronized (alertLineCodes) {
+                        alertLineCodes.clear();
+                        for (int i = 0; i < lines.length(); i++) {
+                            JSONObject lineObj = lines.getJSONObject(i);
+                            String status = lineObj.getString("status").toLowerCase();
+                            if (!status.equals("green") && !status.equals("grey") && !status.equals("typhoon")) {
+                                alertLineCodes.add(lineObj.getString("line_code"));
+                            }
+                        }
+                    }
+                    if (isAdded()) {
+                        requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
         new Thread(() -> {
             try {
                 URL url = new URL("https://www.mtr.com.hk/share/customer/jp/api/HRRoutes/?o=" + origin + "&d=" + dest + "&lang=C");
@@ -358,7 +395,7 @@ public class RouteListFragment extends Fragment {
         TextView tv = new TextView(requireContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.CENTER_VERTICAL;
-        tv.setPadding(dpToPx(6), 0, dpToPx(6), 0);
+        tv.setPadding(Utils.dpToPx(requireContext(), 6), 0, Utils.dpToPx(requireContext(), 6), 0);
         tv.setLayoutParams(params);
         tv.setText(stationName);
         tv.setTextSize(12);
@@ -372,18 +409,18 @@ public class RouteListFragment extends Fragment {
         segmentContainer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         FrameLayout badgeContainer = new FrameLayout(requireContext());
-        FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(dpToPx(32), dpToPx(32));
+        FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 32), Utils.dpToPx(requireContext(), 32));
         badgeParams.gravity = Gravity.CENTER;
         badgeContainer.setLayoutParams(badgeParams);
 
         GradientDrawable badgeBg = new GradientDrawable();
         badgeBg.setShape(GradientDrawable.RECTANGLE);
-        badgeBg.setCornerRadius(dpToPx(4));
+        badgeBg.setCornerRadius(Utils.dpToPx(requireContext(), 4));
         badgeBg.setColor(Color.parseColor("#" + line.color));
         badgeContainer.setBackground(badgeBg);
 
         TextView tvLineCode = new TextView(requireContext());
-        FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(dpToPx(26), dpToPx(26));
+        FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 26), Utils.dpToPx(requireContext(), 26));
         textParams.gravity = Gravity.CENTER;
         tvLineCode.setBackgroundColor(Color.WHITE);
         tvLineCode.setLayoutParams(textParams);
@@ -406,12 +443,12 @@ public class RouteListFragment extends Fragment {
             @Override
             public void draw(@NonNull Canvas canvas) {
                 Paint paint = new Paint();
-                paint.setColor(getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
-                paint.setStrokeWidth(dpToPx(1));
+                paint.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant));
+                paint.setStrokeWidth(Utils.dpToPx(requireContext(), 1));
 
                 int w = getBounds().width();
-                int startY = dpToPx(60);
-                int endY = rvHeight - dpToPx(60);
+                int startY = Utils.dpToPx(requireContext(), 60);
+                int endY = rvHeight - Utils.dpToPx(requireContext(), 60);
                 float availableH = endY - startY;
                 float pxPerMin = availableH / maxDuration;
 
@@ -545,9 +582,9 @@ public class RouteListFragment extends Fragment {
                 for (int i = 0; i < texts.length; i++) {
                     if (match[i]) {
                         TextView tv = new TextView(getContext());
-                        int size = dpToPx(17);
+                        int size = Utils.dpToPx(requireContext(), 17);
                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
-                        lp.setMargins(dpToPx(2), 0, dpToPx(2), 0);
+                        lp.setMargins(Utils.dpToPx(requireContext(), 2), 0, Utils.dpToPx(requireContext(), 2), 0);
                         tv.setLayoutParams(lp);
 
                         tv.setText(texts[i]);
@@ -558,7 +595,7 @@ public class RouteListFragment extends Fragment {
 
                         GradientDrawable bg = new GradientDrawable();
                         bg.setShape(GradientDrawable.RECTANGLE);
-                        bg.setCornerRadius(dpToPx(4));
+                        bg.setCornerRadius(Utils.dpToPx(requireContext(), 4));
                         bg.setColor(Color.parseColor(colors[i]));
                         tv.setBackground(bg);
 
@@ -596,15 +633,15 @@ public class RouteListFragment extends Fragment {
     }
 
     private void drawVisualSegments(RouteAdapter.ViewHolder holder, List<VisualSegment> segments, int adjustedTime) {
-        int verticalPadding = dpToPx(14);
-        int badgeSize = dpToPx(32);
-        int stationSize = dpToPx(32);
-        int walkIntSize = dpToPx(36);
-        int interchangeSize = dpToPx(50);
+        int verticalPadding = Utils.dpToPx(requireContext(), 14);
+        int badgeSize = Utils.dpToPx(requireContext(), 32);
+        int stationSize = Utils.dpToPx(requireContext(), 32);
+        int walkIntSize = Utils.dpToPx(requireContext(), 36);
+        int interchangeSize = Utils.dpToPx(requireContext(), 50);
 
         try {
             //            RecyclerView - Header reserved - Footer reserved
-            int totalVisualSpan = rvHeight - dpToPx(60) - dpToPx(60);
+            int totalVisualSpan = rvHeight - Utils.dpToPx(requireContext(), 60) - Utils.dpToPx(requireContext(), 60);
             float pxPerMin = (float) totalVisualSpan / maxDuration;
             int containerHeight = Math.round(adjustedTime * pxPerMin);
 
@@ -624,8 +661,8 @@ public class RouteListFragment extends Fragment {
                 }
             }
 
-            int neededSpaceForCircle = interchangeSize + dpToPx(10);
-            boolean shouldShowInterchange = availableContentPx - totalStaticPx >= dpToPx(60);
+            int neededSpaceForCircle = interchangeSize + Utils.dpToPx(requireContext(), 10);
+            boolean shouldShowInterchange = availableContentPx - totalStaticPx >= Utils.dpToPx(requireContext(), 60);
 
             int finalAvailableContentPx = availableContentPx - (shouldShowInterchange ? interchangeSize : 0);
             int remainingPx = Math.max(0, finalAvailableContentPx - totalStaticPx);
@@ -689,8 +726,8 @@ public class RouteListFragment extends Fragment {
 
                     FrameLayout.LayoutParams circleParams = new FrameLayout.LayoutParams(interchangeSize, interchangeSize);
                     circleParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-                    circleParams.topMargin = dpToPx(5);
-                    circleParams.bottomMargin = dpToPx(5);
+                    circleParams.topMargin = Utils.dpToPx(requireContext(), 5);
+                    circleParams.bottomMargin = Utils.dpToPx(requireContext(), 5);
                     container.addView(interchangeView, circleParams);
                 }
             }
@@ -702,7 +739,7 @@ public class RouteListFragment extends Fragment {
             holder.layoutVisualSegments.setOutlineProvider(new ViewOutlineProvider() {
                 @Override
                 public void getOutline(View view, Outline outline) {
-                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), dpToPx(60));
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), Utils.dpToPx(requireContext(), 60));
                 }
             });
             holder.layoutVisualSegments.setClipToOutline(true);
@@ -719,7 +756,7 @@ public class RouteListFragment extends Fragment {
 
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.OVAL);
-        shape.setColor(getThemeColor(com.google.android.material.R.attr.colorSurface));
+        shape.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurface));
         container.setBackground(shape);
 
         TextView tvLabel = new TextView(getContext());
@@ -727,14 +764,14 @@ public class RouteListFragment extends Fragment {
         tvLabel.setTextSize(12);
         tvLabel.setGravity(Gravity.CENTER);
         tvLabel.setTypeface(null, Typeface.BOLD);
-        tvLabel.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline));
+        tvLabel.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutline));
 
         TextView tvCount = new TextView(getContext());
         tvCount.setText(count + "次");
         tvCount.setTextSize(12);
         tvCount.setGravity(Gravity.CENTER);
         tvCount.setTypeface(null, Typeface.BOLD);
-        tvCount.setTextColor(getThemeColor(com.google.android.material.R.attr.colorSurfaceInverse));
+        tvCount.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurfaceInverse));
 
         container.addView(tvLabel);
         container.addView(tvCount);
@@ -743,9 +780,9 @@ public class RouteListFragment extends Fragment {
     }
 
     private View createSegmentView(VisualSegment seg, boolean isLastSegment) {
-        int badgeSize = dpToPx(32);
-        int stationSize = dpToPx(32);
-        int walkIntSize = dpToPx(36);
+        int badgeSize = Utils.dpToPx(requireContext(), 32);
+        int stationSize = Utils.dpToPx(requireContext(), 32);
+        int walkIntSize = Utils.dpToPx(requireContext(), 36);
 
         FrameLayout segmentView = new FrameLayout(getContext());
         segmentView.setClipChildren(false);
@@ -762,21 +799,21 @@ public class RouteListFragment extends Fragment {
             TextView tvIcon = new TextView(getContext());
             tvIcon.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
             tvIcon.setTextSize(10);
-            tvIcon.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
+            tvIcon.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant));
             walkContainer.addView(tvIcon);
 
             TextView tvWalk = new TextView(getContext());
             tvWalk.setText(seg.duration + "");
             tvWalk.setTextSize(10);
             tvWalk.setTypeface(null, Typeface.BOLD);
-            tvWalk.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOnSurface));
+            tvWalk.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface));
 
             GradientDrawable bgTvWalk = new GradientDrawable();
             bgTvWalk.setShape(GradientDrawable.RECTANGLE);
-            bgTvWalk.setCornerRadius(dpToPx(4));
-            bgTvWalk.setColor(getThemeColor(com.google.android.material.R.attr.colorOnSurfaceInverse));
+            bgTvWalk.setCornerRadius(Utils.dpToPx(requireContext(), 4));
+            bgTvWalk.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceInverse));
             tvWalk.setBackground(bgTvWalk);
-            tvWalk.setPadding(dpToPx(4), dpToPx(2), dpToPx(4), dpToPx(2));
+            tvWalk.setPadding(Utils.dpToPx(requireContext(), 4), Utils.dpToPx(requireContext(), 2), Utils.dpToPx(requireContext(), 4), Utils.dpToPx(requireContext(), 2));
             walkContainer.addView(tvWalk);
 
             FrameLayout.LayoutParams walkParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, walkIntSize);
@@ -786,13 +823,13 @@ public class RouteListFragment extends Fragment {
             int lineColor = Color.parseColor("#" + seg.lineColor);
 
             View lineBar = new View(getContext());
-            FrameLayout.LayoutParams barParams = new FrameLayout.LayoutParams(dpToPx(8), ViewGroup.LayoutParams.MATCH_PARENT);
+            FrameLayout.LayoutParams barParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 8), ViewGroup.LayoutParams.MATCH_PARENT);
             barParams.gravity = Gravity.CENTER_HORIZONTAL;
             barParams.bottomMargin = showStation ? stationSize : 0;
 
             GradientDrawable shape = new GradientDrawable();
             shape.setShape(GradientDrawable.RECTANGLE);
-            shape.setCornerRadius(dpToPx(8));
+            shape.setCornerRadius(Utils.dpToPx(requireContext(), 8));
             shape.setColor(lineColor);
             lineBar.setBackground(shape);
             segmentView.addView(lineBar, barParams);
@@ -805,12 +842,12 @@ public class RouteListFragment extends Fragment {
 
             GradientDrawable badgeBg = new GradientDrawable();
             badgeBg.setShape(GradientDrawable.RECTANGLE);
-            badgeBg.setCornerRadius(dpToPx(4));
+            badgeBg.setCornerRadius(Utils.dpToPx(requireContext(), 4));
             badgeBg.setColor(lineColor);
             badgeContainer.setBackground(badgeBg);
 
             TextView tvLineCode = new TextView(getContext());
-            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(dpToPx(26), dpToPx(26));
+            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 26), Utils.dpToPx(requireContext(), 26));
             textParams.gravity = Gravity.CENTER;
             tvLineCode.setBackgroundColor(Color.WHITE);
             tvLineCode.setLayoutParams(textParams);
@@ -826,13 +863,13 @@ public class RouteListFragment extends Fragment {
 
             if (hrConf.isTerminus(seg.lineCode, seg.startNode.optInt("ID"))) {
                 TextView tvTerminus = new TextView(getContext());
-                int terminusSize = dpToPx(16);
-                FrameLayout.LayoutParams terminusParams = new FrameLayout.LayoutParams(terminusSize, terminusSize);
-                terminusParams.gravity = Gravity.TOP | Gravity.START;
-                terminusParams.leftMargin = -dpToPx(5);
-                terminusParams.topMargin = -dpToPx(5);
+                int size = Utils.dpToPx(requireContext(), 16);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(size, size);
+                params.gravity = Gravity.TOP | Gravity.START;
+                params.leftMargin = -Utils.dpToPx(requireContext(), 5);
+                params.topMargin = -Utils.dpToPx(requireContext(), 5);
 
-                tvTerminus.setLayoutParams(terminusParams);
+                tvTerminus.setLayoutParams(params);
                 tvTerminus.setText("始");
                 tvTerminus.setTextColor(Color.WHITE);
                 tvTerminus.setTextSize(9);
@@ -841,26 +878,40 @@ public class RouteListFragment extends Fragment {
 
                 GradientDrawable termBg = new GradientDrawable();
                 termBg.setShape(GradientDrawable.RECTANGLE);
-                termBg.setCornerRadius(dpToPx(6));
+                termBg.setCornerRadius(Utils.dpToPx(requireContext(), 6));
                 termBg.setColor(Color.parseColor("#80D8FF"));
-                termBg.setStroke(dpToPx(1), Color.BLACK);
+                termBg.setStroke(Utils.dpToPx(requireContext(), 1), Color.BLACK);
                 tvTerminus.setBackground(termBg);
 
                 badgeContainer.addView(tvTerminus);
+            }
+
+            if (alertLineCodes.contains(seg.lineCode)) {
+                ImageView ivAlert = new ImageView(getContext());
+                int size = Utils.dpToPx(requireContext(), 18);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(size, size);
+
+                params.gravity = Gravity.TOP | Gravity.END;
+                params.rightMargin = -Utils.dpToPx(requireContext(), 5);
+                params.topMargin = -Utils.dpToPx(requireContext(), 5);
+                ivAlert.setLayoutParams(params);
+                ivAlert.setImageResource(R.drawable.ic_line_warning);
+
+                badgeContainer.addView(ivAlert);
             }
         }
 
         if (showStation) {
             TextView tvStation = new TextView(getContext());
             tvStation.setText(seg.stationName);
-            tvStation.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
+            tvStation.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant));
             tvStation.setTextSize(14);
             tvStation.setTypeface(null, Typeface.BOLD);
             tvStation.setGravity(Gravity.CENTER);
 
-            FrameLayout.LayoutParams stationParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, stationSize);
-            stationParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            tvStation.setLayoutParams(stationParams);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, stationSize);
+            params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+            tvStation.setLayoutParams(params);
             segmentView.addView(tvStation);
         }
 
@@ -999,15 +1050,5 @@ public class RouteListFragment extends Fragment {
         }
 
         return totalFare;
-    }
-
-    private int getThemeColor(int attr) {
-        TypedValue typedValue = new TypedValue();
-        getContext().getTheme().resolveAttribute(attr, typedValue, true);
-        return typedValue.data;
-    }
-
-    private int dpToPx(int dp) {
-        return Math.round((float) dp * getResources().getDisplayMetrics().density);
     }
 }

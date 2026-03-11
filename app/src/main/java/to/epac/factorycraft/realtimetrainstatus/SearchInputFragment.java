@@ -301,7 +301,7 @@ public class SearchInputFragment extends Fragment {
         SpannableString spannable = new SpannableString(fullText);
 
         Drawable icon = ContextCompat.getDrawable(requireContext(), iconRes).mutate();
-        icon.setBounds(0, 0, dpToPx(18), dpToPx(18));
+        icon.setBounds(0, 0, Utils.dpToPx(requireContext(), 18), Utils.dpToPx(requireContext(), 18));
         icon.setTint(color);
         spannable.setSpan(new ImageSpan(icon, ImageSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         spannable.setSpan(new RelativeSizeSpan(1.0f), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -313,9 +313,5 @@ public class SearchInputFragment extends Fragment {
         }
 
         btn.setText(spannable);
-    }
-
-    private int dpToPx(int dp) {
-        return Math.round((float) dp * getResources().getDisplayMetrics().density);
     }
 }

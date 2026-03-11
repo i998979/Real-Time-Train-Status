@@ -2,6 +2,7 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.TypedValue;
 
 import androidx.core.content.ContextCompat;
 
@@ -17,8 +18,6 @@ public class Utils {
 
     public static String idToCode(Context context, String line, int id) {
         LineConfig config = LineConfig.get(context, line);
-
-        Log.d("tagg", line + " " + id);
 
         if (line.equalsIgnoreCase("eal")) {
             if (id == 14) return "LMC";
@@ -213,5 +212,16 @@ public class Utils {
         List<String> headCode = new ArrayList<>(Arrays.asList("FF", "SS", "VL", "VT", "VV", "VW", "DP", "XX", "TT"));
 
         return !(headCode.contains(td.substring(0, 2)) || td.equals("UNKNOWN"));
+    }
+
+
+    public static int getThemeColor(Context context, int attr) {
+        TypedValue typedValue = new TypedValue();
+        context.getTheme().resolveAttribute(attr, typedValue, true);
+        return typedValue.data;
+    }
+
+    public static int dpToPx(Context context, int dp) {
+        return Math.round((float) dp * context.getResources().getDisplayMetrics().density);
     }
 }
