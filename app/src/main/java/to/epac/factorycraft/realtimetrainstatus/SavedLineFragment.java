@@ -42,10 +42,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,6 +57,9 @@ public class SavedLineFragment extends Fragment {
 
     private SharedPreferences prefs;
     private static final String KEY_SAVED_LINES = "saved_lines_csv";
+
+    EditAdapter editAdapter;
+    SearchAdapter searchAdapter;
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RelativeLayout layoutEmpty;
@@ -67,6 +72,12 @@ public class SavedLineFragment extends Fragment {
     private final ExecutorService crossCheckExecutor = Executors.newFixedThreadPool(10);
     private HRConfig hrConf;
 
+    Runnable updateSelectAll;
+
+    private List<HRConfig.Line> filteredLines = new ArrayList<>();
+    List<String> currentSaved = new ArrayList<>();
+    Set<String> selectedForDelete = new HashSet<>();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -74,6 +85,7 @@ public class SavedLineFragment extends Fragment {
 
         prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         hrConf = HRConfig.getInstance(getContext());
+
 
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
         layoutEmpty = view.findViewById(R.id.layout_empty);
@@ -92,6 +104,20 @@ public class SavedLineFragment extends Fragment {
             fetchSavedLinesData();
         });
 
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+        int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+
+        int startTime = 1 * 60 + 30; // 01:30
+        int endTime = 5 * 60;        // 05:00
+
+        boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
+
+        LinearLayout nthMessage = view.findViewById(R.id.layout_nth);
+        if (isMaintenanceTime)
+            nthMessage.setVisibility(View.VISIBLE);
+        else
+            nthMessage.setVisibility(View.GONE);
+
         refreshUIState();
 
         return view;
@@ -106,6 +132,18 @@ public class SavedLineFragment extends Fragment {
     }
 
 
+    private List<String> getSavedLinesList() {
+        String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
+        if (savedCsv.isEmpty()) return new ArrayList<>();
+
+        return new ArrayList<>(Arrays.asList(savedCsv.split(",")));
+    }
+
+    private void saveLinesList(List<String> list) {
+        prefs.edit().putString(KEY_SAVED_LINES, String.join(",", list)).apply();
+    }
+
+
     private void showEditBottomSheet() {
         BottomSheetDialog editDialog = new BottomSheetDialog(requireContext());
         View sheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_edit, null);
@@ -116,132 +154,82 @@ public class SavedLineFragment extends Fragment {
 
         int heightInPx = (int) (200 * getResources().getDisplayMetrics().density);
         behavior.setPeekHeight(heightInPx);
-
-        ViewGroup.LayoutParams layoutParams = parent.getLayoutParams();
-        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-
-        parent.setLayoutParams(layoutParams);
         behavior.setSkipCollapsed(true);
         behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
+        ViewGroup.LayoutParams layoutParams = parent.getLayoutParams();
+        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        parent.setLayoutParams(layoutParams);
+
+
+        currentSaved.clear();
+        currentSaved.addAll(getSavedLinesList());
+        selectedForDelete.clear();
+
+
         TextView btnAddLine = sheetView.findViewById(R.id.btn_add_line);
+        btnAddLine.setOnClickListener(v -> {
+            showSearchBottomSheet(currentSaved, updateSelectAll);
+        });
         ImageView rbSelectAll = sheetView.findViewById(R.id.rb_select_all);
         TextView tvSelectAll = sheetView.findViewById(R.id.tv_select_all);
-        MaterialButton btnDelete = sheetView.findViewById(R.id.btn_delete);
-        RecyclerView rvLines = sheetView.findViewById(R.id.rv_saved_lines);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvLines.getContext(), LinearLayoutManager.VERTICAL);
-        rvLines.addItemDecoration(dividerItemDecoration);
-        rvLines.setLayoutManager(new LinearLayoutManager(getContext()));
-        MaterialButton btnClose = sheetView.findViewById(R.id.btn_close);
-
-        btnClose.setOnClickListener(v -> {
-            editDialog.cancel();
-        });
-
-        List<String> currentSaved = getSavedLinesList();
-        Set<String> selectedForDelete = new HashSet<>();
-
-        Runnable updateUIState = () -> {
-            if (rvLines.getAdapter() != null) rvLines.getAdapter().notifyDataSetChanged();
-
-            boolean isAllSelected = !currentSaved.isEmpty() && selectedForDelete.size() == currentSaved.size();
-            tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
-            int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
-
-            rbSelectAll.setImageResource(isAllSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
-            rbSelectAll.setImageTintList(ColorStateList.valueOf(isAllSelected ? ContextCompat.getColor(requireContext(), R.color.button_green) : colorOnSurface));
-
-
-            btnDelete.setEnabled(!selectedForDelete.isEmpty());
-            int btnColor = selectedForDelete.isEmpty() ? Color.parseColor("#2C2C2C") : ContextCompat.getColor(requireContext(), R.color.button_green);
-            btnDelete.setBackgroundColor(btnColor);
-        };
-
-        btnAddLine.setOnClickListener(v -> {
-            showSearchBottomSheet();
-        });
-
-        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = new RecyclerView.Adapter<>() {
-            @NonNull
-            @Override
-            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                return new RecyclerView.ViewHolder(getLayoutInflater().inflate(R.layout.item_edit_line, parent, false)) {
-                };
-            }
-
-            @Override
-            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-                String lineCode = currentSaved.get(position);
-                HRConfig.Line line = hrConf.getLineByAlias(lineCode);
-
-                ImageView rbItem = holder.itemView.findViewById(R.id.cb_select);
-                TextView tvCode = holder.itemView.findViewById(R.id.tv_line_code_badge);
-                View badgeBg = holder.itemView.findViewById(R.id.line_color_badge);
-                TextView tvName = holder.itemView.findViewById(R.id.tv_line_name);
-                ImageView ivDragHandle = holder.itemView.findViewById(R.id.iv_drag_handle);
-                ivDragHandle.setVisibility(View.VISIBLE);
-
-                tvName.setText(line.name);
-                tvCode.setText(line.alias);
-                badgeBg.setBackgroundColor(Color.parseColor("#" + line.color));
-
-                int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
-
-                rbItem.setImageResource(selectedForDelete.contains(lineCode) ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
-                rbItem.setImageTintList(ColorStateList.valueOf(selectedForDelete.contains(lineCode) ? ContextCompat.getColor(requireContext(), R.color.button_green) : colorOnSurface));
-
-
-                // 統一點擊邏輯
-                View.OnClickListener toggleListener = v -> {
-                    if (selectedForDelete.contains(lineCode)) {
-                        selectedForDelete.remove(lineCode);
-                    } else {
-                        selectedForDelete.add(lineCode);
-                    }
-                    updateUIState.run();
-                };
-
-                holder.itemView.setOnClickListener(toggleListener);
-                rbItem.setOnClickListener(toggleListener);
-
-                // 處理拖曳 (ItemTouchHelper 會用到 holder)
-            }
-
-            @Override
-            public int getItemCount() {
-                return currentSaved.size();
-            }
-        };
-        rvLines.setAdapter(adapter);
-
         View.OnClickListener selectAllListener = v -> {
             boolean isCurrentlyAllSelected = (selectedForDelete.size() == currentSaved.size() && !currentSaved.isEmpty());
             selectedForDelete.clear();
             if (!isCurrentlyAllSelected) {
                 selectedForDelete.addAll(currentSaved);
             }
-            updateUIState.run();
+            updateSelectAll.run();
         };
         rbSelectAll.setOnClickListener(selectAllListener);
         tvSelectAll.setOnClickListener(selectAllListener);
 
-        // --- 刪除事件 ---
+        MaterialButton btnDelete = sheetView.findViewById(R.id.btn_delete);
         btnDelete.setOnClickListener(v -> {
             currentSaved.removeAll(selectedForDelete);
             saveLinesList(currentSaved);
             selectedForDelete.clear();
-            updateUIState.run();
-            if (currentSaved.isEmpty()) editDialog.dismiss();
+            updateSelectAll.run();
         });
 
-        // 拖曳排序邏輯維持不變，但在 onMove 時要小心處理 List 同步
+        RecyclerView rvLines = sheetView.findViewById(R.id.rv_saved_lines);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvLines.getContext(), LinearLayoutManager.VERTICAL);
+        rvLines.addItemDecoration(dividerItemDecoration);
+        rvLines.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        MaterialButton btnClose = sheetView.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> {
+            editDialog.cancel();
+        });
+
+        updateSelectAll = () -> {
+            if (editAdapter != null) editAdapter.notifyDataSetChanged();
+
+            boolean isAllSelected = !currentSaved.isEmpty() && selectedForDelete.size() == currentSaved.size();
+            tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
+
+            int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
+            int green = ContextCompat.getColor(requireContext(), R.color.button_green);
+
+            rbSelectAll.setImageResource(isAllSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
+            rbSelectAll.setImageTintList(ColorStateList.valueOf(isAllSelected ? green : colorOnSurface));
+
+            btnDelete.setEnabled(!selectedForDelete.isEmpty());
+            btnDelete.setBackgroundColor(selectedForDelete.isEmpty() ? Color.parseColor("#2C2C2C") : green);
+        };
+
+        editAdapter = new EditAdapter(currentSaved, selectedForDelete, hrConf, updateSelectAll);
+        rvLines.setAdapter(editAdapter);
+
+
+        // Drag item to reorder
         ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
             public boolean onMove(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder from, @NonNull RecyclerView.ViewHolder to) {
                 int fromPos = from.getAdapterPosition();
                 int toPos = to.getAdapterPosition();
                 Collections.swap(currentSaved, fromPos, toPos);
-                adapter.notifyItemMoved(fromPos, toPos);
+                editAdapter.notifyItemMoved(fromPos, toPos);
                 saveLinesList(currentSaved);
                 return true;
             }
@@ -252,14 +240,18 @@ public class SavedLineFragment extends Fragment {
         });
         touchHelper.attachToRecyclerView(rvLines);
 
-        editDialog.setOnDismissListener(dialog -> refreshUIState());
+
+        // Refresh UI, fetch data if not empty, show empty layout if empty
+        editDialog.setOnDismissListener(dialog -> {
+            refreshUIState();
+        });
         editDialog.show();
 
-        // 初始化 UI 狀態
-        updateUIState.run();
+        // Initialize select all state
+        updateSelectAll.run();
     }
 
-    private void showSearchBottomSheet() {
+    private void showSearchBottomSheet(List<String> currentSaved, Runnable onDataChanged) {
         BottomSheetDialog searchDialog = new BottomSheetDialog(requireContext());
         View sheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_search, null);
         searchDialog.setContentView(sheetView);
@@ -269,81 +261,43 @@ public class SavedLineFragment extends Fragment {
 
         int heightInPx = (int) (200 * getResources().getDisplayMetrics().density);
         behavior.setPeekHeight(heightInPx);
+        behavior.setSkipCollapsed(true);
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
         ViewGroup.LayoutParams layoutParams = parent.getLayoutParams();
         layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-        ;
         parent.setLayoutParams(layoutParams);
-        behavior.setSkipCollapsed(true);          // 跳過摺疊狀態，直接進入展開
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED); // 強制設定為展開狀態
 
-        EditText etSearch = sheetView.findViewById(R.id.et_line_search);
+
+        List<HRConfig.Line> allLines = new ArrayList<>();
+        for (HRConfig.Line line : hrConf.getLineMap().values()) {
+            if (!"HSR".equalsIgnoreCase(line.alias))
+                allLines.add(line);
+        }
+        filteredLines.clear();
+        filteredLines.addAll(allLines);
+
+
         RecyclerView rvResults = sheetView.findViewById(R.id.rv_search_results);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvResults.getContext(), LinearLayoutManager.VERTICAL);
         rvResults.addItemDecoration(dividerItemDecoration);
         rvResults.setLayoutManager(new LinearLayoutManager(getContext()));
+        searchAdapter = new SearchAdapter(filteredLines, line -> {
+            if (!currentSaved.contains(line.alias)) {
+                currentSaved.add(line.alias);
+                saveLinesList(currentSaved);
+                onDataChanged.run();
+            }
+            searchDialog.dismiss();
+        });
+        rvResults.setAdapter(searchAdapter);
+
         MaterialButton btnClose = sheetView.findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> {
             searchDialog.cancel();
         });
 
-        // 初始化所有可用路線 (排除高鐵等)
-        List<HRConfig.Line> allLines = new ArrayList<>();
-        for (HRConfig.Line line : hrConf.getLineMap().values()) {
-            if (!"HSR".equalsIgnoreCase(line.alias)) {
-                allLines.add(line);
-            }
-        }
-
-        // 用來顯示的過濾結果
-        List<HRConfig.Line> filteredLines = new ArrayList<>(allLines);
-        List<String> currentSaved = getSavedLinesList();
-
-        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = new RecyclerView.Adapter<>() {
-            @NonNull
-            @Override
-            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                // 這裡可以重用 item_edit_line.xml，只需隱藏 Checkbox 和 Drag 圖標，顯示箭頭即可
-                View v = getLayoutInflater().inflate(R.layout.item_edit_line, parent, false);
-                v.findViewById(R.id.cb_select).setVisibility(View.GONE);
-                v.findViewById(R.id.iv_drag_handle).setVisibility(View.GONE);
-                ((ImageView) v.findViewById(R.id.iv_drag_handle)).setImageResource(R.drawable.baseline_keyboard_arrow_right_24);
-                return new RecyclerView.ViewHolder(v) {
-                };
-            }
-
-            @Override
-            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-                HRConfig.Line line = filteredLines.get(position);
-
-                TextView tvCode = holder.itemView.findViewById(R.id.tv_line_code_badge);
-                View badgeBg = holder.itemView.findViewById(R.id.line_color_badge);
-                TextView tvName = holder.itemView.findViewById(R.id.tv_line_name);
-                ImageView cbSelect = holder.itemView.findViewById(R.id.cb_select);
-
-                tvName.setText(line.name);
-                tvCode.setText(line.alias);
-                badgeBg.setBackgroundColor(Color.parseColor("#" + line.color)); // 依據你的 Config 設定顏色
-
-                holder.itemView.setOnClickListener(v -> {
-                    if (!currentSaved.contains(line.alias)) {
-                        currentSaved.add(line.alias);
-                        saveLinesList(currentSaved);
-                        // HistoryManager.getInstance(getContext()).saveLineSearch(line.id, line.name); // 若需儲存搜尋歷史
-                    }
-                    searchDialog.dismiss();
-                    showEditBottomSheet(); // 點擊後回到編輯畫面
-                });
-            }
-
-            @Override
-            public int getItemCount() {
-                return filteredLines.size();
-            }
-        };
-        rvResults.setAdapter(adapter);
-
-        // 搜尋過濾邏輯 (完全移植自你的 SearchActivity)
+        EditText etSearch = sheetView.findViewById(R.id.et_line_search);
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -355,17 +309,17 @@ public class SavedLineFragment extends Fragment {
                 filteredLines.clear();
 
                 if (query.isEmpty()) {
-                    filteredLines.addAll(allLines); // 如果為空，顯示全部 (或你想顯示歷史紀錄)
+                    filteredLines.addAll(allLines);
                 } else {
                     for (HRConfig.Line line : allLines) {
                         if (line.name.toLowerCase().contains(query) ||
-                                (line.nameEN != null && line.nameEN.toLowerCase().contains(query)) ||
+                                line.nameEN.toLowerCase().contains(query) ||
                                 line.alias.toLowerCase().contains(query)) {
                             filteredLines.add(line);
                         }
                     }
                 }
-                adapter.notifyDataSetChanged();
+                searchAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -389,17 +343,6 @@ public class SavedLineFragment extends Fragment {
             swipeRefreshLayout.setEnabled(true);
             fetchSavedLinesData();
         }
-    }
-
-    private List<String> getSavedLinesList() {
-        String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
-        if (savedCsv.isEmpty()) return new ArrayList<>();
-
-        return new ArrayList<>(Arrays.asList(savedCsv.split(",")));
-    }
-
-    private void saveLinesList(List<String> list) {
-        prefs.edit().putString(KEY_SAVED_LINES, String.join(",", list)).apply();
     }
 
     private void fetchSavedLinesData() {
@@ -622,6 +565,134 @@ public class SavedLineFragment extends Fragment {
                 ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
                 ivIcon.setColorFilter(Color.GRAY);
                 break;
+        }
+    }
+
+
+    private static class EditAdapter extends RecyclerView.Adapter<EditAdapter.ViewHolder> {
+        private final List<String> data;
+        private final Set<String> selectedSet;
+        private final HRConfig hrConf;
+        private final Runnable onUpdateUI;
+
+        public EditAdapter(List<String> data, Set<String> selectedSet, HRConfig hrConf, Runnable onUpdateUI) {
+            this.data = data;
+            this.selectedSet = selectedSet;
+            this.hrConf = hrConf;
+            this.onUpdateUI = onUpdateUI;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_edit_line, parent, false));
+
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            String lineCode = data.get(position);
+            HRConfig.Line line = hrConf.getLineByAlias(lineCode);
+            Context context = holder.itemView.getContext();
+
+            holder.tvLineName.setText(line.name);
+            holder.tvLineBadge.setText(line.alias);
+            holder.lineColorBadge.setBackgroundColor(Color.parseColor("#" + line.color));
+
+            int colorOnSurface = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnSurface);
+            boolean isSelected = selectedSet.contains(lineCode);
+
+            holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
+            holder.cbSelect.setImageTintList(ColorStateList.valueOf(isSelected ? ContextCompat.getColor(context, R.color.button_green) : colorOnSurface));
+
+
+            holder.itemView.setOnClickListener(v -> {
+                if (isSelected) selectedSet.remove(lineCode);
+                else selectedSet.add(lineCode);
+                onUpdateUI.run();
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return data.size();
+        }
+
+        private static class ViewHolder extends RecyclerView.ViewHolder {
+            ImageView cbSelect;
+            View lineColorBadge;
+            TextView tvLineBadge;
+            TextView tvLineName;
+            ImageView ivIndicator;
+
+            private ViewHolder(View v) {
+                super(v);
+                cbSelect = v.findViewById(R.id.cb_select);
+                lineColorBadge = v.findViewById(R.id.line_color_badge);
+                tvLineBadge = v.findViewById(R.id.tv_line_code_badge);
+                tvLineName = v.findViewById(R.id.tv_line_name);
+                ivIndicator = v.findViewById(R.id.iv_indicator);
+            }
+        }
+    }
+
+    private static class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
+        private final List<HRConfig.Line> filteredList;
+        private final OnLineSelectedListener listener;
+
+        public interface OnLineSelectedListener {
+            void onSelected(HRConfig.Line line);
+        }
+
+        public SearchAdapter(List<HRConfig.Line> filteredList, OnLineSelectedListener listener) {
+            this.filteredList = filteredList;
+            this.listener = listener;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_edit_line, parent, false));
+
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            HRConfig.Line line = filteredList.get(position);
+
+            holder.tvLineName.setText(line.name);
+            holder.tvLineBadge.setText(line.alias);
+            holder.lineColorBadge.setBackgroundColor(Color.parseColor("#" + line.color));
+
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null)
+                    listener.onSelected(line);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return filteredList.size();
+        }
+
+        private static class ViewHolder extends RecyclerView.ViewHolder {
+            ImageView cbSelect;
+            View lineColorBadge;
+            TextView tvLineBadge;
+            TextView tvLineName;
+            ImageView ivIndicator;
+
+            private ViewHolder(View v) {
+                super(v);
+                cbSelect = v.findViewById(R.id.cb_select);
+                lineColorBadge = v.findViewById(R.id.line_color_badge);
+                tvLineBadge = v.findViewById(R.id.tv_line_code_badge);
+                tvLineName = v.findViewById(R.id.tv_line_name);
+                ivIndicator = v.findViewById(R.id.iv_indicator);
+
+                cbSelect.setVisibility(View.GONE);
+                ivIndicator.setBackgroundResource(R.drawable.baseline_keyboard_arrow_right_24);
+            }
         }
     }
 }

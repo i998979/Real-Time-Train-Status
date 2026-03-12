@@ -71,10 +71,6 @@ public class TrafficNewsFragment extends Fragment {
         layoutNormal = view.findViewById(R.id.layout_normal);
         layoutDelayed = view.findViewById(R.id.layout_delayed);
 
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            fetchTrafficNews();
-        });
-
         Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
         int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
 
@@ -89,8 +85,15 @@ public class TrafficNewsFragment extends Fragment {
         else
             nthMessage.setVisibility(View.GONE);
 
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            if (!isMaintenanceTime)
+                fetchTrafficNews();
+            else
+                swipeRefreshLayout.setRefreshing(false);
+        });
+
         tvRefreshTime.setText("");
-        fetchTrafficNews();
+        if (!isMaintenanceTime) fetchTrafficNews();
 
         return view;
     }

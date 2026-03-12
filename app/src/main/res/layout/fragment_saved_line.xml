@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -36,9 +35,7 @@
                 android:id="@+id/layout_empty"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingBottom="32dp"
-                android:visibility="gone"
-                tools:visibility="visible">
+                android:paddingBottom="32dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -82,19 +79,19 @@
                 android:id="@+id/v_saved_lines"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="visible">
+                android:paddingVertical="16dp"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingVertical="16dp">
+                    android:orientation="vertical">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingHorizontal="16dp"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="20dp"
+                        android:paddingHorizontal="16dp">
 
                         <TextView
                             android:id="@+id/btn_edit"
@@ -111,9 +108,33 @@
                         android:id="@+id/status_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical" />
+                        android:orientation="vertical"
+                        android:paddingTop="20dp" />
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
+
+            <LinearLayout
+                android:id="@+id/layout_nth"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="#E14158"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="現在是非行車時間"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="凌晨1時30分~5時正"
+                    android:textColor="#FFFFFF" />
+            </LinearLayout>
 
         </FrameLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
