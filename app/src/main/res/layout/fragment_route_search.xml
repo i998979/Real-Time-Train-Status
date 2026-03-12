@@ -13,6 +13,7 @@
         android:minHeight="0dp"
         app:tabGravity="fill"
         app:tabIndicator="@null"
+        app:tabIndicatorFullWidth="true"
         app:tabIndicatorHeight="0dp"
         app:tabMode="fixed"
         app:tabPaddingEnd="0dp"

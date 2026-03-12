@@ -161,6 +161,7 @@
                     android:background="?attr/colorSurface"
                     app:tabGravity="fill"
                     app:tabIndicatorColor="@color/button_green"
+                    app:tabIndicatorFullWidth="true"
                     app:tabIndicatorGravity="bottom"
                     app:tabIndicatorHeight="4dp"
                     app:tabMaxWidth="0dp"

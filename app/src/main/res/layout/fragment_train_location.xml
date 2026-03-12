@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_line"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <TextView
+        android:id="@+id/tv_refresh_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:padding="16dp"
+        android:text="3月2日 23:59" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_up_dir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/bg_round_label"
+        android:backgroundTint="@color/label_bg_tint"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="4dp"
+        android:text="羅湖/落馬洲方面"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="14sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_dn_dir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_round_label"
+        android:backgroundTint="@color/label_bg_tint"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="4dp"
+        android:text="金鐘方面"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="14sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_refresh"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:backgroundTint="@color/button_green"
+        app:cornerRadius="28dp"
+        app:icon="@drawable/baseline_refresh_24"
+        app:iconPadding="0dp"
+        app:iconSize="40dp"
+        app:iconTint="@android:color/white"
+        app:strokeColor="@android:color/white"
+        app:strokeWidth="4dp" />
+
+    <LinearLayout
+        android:id="@+id/layout_nth"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="56dp"
+        android:background="#E14158"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="現在是非行車時間"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="凌晨1時30分~5時正"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+</FrameLayout>

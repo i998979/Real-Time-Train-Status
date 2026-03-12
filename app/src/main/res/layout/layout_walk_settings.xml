@@ -102,10 +102,10 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:tag="iv_check_mark"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/outline_circle_24"
+                    android:tag="iv_check_mark"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
@@ -163,10 +163,10 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:tag="iv_check_mark"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/outline_circle_24"
+                    android:tag="iv_check_mark"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
@@ -224,10 +224,10 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:tag="iv_check_mark"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/outline_circle_24"
+                    android:tag="iv_check_mark"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
@@ -285,10 +285,10 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:tag="iv_check_mark"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/outline_circle_24"
+                    android:tag="iv_check_mark"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>

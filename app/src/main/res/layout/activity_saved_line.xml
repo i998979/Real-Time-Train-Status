@@ -9,8 +9,8 @@
     <FrameLayout
         android:id="@+id/line_banner"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="?attr/colorSurface">
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -19,11 +19,31 @@
             android:gravity="center"
             android:orientation="horizontal">
 
+            <FrameLayout
+                android:id="@+id/line_color_badge"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="8dp"
+                android:background="#5DE2FF">
+
+                <TextView
+                    android:id="@+id/tv_line_code_badge"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:background="#FFFFFF"
+                    android:gravity="center"
+                    android:text="EAL"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
             <TextView
                 android:id="@+id/tv_banner_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="金鐘"
+                android:text="東鐵綫"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -40,6 +60,7 @@
             app:iconPadding="0dp"
             app:iconSize="36dp"
             app:iconTint="#92ADBB" />
+
     </FrameLayout>
 
     <com.google.android.material.tabs.TabLayout
@@ -52,8 +73,6 @@
         app:tabIndicatorFullWidth="true"
         app:tabIndicatorGravity="bottom"
         app:tabIndicatorHeight="4dp"
-        app:tabMaxWidth="0dp"
-        app:tabMode="auto"
         app:tabSelectedTextAppearance="@style/TabText.Selected"
         app:tabSelectedTextColor="?attr/colorOnSurface"
         app:tabTextAppearance="@style/TabText"

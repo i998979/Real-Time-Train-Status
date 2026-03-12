@@ -2,72 +2,110 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.material.button.MaterialButton;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class TrafficNewsActivity extends AppCompatActivity {
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
+public class TrafficNews2Fragment extends Fragment {
 
     private HRConfig hrConf;
 
-    View lineColorBadge;
-    TextView tvLineCodeBadge;
-    TextView tvBannerName;
-    MaterialButton btnClose;
-    ImageView ivIcon;
+    TextView tvRefreshTime;
+
+    LinearLayout normalLayout;
+
+    LinearLayout delayedLayout;
+    ImageView ivStatusIcon;
     TextView tvStatus;
     TextView tvLineSection;
     TextView tvReason;
+
     TextView tvDetail;
     WebView wvDetail;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_traffic_news);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_traffic_news2, container, false);
+    }
 
-        hrConf = HRConfig.getInstance(this);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        lineColorBadge = findViewById(R.id.line_color_badge);
-        tvLineCodeBadge = findViewById(R.id.tv_line_code_badge);
-        tvBannerName = findViewById(R.id.tv_banner_name);
-        btnClose = findViewById(R.id.btn_close);
-        findViewById(R.id.btn_close).setOnClickListener(v -> {
-            finish();
-        });
-        ivIcon = findViewById(R.id.iv_status_icon);
-        tvStatus = findViewById(R.id.tv_status);
-        tvLineSection = findViewById(R.id.tv_line_section);
-        tvReason = findViewById(R.id.tv_reason);
-        tvDetail = findViewById(R.id.tv_detail);
+        hrConf = HRConfig.getInstance(requireContext());
 
-        wvDetail = findViewById(R.id.wv_detail);
+        tvRefreshTime = view.findViewById(R.id.tv_refresh_time);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("M月d日 HH:mm", Locale.getDefault());
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+        String currentTime = dateFormat.format(new Date());
+        tvRefreshTime.setText(currentTime);
+
+        normalLayout = view.findViewById(R.id.layout_normal);
+
+        delayedLayout = view.findViewById(R.id.layout_delayed);
+        ivStatusIcon = view.findViewById(R.id.iv_status_icon);
+        tvStatus = view.findViewById(R.id.tv_status);
+        tvLineSection = view.findViewById(R.id.tv_line_section);
+        tvReason = view.findViewById(R.id.tv_reason);
+
+        tvDetail = view.findViewById(R.id.tv_detail);
+        wvDetail = view.findViewById(R.id.wv_detail);
         WebSettings webSettings = wvDetail.getSettings();
         webSettings.setJavaScriptEnabled(true);
         wvDetail.setWebViewClient(new WebViewClient());
 
-        String lineCode = getIntent().getStringExtra("line_code");
-        String lineNameTc = getIntent().getStringExtra("line_name_tc");
-        String lineColor = getIntent().getStringExtra("line_color");
-        String status = getIntent().getStringExtra("status");
-        String messages = getIntent().getStringExtra("messages");
 
-        lineColorBadge.setBackgroundColor(Color.parseColor(lineColor));
-        tvLineCodeBadge.setText(lineCode);
-        tvBannerName.setText(lineNameTc);
+        String lineCode = getArguments().getString("line_code");
+        String lineNameTc = getArguments().getString("line_name_tc");
+        String lineColor = getArguments().getString("line_color");
+        String status = getArguments().getString("status");
+        String messages = getArguments().getString("messages");
 
-        parseTrafficMessages(messages);
-        applyStatusUI(status);
+
+        // Non-traffic Hour
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+        int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+
+        int startTime = 1 * 60 + 30; // 01:30
+        int endTime = 5 * 60;        // 05:00
+
+        boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
+
+        LinearLayout nthMessage = view.findViewById(R.id.layout_nth);
+        nthMessage.setVisibility(isMaintenanceTime ? View.VISIBLE : View.GONE);
+
+
+        // Only parse message if delayed
+        if (status.equalsIgnoreCase("green") | status.equalsIgnoreCase("grey")) {
+            normalLayout.setVisibility(View.VISIBLE);
+            delayedLayout.setVisibility(View.GONE);
+        } else {
+            normalLayout.setVisibility(View.GONE);
+            delayedLayout.setVisibility(View.VISIBLE);
+
+            parseTrafficMessages(messages);
+            applyStatusUI(status);
+        }
     }
 
     private void parseTrafficMessages(String messages) {
@@ -176,8 +214,8 @@ public class TrafficNewsActivity extends AppCompatActivity {
         }
 
         tvStatus.setText(displayStatus);
-        ivIcon.setImageResource(iconRes);
-        ivIcon.setColorFilter(iconColor);
+        ivStatusIcon.setImageResource(iconRes);
+        ivStatusIcon.setColorFilter(iconColor);
         if (currentReason.isEmpty()) tvReason.setText(displayStatus);
     }
 }

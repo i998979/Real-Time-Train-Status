@@ -116,7 +116,7 @@
             android:layout_weight="1"
             android:paddingStart="10dp"
             android:text="服務正常"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="?android:attr/colorForeground"
             android:textSize="14sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -136,15 +136,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lineSpacingExtra="8dp"
-            android:text="服務正常"
+            android:paddingVertical="8dp"
+            android:text="現時，列車服務運作正常。"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="16sp" />
 
         <WebView
             android:id="@+id/wv_detail"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="10dp" />
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 

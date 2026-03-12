@@ -574,7 +574,7 @@ public class SavedLineFragment extends Fragment {
                 updateStatusUI(status, tvStatus, ivIcon);
 
                 itemView.setOnClickListener(v -> {
-                    android.content.Intent intent = new android.content.Intent(getActivity(), TrafficNewsActivity.class);
+                    android.content.Intent intent = new android.content.Intent(getActivity(), SavedLineActivity.class);
                     intent.putExtra("line_code", lineCode);
                     intent.putExtra("line_name_tc", lineNameTc);
                     intent.putExtra("line_color", lineColor);

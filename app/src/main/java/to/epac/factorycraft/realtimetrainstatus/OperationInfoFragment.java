@@ -25,6 +25,8 @@ public class OperationInfoFragment extends Fragment {
 
     private SharedPreferences prefs;
 
+    private ViewPager2 pagerContent;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -33,7 +35,7 @@ public class OperationInfoFragment extends Fragment {
         prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         int lastTab = prefs.getInt(MainActivity.KEY_OPERATIONINFO_LAST_TAB, 0);
 
-        ViewPager2 pagerContent = view.findViewById(R.id.pager_content);
+        pagerContent = view.findViewById(R.id.pager_content);
         TabLayout tabLayout = view.findViewById(R.id.tab_layout);
 
         pagerContent.setAdapter(new OperationInfoAdapter(this));
@@ -60,7 +62,7 @@ public class OperationInfoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewPager2 pagerContent = view.findViewById(R.id.pager_content);
+        pagerContent = view.findViewById(R.id.pager_content);
 
         if (getActivity() != null && getActivity().getIntent() != null) {
             Intent intent = getActivity().getIntent();
