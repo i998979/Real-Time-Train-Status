@@ -83,32 +83,19 @@
             android:text="刪除/排序路綫"
             android:textSize="14sp" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tv_select_all"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/layout_header"
+            android:layout_height="wrap_content"
+            android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingVertical="16dp">
-
-            <ImageView
-                android:id="@+id/rb_select_all"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/outline_circle_24"
-                android:tag="iv_check_mark"
-                app:tint="?attr/colorOnSurfaceVariant" />
-
-            <TextView
-                android:id="@+id/tv_select_all"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="全選"
-                android:textColor="@color/button_green"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+            android:paddingVertical="16dp"
+            android:text="全選"
+            android:textColor="@color/button_green"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/outline_circle_24"
+            app:drawableTint="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
 

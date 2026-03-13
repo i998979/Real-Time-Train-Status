@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.core.widget.TextViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -171,7 +172,6 @@ public class SavedLineFragment extends Fragment {
         btnAddLine.setOnClickListener(v -> {
             showSearchBottomSheet(currentSaved, updateSelectAll);
         });
-        ImageView rbSelectAll = sheetView.findViewById(R.id.rb_select_all);
         TextView tvSelectAll = sheetView.findViewById(R.id.tv_select_all);
         View.OnClickListener selectAllListener = v -> {
             boolean isCurrentlyAllSelected = (selectedForDelete.size() == currentSaved.size() && !currentSaved.isEmpty());
@@ -181,7 +181,6 @@ public class SavedLineFragment extends Fragment {
             }
             updateSelectAll.run();
         };
-        rbSelectAll.setOnClickListener(selectAllListener);
         tvSelectAll.setOnClickListener(selectAllListener);
 
         MaterialButton btnDelete = sheetView.findViewById(R.id.btn_delete);
@@ -211,8 +210,9 @@ public class SavedLineFragment extends Fragment {
             int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
             int green = ContextCompat.getColor(requireContext(), R.color.button_green);
 
-            rbSelectAll.setImageResource(isAllSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
-            rbSelectAll.setImageTintList(ColorStateList.valueOf(isAllSelected ? green : colorOnSurface));
+            int drawableRes = isAllSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24;
+            tvSelectAll.setCompoundDrawablesWithIntrinsicBounds(drawableRes, 0, 0, 0);
+            TextViewCompat.setCompoundDrawableTintList(tvSelectAll, ColorStateList.valueOf(isAllSelected ? green : colorOnSurface));
 
             btnDelete.setEnabled(!selectedForDelete.isEmpty());
             btnDelete.setBackgroundColor(selectedForDelete.isEmpty() ? Color.parseColor("#2C2C2C") : green);

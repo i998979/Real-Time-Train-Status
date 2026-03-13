@@ -137,7 +137,7 @@ public class RouteSearchFragment extends Fragment {
                 case 1: // Route Search
                     return new SearchInputFragment();
                 case 2: // Saved Route
-                    return new Fragment();
+                    return new SavedRouteFragment();
                 default:
                     return new Fragment();
             }
