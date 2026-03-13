@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/train_bg_tint"
     android:orientation="vertical"
     android:paddingHorizontal="20dp"
     android:paddingTop="20dp">
@@ -53,7 +54,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -99,7 +100,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -151,7 +152,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -197,7 +198,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -243,7 +244,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -289,7 +290,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -335,7 +336,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -381,7 +382,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -427,7 +428,7 @@
             android:layout_marginVertical="8dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">

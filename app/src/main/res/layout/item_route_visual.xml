@@ -51,7 +51,7 @@
                 android:id="@+id/layout_visual_segments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorSurfaceVariant"
+                android:background="?attr/colorOnSurfaceInverse"
                 android:gravity="center_horizontal"
                 android:orientation="vertical" />
         </FrameLayout>

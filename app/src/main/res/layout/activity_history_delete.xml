@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/line_badge_bg_tint"
     android:fitsSystemWindows="true">
 
     <RelativeLayout
@@ -76,9 +77,9 @@
             android:id="@+id/btn_delete"
             android:layout_width="256dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="?attr/colorOnSurface"
+            android:backgroundTint="@color/button_green"
             android:text="刪除"
-            android:textColor="?attr/colorOnSurfaceInverse" />
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

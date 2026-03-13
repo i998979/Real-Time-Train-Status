@@ -7,7 +7,7 @@
     android:layout_marginVertical="8dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="?attr/colorOnSurfaceInverse"
+    app:cardBackgroundColor="@color/line_badge_bg_tint"
     app:cardCornerRadius="8dp"
     app:cardElevation="0dp"
     app:strokeWidth="0dp">

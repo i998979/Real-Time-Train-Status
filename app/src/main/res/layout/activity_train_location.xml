@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@color/line_badge_bg_tint"
     android:fitsSystemWindows="true">
 
     <androidx.core.widget.NestedScrollView
@@ -19,7 +19,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="70dp" />
+                android:layout_height="80dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_line"
@@ -44,7 +44,7 @@
             android:id="@+id/line_banner"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:background="?attr/colorSurface">
+            android:background="@color/line_badge_bg_tint">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -103,9 +103,9 @@
         android:id="@+id/tv_refresh_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="60dp"
         android:gravity="right"
-        android:padding="16dp"
+        android:paddingHorizontal="16dp"
         android:text="3月2日 23:59" />
 
     <com.google.android.material.textview.MaterialTextView

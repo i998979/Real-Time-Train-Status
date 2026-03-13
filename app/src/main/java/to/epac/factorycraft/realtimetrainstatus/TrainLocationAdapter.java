@@ -3,14 +3,17 @@ package to.epac.factorycraft.realtimetrainstatus;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.time.Instant;
@@ -343,7 +347,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         container.addView(row);
     }
 
-    private void updateTrainCrowd(LinearLayout layout, Trip trip, View itemView) {
+    private void updateTrainCrowd(ViewGroup layout, Trip trip, View itemView) {
         LinearLayout crowdContainer = layout.findViewById(R.id.crowd_container);
         crowdContainer.removeAllViews();
 
@@ -466,7 +470,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                     }
                     ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
                 }
-                LinearLayout crowdLayout = v.findViewById(R.id.crowd_layout);
+                MaterialCardView crowdLayout = v.findViewById(R.id.crowd_layout);
                 updateTrainCrowd(crowdLayout, trip, v);
 
 

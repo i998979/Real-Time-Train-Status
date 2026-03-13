@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/line_badge_bg_tint"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:padding="16dp">
@@ -18,12 +19,19 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:drawableStart="@drawable/baseline_search_24"
-            android:drawablePadding="8dp"
+            android:background="?attr/colorOnSurfaceInverse"
+            android:drawablePadding="12dp"
             android:hint="請輸入車站"
+            android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
-            android:textSize="18sp">
+            android:paddingHorizontal="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="#92ADBB"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/baseline_search_24"
+            app:drawableTint="?attr/colorOnSurface">
 
             <requestFocus />
         </EditText>

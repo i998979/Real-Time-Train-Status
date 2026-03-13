@@ -4,6 +4,7 @@
     style="@style/Widget.Material3.BottomSheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/colorSurfaceContainer"
     android:orientation="vertical"
     android:paddingBottom="16dp"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
@@ -11,12 +12,14 @@
     <com.google.android.material.bottomsheet.BottomSheetDragHandleView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/line_badge_bg_tint"
         android:minHeight="24dp"
         android:paddingBottom="0dp" />
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/line_badge_bg_tint">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_close"

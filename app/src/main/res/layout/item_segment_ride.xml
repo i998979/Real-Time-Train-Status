@@ -49,7 +49,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="4dp"
                 android:background="@drawable/bg_platform_border"
-                android:backgroundTint="#03A9F4"
+                android:backgroundTint="#74C6F7"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
                 android:text="本站始發"
