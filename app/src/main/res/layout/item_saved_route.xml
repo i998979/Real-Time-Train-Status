@@ -9,7 +9,7 @@
     android:paddingVertical="16dp">
 
     <ImageView
-        android:id="@+id/btn_delete_route"
+        android:id="@+id/cb_select"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginStart="8dp"
@@ -19,7 +19,7 @@
         app:tint="?attr/colorOnSurfaceVariant" />
 
     <TextView
-        android:id="@+id/tv_saved_origin"
+        android:id="@+id/tv_origin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -36,7 +36,7 @@
         app:tint="?attr/colorOnSurfaceVariant" />
 
     <TextView
-        android:id="@+id/tv_saved_dest"
+        android:id="@+id/tv_dest"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -46,7 +46,6 @@
         android:textStyle="bold" />
 
     <ImageView
-        android:id="@+id/iv_indicator"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginEnd="8dp"
