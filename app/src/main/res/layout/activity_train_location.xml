@@ -37,8 +37,7 @@
         android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:elevation="2dp">
+        android:layout_gravity="top">
 
         <FrameLayout
             android:id="@+id/line_banner"
@@ -84,20 +83,21 @@
             </LinearLayout>
         </FrameLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_close"
-            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="end|top"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="4dp"
-            app:icon="@android:drawable/ic_menu_close_clear_cancel"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="36dp"
-            app:iconTint="#92ADBB" />
     </FrameLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_close"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="end|top"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        app:icon="@android:drawable/ic_menu_close_clear_cancel"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="36dp"
+        app:iconTint="#92ADBB" />
 
     <TextView
         android:id="@+id/tv_refresh_time"
