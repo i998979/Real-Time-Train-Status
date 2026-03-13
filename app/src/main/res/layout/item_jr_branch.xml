@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="100dp"
-    android:background="@color/train_bg_tint"
+    android:background="?attr/colorSurfaceContainerLowest"
     android:clipChildren="false">
 
     <ImageView
