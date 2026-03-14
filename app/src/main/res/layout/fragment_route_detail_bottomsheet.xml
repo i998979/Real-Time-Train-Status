@@ -198,7 +198,7 @@
         android:insetBottom="0dp"
         app:backgroundTint="@color/button_green"
         app:cornerRadius="28dp"
-        app:icon="@drawable/baseline_refresh_24"
+        app:icon="@drawable/baseline_add_24"
         app:iconPadding="0dp"
         app:iconSize="40dp"
         app:iconTint="@android:color/white"

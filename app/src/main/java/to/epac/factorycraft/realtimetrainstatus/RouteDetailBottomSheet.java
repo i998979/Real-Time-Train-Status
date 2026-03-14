@@ -1,52 +1,31 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
-import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabColorSchemeParams;
-import androidx.browser.customtabs.CustomTabsClient;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.CustomTabsServiceConnection;
-import androidx.browser.customtabs.CustomTabsSession;
-import androidx.core.content.FileProvider;
-import androidx.fragment.app.Fragment;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textview.MaterialTextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,93 +33,97 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class RouteDetailFragment extends Fragment {
+public class RouteDetailBottomSheet extends BottomSheetDialogFragment {
+
+    private SavedRouteManager savedRouteManager;
 
     private HRConfig hrConf;
     private SharedPreferences prefs;
 
-    private CustomTabsSession tabsSession;
-    private CustomTabsClient tabsClient;
+    private MaterialButton btnClose;
+    private MaterialButton btnReturn;
 
-    private ScrollView svRoute;
+    private TextView tvStartTime;
+    private TextView tvEndTime;
+    private TextView tvJourneyStart;
+
+    private LinearLayout routeContainer;
+
+    private TextView tvJourneyTime;
+    private TextView tvInterchangeCount;
+    private TextView tvFare;
+
+    private MaterialButton btnAdd;
+
+    private String currentOriginID, currentDestID, currentOriginName, currentDestName;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        View bottomSheet = getDialog().findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
+
+        int displayHeight = getResources().getDisplayMetrics().heightPixels;
+        int targetHeight = (int) (displayHeight * 0.9);
+
+        behavior.setPeekHeight(targetHeight);
+
+        behavior.setFitToContents(false);
+        behavior.setExpandedOffset(displayHeight - targetHeight);
+
+        behavior.setDraggable(false);
+        behavior.setHideable(false);
+
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        ViewGroup.LayoutParams layoutParams = bottomSheet.getLayoutParams();
+        layoutParams.height = targetHeight;
+        bottomSheet.setLayoutParams(layoutParams);
+
+        getDialog().setCanceledOnTouchOutside(false);
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_route_detail, container, false);
+        View view = inflater.inflate(R.layout.fragment_route_detail_bottomsheet, container, false);
 
         prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         hrConf = HRConfig.getInstance(getContext());
+        savedRouteManager = new SavedRouteManager(requireContext());
 
-        MaterialButton btnReturn = root.findViewById(R.id.btn_return);
+        btnClose = view.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> {
+            dismiss();
+        });
+        btnReturn = view.findViewById(R.id.btn_return);
         btnReturn.setOnClickListener(v -> {
-            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
-                getParentFragmentManager().popBackStack();
-            }
+            dismiss();
         });
+        tvStartTime = view.findViewById(R.id.tv_start_time);
+        tvEndTime = view.findViewById(R.id.tv_end_time);
+        tvJourneyStart = view.findViewById(R.id.tv_journey_start);
 
-        svRoute = root.findViewById(R.id.sv_route);
+        routeContainer = view.findViewById(R.id.route_container);
 
-        LinearLayout routeContainer = root.findViewById(R.id.route_container);
+        tvJourneyTime = view.findViewById(R.id.tv_journey_time);
+        tvInterchangeCount = view.findViewById(R.id.tv_interchange_count);
+        tvFare = view.findViewById(R.id.tv_fare);
 
-        TextView tvStartTime = root.findViewById(R.id.tv_start_time);
-        TextView tvEndTime = root.findViewById(R.id.tv_end_time);
-        TextView journeyStart = root.findViewById(R.id.tv_journey_start);
+        btnAdd = view.findViewById(R.id.btn_add);
+        btnAdd.setOnClickListener(v -> {
+            savedRouteManager.saveRoute(currentOriginID, currentDestID, currentOriginName, currentDestName);
 
-        TextView tvJourneyTime = root.findViewById(R.id.tv_journey_time);
-        TextView tvInterchangeCount = root.findViewById(R.id.tv_interchange_count);
-        TextView tvFare = root.findViewById(R.id.tv_fare);
-
-        MaterialButton btnShare = root.findViewById(R.id.btn_share);
-        btnShare.setOnClickListener(v -> {
-            try {
-                JSONObject data = new JSONObject(getArguments().getString("route_data"));
-                JSONObject selected = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
-
-                String startStr = ((TextView) root.findViewById(R.id.tv_start_time)).getText().toString();
-                String endStr = ((TextView) root.findViewById(R.id.tv_end_time)).getText().toString();
-
-                View headerView = getHeaderView(selected, startStr, endStr);
-                View footerView = getFooterView();
-
-                Bitmap finalBitmap = combineViewsToBitmap(headerView, routeContainer, footerView);
-                shareBitmap(finalBitmap);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Bundle result = new Bundle();
+            result.putBoolean("route_saved", true);
+            getParentFragmentManager().setFragmentResult("route_saved_result", result);
+            dismiss();
         });
-
-        MaterialButton btnRoutePicture = root.findViewById(R.id.btn_route_picture);
-        btnRoutePicture.setOnClickListener(v -> {
-            try {
-                JSONObject data = new JSONObject(getArguments().getString("route_data"));
-                JSONObject selected = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
-
-                String startStr = ((TextView) root.findViewById(R.id.tv_start_time)).getText().toString();
-                String endStr = ((TextView) root.findViewById(R.id.tv_end_time)).getText().toString();
-
-                View headerView = getHeaderView(selected, startStr, endStr);
-                View footerView = getFooterView();
-
-                Bitmap finalBitmap = combineViewsToBitmap(headerView, routeContainer, footerView);
-                saveBitmapToDCIM(finalBitmap);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-        MaterialButton btnRouteSave = root.findViewById(R.id.btn_route_save);
-        MaterialButton btnCheckValue = root.findViewById(R.id.btn_check_value);
-        btnCheckValue.setOnClickListener(v -> {
-            openExternalApp(MainActivity.OCTOPUS_PACKAGE);
-        });
-
 
         try {
             JSONObject data = new JSONObject(getArguments().getString("route_data"));
             JSONObject selectedRoute = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
-
 
             // Start and end time calculation
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
@@ -163,7 +146,7 @@ public class RouteDetailFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            journeyStart.setText(sdf.format(calendar.getTime()));
+            tvJourneyStart.setText(sdf.format(calendar.getTime()));
 
             String startTime = getArguments().getString("start_time");
             int startH = Integer.parseInt(startTime.split(":")[0]);
@@ -174,11 +157,19 @@ public class RouteDetailFragment extends Fragment {
             tvInterchangeCount.setText(selectedRoute.optString("interchangeStationsNo"));
             tvFare.setText(getFare(selectedRoute) + "");
 
-
             // Apply path segments
             List<VisualSegment> segments = parsePathToSegments(selectedRoute.getJSONArray("path"), startH, startM);
             if (!segments.isEmpty()) {
+                VisualSegment firstSeg = segments.get(0);
+                int oID = firstSeg.startNode.optInt("ID");
+                currentOriginID = String.valueOf(oID);
+                currentOriginName = hrConf.getStationName(oID);
+
                 VisualSegment lastSeg = segments.get(segments.size() - 1);
+                int dID = lastSeg.endNode.optInt("ID");
+                currentDestID = String.valueOf(dID);
+                currentDestName = hrConf.getStationName(dID);
+
                 tvEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", lastSeg.endH, lastSeg.endM));
 
                 int totalJourneyMinutes = (lastSeg.endH * 60 + lastSeg.endM) - (startH * 60 + startM);
@@ -190,16 +181,9 @@ public class RouteDetailFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return root;
+
+        return view;
     }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        bindCustomTabsService();
-    }
-
 
     private void buildRouteUI(LayoutInflater inflater, LinearLayout container, List<VisualSegment> segments, int startH, int startM) {
         container.removeAllViews();
@@ -226,41 +210,6 @@ public class RouteDetailFragment extends Fragment {
                     intent.putExtra("station_code", hrConf.getStationAlias(seg.endNode.optInt("ID")));
                     v.getContext().startActivity(intent);
                 });
-
-                View layoutNearby = lastStationView.findViewById(R.id.layout_nearby);
-                layoutNearby.setVisibility(View.VISIBLE);
-
-                View.OnClickListener listener = v -> {
-                    String queryKeyword = "";
-                    int id = v.getId();
-                    if (id == R.id.btn_coffee) queryKeyword = "咖啡";
-                    else if (id == R.id.btn_restaurant) queryKeyword = "餐廳";
-                    else if (id == R.id.btn_atm) queryKeyword = "自動櫃員機";
-                    else if (id == R.id.btn_hotel) queryKeyword = "酒店";
-
-                    final String finalKeyword = queryKeyword;
-
-                    new Thread(() -> {
-                        String address = hrConf.getStationAddress(requireContext(), seg.endNode.optInt("ID"));
-
-                        if (address.isEmpty()) {
-                            address = hrConf.getStationName(seg.endNode.optInt("ID")) + "站";
-                        }
-
-                        String searchUrl = "https://www.google.com/search?q=" + Uri.encode(address + " 附近的" + finalKeyword);
-
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                openNearbySearchSheet(searchUrl);
-                            });
-                        }
-                    }).start();
-                };
-
-                lastStationView.findViewById(R.id.btn_coffee).setOnClickListener(listener);
-                lastStationView.findViewById(R.id.btn_restaurant).setOnClickListener(listener);
-                lastStationView.findViewById(R.id.btn_atm).setOnClickListener(listener);
-                lastStationView.findViewById(R.id.btn_hotel).setOnClickListener(listener);
 
                 container.addView(lastStationView);
             }
@@ -490,252 +439,6 @@ public class RouteDetailFragment extends Fragment {
         });
 
         container.addView(walkView);
-    }
-
-
-    private void bindCustomTabsService() {
-        CustomTabsClient.bindCustomTabsService(requireContext(), "com.android.chrome", new CustomTabsServiceConnection() {
-            @Override
-            public void onCustomTabsServiceConnected(ComponentName name, CustomTabsClient client) {
-                RouteDetailFragment.this.tabsClient = client;
-                RouteDetailFragment.this.tabsClient.warmup(0L);
-                tabsSession = RouteDetailFragment.this.tabsClient.newSession(null);
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                tabsClient = null;
-                tabsSession = null;
-            }
-        });
-    }
-
-    private void openNearbySearchSheet(String url) {
-        int surfaceColor = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurface);
-        CustomTabColorSchemeParams colorParams = new CustomTabColorSchemeParams.Builder()
-                .setToolbarColor(surfaceColor)
-                .build();
-
-        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(tabsSession);
-        builder.setDefaultColorSchemeParams(colorParams);
-        builder.setShowTitle(true);
-        builder.setToolbarCornerRadiusDp(16);
-
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
-
-        CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.intent.putExtra("androidx.browser.customtabs.extra.INITIAL_ACTIVITY_HEIGHT_PX", screenHeight);
-        customTabsIntent.intent.putExtra("androidx.browser.customtabs.extra.ACTIVITY_HEIGHT_RESIZE_BEHAVIOR", CustomTabsIntent.ACTIVITY_HEIGHT_ADJUSTABLE);
-        customTabsIntent.launchUrl(requireActivity(), Uri.parse(url));
-    }
-
-
-    private View getHeaderView(JSONObject selectedRoute, String startTime, String endTime) {
-        View headerView = getLayoutInflater().inflate(R.layout.item_route_header, null);
-
-        TextView tvStartTime = headerView.findViewById(R.id.tv_start_time);
-        TextView tvEndTime = headerView.findViewById(R.id.tv_end_time);
-        TextView tvJourneyStart = headerView.findViewById(R.id.tv_journey_start);
-        TextView tvJourneyTime = headerView.findViewById(R.id.tv_journey_time);
-        TextView tvInterchange = headerView.findViewById(R.id.tv_interchange_count);
-        TextView tvFare = headerView.findViewById(R.id.tv_fare);
-
-        tvStartTime.setText(startTime);
-        tvEndTime.setText(endTime);
-        tvInterchange.setText(selectedRoute.optString("interchangeStationsNo"));
-
-        try {
-            tvFare.setText(String.valueOf(getFare(selectedRoute)));
-
-            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-            SimpleDateFormat sdf = new SimpleDateFormat("M月d日(E)", Locale.TRADITIONAL_CHINESE);
-            tvJourneyStart.setText(sdf.format(calendar.getTime()));
-
-            int startH = Integer.parseInt(startTime.split(":")[0]);
-            int startM = Integer.parseInt(startTime.split(":")[1]);
-            int endH = Integer.parseInt(endTime.split(":")[0]);
-            int endM = Integer.parseInt(endTime.split(":")[1]);
-            int total = (endH * 60 + endM) - (startH * 60 + startM);
-            if (total < 0) total += 1440;
-            tvJourneyTime.setText(total + "");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return headerView;
-    }
-
-    private View getFooterView() {
-        return getLayoutInflater().inflate(R.layout.item_route_footer, null);
-    }
-
-    private Bitmap combineViewsToBitmap(View headerView, View contentContainer, View footerView) {
-        Context context = contentContainer.getContext();
-
-        int contentBgColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnPrimary);
-        int secondaryBgColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
-
-        int widthSpec = View.MeasureSpec.makeMeasureSpec(contentContainer.getWidth(), View.MeasureSpec.EXACTLY);
-        int heightUnspecified = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-
-        headerView.measure(widthSpec, heightUnspecified);
-        headerView.layout(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight());
-
-        footerView.measure(widthSpec, heightUnspecified);
-        footerView.layout(0, 0, footerView.getMeasuredWidth(), footerView.getMeasuredHeight());
-
-        int hHeight = headerView.getMeasuredHeight();
-        int cHeight = contentContainer.getHeight();
-        int fHeight = footerView.getMeasuredHeight();
-        int totalWidth = contentContainer.getWidth();
-        int totalHeight = hHeight + cHeight + fHeight;
-
-        Bitmap resultBitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(resultBitmap);
-        Paint bgPaint = new Paint();
-
-        bgPaint.setColor(secondaryBgColor);
-        canvas.drawRect(0, 0, totalWidth, hHeight, bgPaint);
-        headerView.draw(canvas);
-
-        canvas.save();
-        canvas.translate(0, hHeight);
-        bgPaint.setColor(contentBgColor);
-        canvas.drawRect(0, 0, totalWidth, cHeight, bgPaint);
-        contentContainer.draw(canvas);
-        canvas.restore();
-
-        canvas.save();
-        canvas.translate(0, hHeight + cHeight);
-        bgPaint.setColor(secondaryBgColor);
-        canvas.drawRect(0, 0, totalWidth, fHeight, bgPaint);
-        footerView.draw(canvas);
-        canvas.restore();
-
-        return resultBitmap;
-    }
-
-    private void shareBitmap(Bitmap bitmap) {
-        if (bitmap == null) return;
-
-        try {
-            File cachePath = new File(requireContext().getExternalCacheDir(), "route_detail");
-            cachePath.mkdirs();
-            File file = new File(cachePath, "screenshot_" + System.currentTimeMillis() + ".png");
-            FileOutputStream stream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            stream.close();
-
-            Uri contentUri = FileProvider.getUriForFile(
-                    requireContext(),
-                    requireContext().getPackageName() + ".fileprovider",
-                    file);
-
-            if (contentUri != null) {
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                shareIntent.setDataAndType(contentUri, requireContext().getContentResolver().getType(contentUri));
-                shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                shareIntent.setType("image/png");
-
-                startActivity(Intent.createChooser(shareIntent, "分享路綫截圖"));
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖分享失敗。");
-        }
-    }
-
-    private void saveBitmapToDCIM(Bitmap bitmap) {
-        if (bitmap == null) return;
-
-        String fileName = "screenshot_" + System.currentTimeMillis() + ".png";
-        String subFolderName = Environment.DIRECTORY_DCIM + File.separator + "Transit App";
-
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-        values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH, subFolderName);
-        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-
-        try {
-            ContentResolver resolver = requireContext().getContentResolver();
-            Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            Uri uri = resolver.insert(contentUri, values);
-
-            if (uri != null) {
-                OutputStream outputStream = resolver.openOutputStream(uri);
-                if (outputStream != null) {
-                    boolean success = bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                    outputStream.close();
-
-                    values.clear();
-                    values.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                    resolver.update(uri, values, null, null);
-
-                    if (success) {
-                        showSnackBar(svRoute, Color.parseColor("#58A473"), "路綫截圖已成功保存。");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖保存失敗。");
-        }
-    }
-
-
-    private void showSnackBar(View anchor, int color, String message) {
-        Snackbar snackbar = Snackbar.make(anchor, message, Snackbar.LENGTH_SHORT);
-        View snackbarView = snackbar.getView();
-
-        snackbarView.setBackgroundTintList(ColorStateList.valueOf(color));
-        // snackbar.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
-
-        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
-        textView.setTextColor(Color.WHITE);
-        textView.setTextSize(16);
-
-        View navigationBar = getActivity().findViewById(R.id.bottom_navigation);
-        snackbar.setAnchorView(navigationBar);
-
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) snackbarView.getLayoutParams();
-        snackbarView.setLayoutParams(params);
-
-        snackbar.show();
-    }
-
-
-    private void openExternalApp(String packageName) {
-        try {
-            Intent intent = requireContext().getPackageManager().getLaunchIntentForPackage(packageName);
-
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            } else {
-                goToPlayStore(packageName);
-            }
-
-        } catch (Exception e) {
-            goToPlayStore(packageName);
-        }
-    }
-
-    private void goToPlayStore(String appPackage) {
-        Uri uri = Uri.parse("market://details?id=" + appPackage);
-        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-
-        goToMarket.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        try {
-            startActivity(goToMarket);
-        } catch (ActivityNotFoundException e) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackage)));
-        }
     }
 
 
