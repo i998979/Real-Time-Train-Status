@@ -51,7 +51,7 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:id="@+id/layout_saved_route_list"
+        android:id="@+id/layout_saved"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"

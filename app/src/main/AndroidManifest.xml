@@ -75,9 +75,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ModifySavedRoutesActivity"
-            android:exported="false" />
-        <activity
             android:name=".SavedLineActivity"
             android:exported="false" />
         <activity
