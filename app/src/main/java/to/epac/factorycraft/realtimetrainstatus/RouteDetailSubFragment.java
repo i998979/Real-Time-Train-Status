@@ -91,7 +91,7 @@ public class RouteDetailSubFragment extends Fragment {
 
             Bundle result = new Bundle();
             result.putBoolean("route_saved", true);
-            getParentFragmentManager().setFragmentResult("route_saved_result", result);
+            requireActivity().getSupportFragmentManager().setFragmentResult("route_saved_result", result);
 
             ((RouteHostBottomSheet) getParentFragment()).dismiss();
         });
