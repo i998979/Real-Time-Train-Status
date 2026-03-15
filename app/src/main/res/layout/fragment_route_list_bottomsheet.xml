@@ -80,8 +80,7 @@
         <FrameLayout
             android:id="@+id/routes_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:visibility="visible">
+            android:layout_height="match_parent">
 
             <LinearLayout
                 android:id="@+id/layout_background_lines"
@@ -100,116 +99,8 @@
                     android:id="@+id/rv_routes"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_above="@+id/tab_layout"
                     android:orientation="horizontal" />
 
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tab_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_alignParentBottom="true"
-                    android:background="?attr/colorSurface"
-                    app:tabGravity="fill"
-                    app:tabIndicatorColor="@color/button_green"
-                    app:tabIndicatorFullWidth="true"
-                    app:tabIndicatorGravity="bottom"
-                    app:tabIndicatorHeight="4dp"
-                    app:tabMaxWidth="0dp"
-                    app:tabMode="auto"
-                    app:tabSelectedTextColor="?attr/colorOnSurface"
-                    app:tabTextColor="?attr/colorOnSurface">
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="全部" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="最短時間(早)" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="最少轉乘(樂)" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="最低車費(安)" />
-
-                </com.google.android.material.tabs.TabLayout>
-
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/notice_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@+id/tab_layout"
-                    android:layout_marginHorizontal="16dp"
-                    android:visibility="gone"
-                    app:cardBackgroundColor="#E91E63"
-                    app:cardCornerRadius="16dp"
-                    tools:visibility="visible">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp">
-
-                        <LinearLayout
-                            android:id="@+id/card_content_container"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tv_card_title"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="尾班車: 23:59"
-                                android:textColor="@android:color/white"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tv_card_remark"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="上述時間為列車由月台開出的實際時間。乘搭尾班車的乘客須於列車開出前最少5分鐘入站。"
-                                android:textColor="@android:color/white"
-                                android:textSize="12sp" />
-
-                            <HorizontalScrollView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:scrollbars="none">
-
-                                <LinearLayout
-                                    android:id="@+id/layout_card_segments"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="center_vertical"
-                                    android:orientation="horizontal" />
-                            </HorizontalScrollView>
-                        </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_close"
-                            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_alignParentTop="true"
-                            android:layout_alignParentEnd="true"
-                            android:layout_gravity="end"
-                            app:icon="@android:drawable/ic_menu_close_clear_cancel"
-                            app:iconGravity="textStart"
-                            app:iconPadding="0dp"
-                            app:iconSize="24dp"
-                            app:iconTint="@color/white" />
-                    </RelativeLayout>
-                </androidx.cardview.widget.CardView>
             </RelativeLayout>
         </FrameLayout>
 
@@ -263,5 +154,4 @@
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
-
 </FrameLayout>

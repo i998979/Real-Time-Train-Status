@@ -101,6 +101,7 @@ public class RouteListFragment extends Fragment {
         tvStart.setText(sdf.format(calendar.getTime()));
 
         if (oID.equals(dID)) {
+            view.findViewById(R.id.routes_layout).setVisibility(View.GONE);
             view.findViewById(R.id.not_found_layout).setVisibility(View.VISIBLE);
             view.findViewById(R.id.btn_back).setOnClickListener(v -> {
                 if (isAdded())
