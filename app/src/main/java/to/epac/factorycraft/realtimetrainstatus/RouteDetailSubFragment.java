@@ -16,9 +16,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textview.MaterialTextView;
@@ -33,7 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class RouteDetailBottomSheet extends BottomSheetDialogFragment {
+public class RouteDetailSubFragment extends Fragment {
 
     private SavedRouteManager savedRouteManager;
 
@@ -57,33 +56,6 @@ public class RouteDetailBottomSheet extends BottomSheetDialogFragment {
 
     private String currentOriginID, currentDestID, currentOriginName, currentDestName;
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        View bottomSheet = getDialog().findViewById(com.google.android.material.R.id.design_bottom_sheet);
-        BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
-
-        int displayHeight = getResources().getDisplayMetrics().heightPixels;
-        int targetHeight = (int) (displayHeight * 0.9);
-
-        behavior.setPeekHeight(targetHeight);
-
-        behavior.setFitToContents(false);
-        behavior.setExpandedOffset(displayHeight - targetHeight);
-
-        behavior.setDraggable(false);
-        behavior.setHideable(false);
-
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
-        ViewGroup.LayoutParams layoutParams = bottomSheet.getLayoutParams();
-        layoutParams.height = targetHeight;
-        bottomSheet.setLayoutParams(layoutParams);
-
-        getDialog().setCanceledOnTouchOutside(false);
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -93,13 +65,15 @@ public class RouteDetailBottomSheet extends BottomSheetDialogFragment {
         hrConf = HRConfig.getInstance(getContext());
         savedRouteManager = new SavedRouteManager(requireContext());
 
-        btnClose = view.findViewById(R.id.btn_close);
-        btnClose.setOnClickListener(v -> {
-            dismiss();
-        });
         btnReturn = view.findViewById(R.id.btn_return);
         btnReturn.setOnClickListener(v -> {
-            dismiss();
+            getParentFragmentManager().popBackStack();
+        });
+        btnClose = view.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> {
+            if (getParentFragment() instanceof RouteHostBottomSheet) {
+                ((RouteHostBottomSheet) getParentFragment()).dismiss();
+            }
         });
         tvStartTime = view.findViewById(R.id.tv_start_time);
         tvEndTime = view.findViewById(R.id.tv_end_time);
@@ -118,7 +92,8 @@ public class RouteDetailBottomSheet extends BottomSheetDialogFragment {
             Bundle result = new Bundle();
             result.putBoolean("route_saved", true);
             getParentFragmentManager().setFragmentResult("route_saved_result", result);
-            dismiss();
+
+            ((RouteHostBottomSheet) getParentFragment()).dismiss();
         });
 
         try {
