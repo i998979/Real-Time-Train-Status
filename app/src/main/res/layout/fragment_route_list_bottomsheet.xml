@@ -28,6 +28,16 @@
                 app:iconSize="36dp"
                 app:iconTint="?attr/colorOutline" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_close"
+                style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end|center_vertical"
+                app:icon="@android:drawable/ic_menu_close_clear_cancel"
+                app:iconSize="36dp"
+                app:iconTint="#92ADBB" />
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
