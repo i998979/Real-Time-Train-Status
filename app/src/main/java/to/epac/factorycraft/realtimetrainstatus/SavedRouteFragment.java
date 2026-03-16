@@ -154,11 +154,13 @@ public class SavedRouteFragment extends Fragment {
             holder.tvOrigin.setText(route.getOriginName());
             holder.tvDest.setText(route.getDestName());
 
-            holder.itemView.setOnClickListener(v -> {
+            View.OnClickListener cardClickListener = v -> {
                 if (listener != null) {
                     listener.onItemClick(route);
                 }
-            });
+            };
+            holder.itemView.setOnClickListener(cardClickListener);
+            holder.segmentCardLayout.setOnClickListener(cardClickListener);
 
             holder.segmentCardLayout.removeAllViews();
             String jsonStr = route.getRouteJson();
@@ -171,7 +173,6 @@ public class SavedRouteFragment extends Fragment {
                     e.printStackTrace();
                 }
             }
-
         }
 
         @Override
