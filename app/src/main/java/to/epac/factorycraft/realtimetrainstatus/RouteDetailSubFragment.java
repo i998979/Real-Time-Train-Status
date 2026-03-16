@@ -54,7 +54,7 @@ public class RouteDetailSubFragment extends Fragment {
 
     private MaterialButton btnAdd;
 
-    private String currentOriginID, currentDestID, currentOriginName, currentDestName;
+    private String currentOriginID, currentDestID, currentOriginName, currentDestName, routeData;
 
     @Nullable
     @Override
@@ -87,7 +87,7 @@ public class RouteDetailSubFragment extends Fragment {
 
         btnAdd = view.findViewById(R.id.btn_add);
         btnAdd.setOnClickListener(v -> {
-            savedRouteManager.saveRoute(currentOriginID, currentDestID, currentOriginName, currentDestName);
+            savedRouteManager.saveRoute(currentOriginID, currentDestID, currentOriginName, currentDestName, routeData);
 
             if (getParentFragment() instanceof RouteHostBottomSheet) {
                 RouteHostBottomSheet host = (RouteHostBottomSheet) getParentFragment();
@@ -100,6 +100,8 @@ public class RouteDetailSubFragment extends Fragment {
         try {
             JSONObject data = new JSONObject(getArguments().getString("route_data"));
             JSONObject selectedRoute = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
+
+            routeData = selectedRoute.toString();
 
             // Start and end time calculation
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));

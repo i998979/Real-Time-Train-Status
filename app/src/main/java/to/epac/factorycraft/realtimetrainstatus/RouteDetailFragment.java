@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsClient;
 import androidx.browser.customtabs.CustomTabsIntent;
@@ -37,6 +39,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textview.MaterialTextView;
 
@@ -56,6 +59,8 @@ import java.util.TimeZone;
 
 public class RouteDetailFragment extends Fragment {
 
+    private SavedRouteManager savedRouteManager;
+
     private HRConfig hrConf;
     private SharedPreferences prefs;
 
@@ -64,13 +69,16 @@ public class RouteDetailFragment extends Fragment {
 
     private ScrollView svRoute;
 
+    private String currentOriginID, currentDestID, currentOriginName, currentDestName, routeData;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_route_detail, container, false);
 
         prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
-        hrConf = HRConfig.getInstance(getContext());
+        hrConf = HRConfig.getInstance(requireContext());
+        savedRouteManager = new SavedRouteManager(requireContext());
 
         MaterialButton btnReturn = root.findViewById(R.id.btn_return);
         btnReturn.setOnClickListener(v -> {
@@ -131,6 +139,26 @@ public class RouteDetailFragment extends Fragment {
             }
         });
         MaterialButton btnRouteSave = root.findViewById(R.id.btn_route_save);
+        btnRouteSave.setOnClickListener(v -> {
+            savedRouteManager.saveRoute(currentOriginID, currentDestID, currentOriginName, currentDestName, routeData);
+
+            View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.layout_dialog_success, null);
+
+            AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                    .setView(dialogView)
+                    .setCancelable(true)
+                    .create();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
+            dialogView.findViewById(R.id.btn_dialog_confirm).setOnClickListener(view -> {
+                dialog.dismiss();
+            });
+
+            dialog.show();
+        });
         MaterialButton btnCheckValue = root.findViewById(R.id.btn_check_value);
         btnCheckValue.setOnClickListener(v -> {
             openExternalApp(MainActivity.OCTOPUS_PACKAGE);
@@ -141,6 +169,7 @@ public class RouteDetailFragment extends Fragment {
             JSONObject data = new JSONObject(getArguments().getString("route_data"));
             JSONObject selectedRoute = data.getJSONArray("routes").getJSONObject(getArguments().getInt("selected_route"));
 
+            routeData = selectedRoute.toString();
 
             // Start and end time calculation
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
@@ -178,7 +207,15 @@ public class RouteDetailFragment extends Fragment {
             // Apply path segments
             List<VisualSegment> segments = parsePathToSegments(selectedRoute.getJSONArray("path"), startH, startM);
             if (!segments.isEmpty()) {
+                VisualSegment firstSeg = segments.get(0);
+                int oID = firstSeg.startNode.optInt("ID");
+                currentOriginID = String.valueOf(oID);
+                currentOriginName = hrConf.getStationName(oID);
+
                 VisualSegment lastSeg = segments.get(segments.size() - 1);
+                int dID = lastSeg.endNode.optInt("ID");
+                currentDestID = String.valueOf(dID);
+                currentDestName = hrConf.getStationName(dID);
                 tvEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", lastSeg.endH, lastSeg.endM));
 
                 int totalJourneyMinutes = (lastSeg.endH * 60 + lastSeg.endM) - (startH * 60 + startM);

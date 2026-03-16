@@ -1,4 +1,3 @@
-// SavedRouteManager.java (Helper class to manage saved routes in SharedPreferences)
 package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
@@ -20,9 +19,9 @@ public class SavedRouteManager {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
-    public void saveRoute(String originID, String destID, String originName, String destName) {
+    public void saveRoute(String originID, String destID, String originName, String destName, String routeJson) {
         List<SavedRoute> currentRoutes = getSavedRoutes();
-        currentRoutes.add(new SavedRoute(originID, destID, originName, destName));
+        currentRoutes.add(new SavedRoute(originID, destID, originName, destName, routeJson));
         saveRoutesToPrefs(currentRoutes);
     }
 
@@ -37,7 +36,8 @@ public class SavedRouteManager {
                         jsonObject.getString("oID"),
                         jsonObject.getString("dID"),
                         jsonObject.getString("oName"),
-                        jsonObject.getString("dName")
+                        jsonObject.getString("dName"),
+                        jsonObject.optString("rJson", "")
                 ));
             }
         } catch (JSONException e) {
@@ -55,6 +55,7 @@ public class SavedRouteManager {
                 jsonObject.put("dID", route.getDestID());
                 jsonObject.put("oName", route.getOriginName());
                 jsonObject.put("dName", route.getDestName());
+                jsonObject.put("rJson", route.getRouteJson());
                 jsonArray.put(jsonObject);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -80,17 +81,34 @@ public class SavedRouteManager {
         private String destID;
         private String originName;
         private String destName;
+        private String routeJson;
 
-        public SavedRoute(String originID, String destID, String originName, String destName) {
+        public SavedRoute(String originID, String destID, String originName, String destName, String routeJson) {
             this.originID = originID;
             this.destID = destID;
             this.originName = originName;
             this.destName = destName;
+            this.routeJson = routeJson;
         }
 
-        public String getOriginID() { return originID; }
-        public String getDestID() { return destID; }
-        public String getOriginName() { return originName; }
-        public String getDestName() { return destName; }
+        public String getOriginID() {
+            return originID;
+        }
+
+        public String getDestID() {
+            return destID;
+        }
+
+        public String getOriginName() {
+            return originName;
+        }
+
+        public String getDestName() {
+            return destName;
+        }
+
+        public String getRouteJson() {
+            return routeJson;
+        }
     }
 }

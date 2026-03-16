@@ -1,11 +1,18 @@
 package to.epac.factorycraft.realtimetrainstatus;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,6 +23,10 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class SavedRouteFragment extends Fragment {
@@ -106,6 +117,8 @@ public class SavedRouteFragment extends Fragment {
 
 
     private static class SavedRouteAdapter extends RecyclerView.Adapter<SavedRouteAdapter.ViewHolder> {
+        private HRConfig hrConf;
+        private SharedPreferences prefs;
 
         private List<SavedRouteManager.SavedRoute> routes;
         private SavedRouteAdapter.OnItemClickListener listener;
@@ -128,6 +141,10 @@ public class SavedRouteFragment extends Fragment {
         @Override
         public SavedRouteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_route_search_card, parent, false);
+
+            prefs = parent.getContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
+            hrConf = HRConfig.getInstance(parent.getContext());
+
             return new SavedRouteAdapter.ViewHolder(view);
         }
 
@@ -142,11 +159,188 @@ public class SavedRouteFragment extends Fragment {
                     listener.onItemClick(route);
                 }
             });
+
+            holder.segmentCardLayout.removeAllViews();
+            String jsonStr = route.getRouteJson();
+            if (jsonStr != null && !jsonStr.isEmpty()) {
+                try {
+                    JSONObject data = new JSONObject(jsonStr);
+                    List<VisualSegment> segments = parseJsonToSegments(data.getJSONArray("path"));
+                    drawHorizontalRoute(holder.segmentCardLayout, route.getOriginName(), segments);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
 
         @Override
         public int getItemCount() {
             return routes.size();
+        }
+
+        private List<VisualSegment> parseJsonToSegments(JSONArray path) {
+            List<VisualSegment> segments = new ArrayList<>();
+            if (path == null || path.length() < 2) return segments;
+
+            // Walk interchange multiplier
+            float multiplier = 1.0F;
+            String speed = prefs.getString(MainActivity.KEY_WALK_SPEED, "普通");
+            switch (speed) {
+                case "很慢":
+                    multiplier = 1.2F;
+                    break;
+                case "慢速":
+                    multiplier = 1.1F;
+                    break;
+                case "普通":
+                    multiplier = 1.0F;
+                    break;
+                case "快速":
+                    multiplier = 0.9F;
+                    break;
+            }
+
+            int accumulatedDelay = 0;
+
+            int i = 0;
+            while (i < path.length() - 1) {
+                JSONObject startNode = path.optJSONObject(i);
+                boolean isWalk = startNode.optString("linkType").equals("WALKINTERCHANGE");
+                int startLineID = startNode.optInt("lineID");
+
+                // Find segment end
+                int j = i;
+                while (j < path.length() - 1) {
+                    JSONObject currNode = path.optJSONObject(j);
+                    boolean currIsWalk = currNode.optString("linkType").equals("WALKINTERCHANGE");
+                    int currLineID = currNode.optInt("lineID");
+
+                    // If linkType change, segment ends
+                    if (isWalk != currIsWalk || (!isWalk && currLineID != startLineID)) {
+                        break;
+                    }
+                    j++;
+                }
+
+                // Construct VisualSegment
+                VisualSegment seg = new VisualSegment();
+                JSONObject endNode = path.optJSONObject(j);
+
+                seg.startNode = startNode;
+                seg.endNode = endNode;
+                seg.isWalk = isWalk;
+                seg.lineID = startLineID;
+
+                // Calculate start end time and duration
+                int rawStartTime = startNode.optInt("time");
+                int rawEndTime = endNode.optInt("time");
+                int rawDuration = rawEndTime - rawStartTime;
+
+                seg.duration = (int) (rawDuration * (isWalk ? multiplier : 1.0F));
+
+                accumulatedDelay += (seg.duration - rawDuration);
+
+                // Apply line name and color
+                seg.lineCode = hrConf.getLineById(startLineID).alias;
+                seg.lineColor = hrConf.getLineById(startLineID).color;
+                seg.stationName = hrConf.getStationName(endNode.optInt("ID"));
+
+                // Add intermediate stations
+                for (int k = i + 1; k < j; k++) {
+                    seg.intermediates.add(path.optJSONObject(k));
+                }
+
+                segments.add(seg);
+
+                // Set next segment start
+                if (j < path.length() - 1)
+                    i = j;
+                else
+                    i = j + 1;
+            }
+
+            return segments;
+        }
+
+        private void drawHorizontalRoute(LinearLayout container, String originName, List<VisualSegment> segments) {
+            container.setGravity(Gravity.CENTER_VERTICAL);
+
+            addStationViewToCard(container, originName, false);
+
+            for (VisualSegment seg : segments) {
+                if (seg.isWalk) {
+                    addStationViewToCard(container, seg.stationName, true);
+                } else {
+                    addTrainSegmentViewToCard(container, seg.lineCode, seg.lineColor);
+                    addStationViewToCard(container, seg.stationName, false);
+                }
+            }
+        }
+
+        private void addStationViewToCard(LinearLayout container, String stationName, boolean walk) {
+            Context context = container.getContext();
+            int textColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnSurface);
+
+            if (walk) {
+                TextView tvWalk = new TextView(context);
+                LinearLayout.LayoutParams walkParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                walkParams.gravity = Gravity.CENTER_VERTICAL;
+                tvWalk.setLayoutParams(walkParams);
+
+                tvWalk.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
+                tvWalk.setCompoundDrawablePadding(0);
+                tvWalk.setGravity(Gravity.CENTER);
+                tvWalk.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
+
+                container.addView(tvWalk);
+            }
+
+            TextView tv = new TextView(context);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.CENTER_VERTICAL;
+            tv.setPadding(Utils.dpToPx(context, 6), 0, Utils.dpToPx(context, 6), 0);
+            tv.setLayoutParams(params);
+            tv.setText(stationName);
+            tv.setTextSize(12);
+            tv.setGravity(Gravity.CENTER);
+            tv.setTextColor(textColor);
+
+            container.addView(tv);
+        }
+
+        private void addTrainSegmentViewToCard(LinearLayout container, String lineAlias, String lineColor) {
+            Context context = container.getContext();
+
+            FrameLayout segmentContainer = new FrameLayout(context);
+            segmentContainer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            FrameLayout badgeContainer = new FrameLayout(context);
+            FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(Utils.dpToPx(context, 32), Utils.dpToPx(context, 32));
+            badgeParams.gravity = Gravity.CENTER;
+            badgeContainer.setLayoutParams(badgeParams);
+
+            GradientDrawable badgeBg = new GradientDrawable();
+            badgeBg.setShape(GradientDrawable.RECTANGLE);
+            badgeBg.setCornerRadius(Utils.dpToPx(context, 4));
+            badgeBg.setColor(Color.parseColor("#" + (lineColor != null ? lineColor : "808080")));
+            badgeContainer.setBackground(badgeBg);
+
+            TextView tvLineCode = new TextView(context);
+            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(Utils.dpToPx(context, 26), Utils.dpToPx(context, 26));
+            textParams.gravity = Gravity.CENTER;
+            tvLineCode.setBackgroundColor(Color.WHITE);
+            tvLineCode.setLayoutParams(textParams);
+            tvLineCode.setText(lineAlias != null ? lineAlias : "");
+            tvLineCode.setTextColor(Color.BLACK);
+            tvLineCode.setTextSize(10);
+            tvLineCode.setTypeface(null, Typeface.BOLD);
+            tvLineCode.setGravity(Gravity.CENTER);
+
+            badgeContainer.addView(tvLineCode);
+            segmentContainer.addView(badgeContainer);
+
+            container.addView(segmentContainer);
         }
 
         private static class ViewHolder extends RecyclerView.ViewHolder {
