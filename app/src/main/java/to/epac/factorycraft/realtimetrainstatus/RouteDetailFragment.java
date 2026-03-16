@@ -140,10 +140,20 @@ public class RouteDetailFragment extends Fragment {
         });
         MaterialButton btnRouteSave = root.findViewById(R.id.btn_route_save);
         btnRouteSave.setOnClickListener(v -> {
+            if (savedRouteManager.getSavedRoutes().size() >= 10) {
+                new MaterialAlertDialogBuilder(requireContext(), R.style.GreenAlertDialogTheme)
+                        .setTitle("無法登錄更多檢索")
+                        .setMessage("最多可登錄10個檢索。請先在「常用檢索」的「編輯」中刪除檢索，然後再嘗試重新登錄。")
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            dialog.dismiss();
+                        })
+                        .show();
+                return;
+            }
+
             savedRouteManager.saveRoute(currentOriginID, currentDestID, currentOriginName, currentDestName, routeData);
 
             View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.layout_dialog_success, null);
-
             AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                     .setView(dialogView)
                     .setCancelable(true)
