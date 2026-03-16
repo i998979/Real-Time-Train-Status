@@ -51,7 +51,7 @@
         android:textSize="14sp" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/search_bar_add"
+        android:id="@+id/btn_search_add"
         style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -105,7 +105,7 @@
         android:background="?attr/colorOutlineVariant" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_modify_saved_routes"
+        android:id="@+id/rv_saved_routes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
