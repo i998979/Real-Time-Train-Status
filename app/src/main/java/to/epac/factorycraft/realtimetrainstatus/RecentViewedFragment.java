@@ -43,6 +43,7 @@ public class RecentViewedFragment extends Fragment {
         tvDelete.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), HistoryDeleteActivity.class);
             intent.putExtra("history_type", HistoryDeleteActivity.TYPE_ROUTE);
+
             startActivity(intent);
         });
 
@@ -51,25 +52,24 @@ public class RecentViewedFragment extends Fragment {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvHistory.getContext(), LinearLayoutManager.VERTICAL);
         rvHistory.addItemDecoration(dividerItemDecoration);
         adapter = new RecentViewedAdapter(historyList, item -> {
-            RouteListFragment routeListFragment = new RouteListFragment();
+            RouteListFragment fragment = new RouteListFragment();
+
             Bundle args = new Bundle();
-            args.putString("o", item.originId);
-            args.putString("d", item.destinationId);
-            routeListFragment.setArguments(args);
+            args.putString(RouteSearchFragment.ORIGIN_ID, item.originId);
+            args.putString(RouteSearchFragment.DEST_ID, item.destinationId);
+            fragment.setArguments(args);
 
             if (isAdded()) {
                 requireActivity().getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
                                 android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-                        .replace(R.id.main_container, routeListFragment)
+                        .replace(R.id.main_container, fragment)
                         .addToBackStack(null)
                         .commit();
             }
         });
         rvHistory.setAdapter(adapter);
-
         layoutEmpty = view.findViewById(R.id.layout_empty);
-
 
         return view;
     }
@@ -86,20 +86,18 @@ public class RecentViewedFragment extends Fragment {
             if (isAdded()) {
                 historyList.clear();
                 historyList.addAll(data);
-                updateUI(data.isEmpty());
+
+                if (data.isEmpty()) {
+                    layoutHistory.setVisibility(View.GONE);
+                    layoutEmpty.setVisibility(View.VISIBLE);
+                } else {
+                    layoutHistory.setVisibility(View.VISIBLE);
+                    layoutEmpty.setVisibility(View.GONE);
+                }
+
                 adapter.notifyDataSetChanged();
             }
         });
-    }
-
-    private void updateUI(boolean isEmpty) {
-        if (isEmpty) {
-            layoutHistory.setVisibility(View.GONE);
-            layoutEmpty.setVisibility(View.VISIBLE);
-        } else {
-            layoutHistory.setVisibility(View.VISIBLE);
-            layoutEmpty.setVisibility(View.GONE);
-        }
     }
 
 
