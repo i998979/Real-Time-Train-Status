@@ -114,15 +114,16 @@ public class SearchInputFragment extends Fragment {
         btnGo.setOnClickListener(v -> {
             HistoryManager.getInstance(requireContext()).saveRouteSearch(selectedOriginID, selectedDestID, tvOrigin.getText().toString(), tvDest.getText().toString());
 
-            RouteListFragment listFragment = new RouteListFragment();
+            RouteListFragment fragment = new RouteListFragment();
+
             Bundle bundle = new Bundle();
-            bundle.putString("o", selectedOriginID);
-            bundle.putString("d", selectedDestID);
-            listFragment.setArguments(bundle);
+            bundle.putString(RouteSearchFragment.ORIGIN_ID, selectedOriginID);
+            bundle.putString(RouteSearchFragment.DEST_ID, selectedDestID);
+            fragment.setArguments(bundle);
 
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-                    .replace(R.id.main_container, listFragment)
+                    .replace(R.id.main_container, fragment)
                     .addToBackStack("LIST_PAGE")
                     .commit();
         });

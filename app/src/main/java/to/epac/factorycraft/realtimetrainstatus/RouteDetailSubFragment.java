@@ -89,11 +89,12 @@ public class RouteDetailSubFragment extends Fragment {
         btnAdd.setOnClickListener(v -> {
             savedRouteManager.saveRoute(currentOriginID, currentDestID, currentOriginName, currentDestName);
 
-            Bundle result = new Bundle();
-            result.putBoolean("route_saved", true);
-            requireActivity().getSupportFragmentManager().setFragmentResult("route_saved_result", result);
+            if (getParentFragment() instanceof RouteHostBottomSheet) {
+                RouteHostBottomSheet host = (RouteHostBottomSheet) getParentFragment();
 
-            ((RouteHostBottomSheet) getParentFragment()).dismiss();
+                host.notifyRouteAdded();
+                host.dismiss();
+            }
         });
 
         try {

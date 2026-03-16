@@ -100,7 +100,7 @@ public class RouteListFragment extends Fragment {
         tvOrigin = view.findViewById(R.id.tv_header_origin);
         tvDest = view.findViewById(R.id.tv_header_dest);
         tvOrigin.setText(hrConf.getStationName(Integer.parseInt(originId)));
-        tvDest.setText(hrConf.getStationName(Integer.parseInt(dID)));
+        tvDest.setText(hrConf.getStationName(Integer.parseInt(destId)));
 
         tvStart = view.findViewById(R.id.tv_journey_start);
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
@@ -159,7 +159,7 @@ public class RouteListFragment extends Fragment {
             tabLayout.setVisibility(View.GONE);
         }
 
-        fetchData(originId, dID);
+        fetchData(originId, destId);
         return view;
     }
 

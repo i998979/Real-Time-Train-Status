@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RouteSearchFragment extends Fragment {
+    public static final String ORIGIN_ID = "origin_id";
+    public static final String DEST_ID = "dest_id";
     private static final List<String> subTitles = Arrays.asList("檢索履歷", "檢索", "常用檢索");
 
     SharedPreferences prefs;
