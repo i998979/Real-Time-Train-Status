@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurfaceContainerLow"
+    android:paddingTop="40dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,8 +14,7 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="?attr/colorSecondary">
+            android:layout_height="50dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_return"
@@ -56,7 +57,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="起點"
-                        android:textColor="#FFFFFF"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -65,14 +65,13 @@
                         android:layout_height="24dp"
                         android:layout_marginHorizontal="12dp"
                         android:src="@drawable/baseline_arrow_forward_24"
-                        app:tint="#FFFFFF" />
+                        app:tint="?attr/colorOutline" />
 
                     <TextView
                         android:id="@+id/tv_header_dest"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="終點"
-                        android:textColor="#FFFFFF"
                         android:textSize="20sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -96,7 +95,6 @@
                 android:id="@+id/layout_background_lines"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="?attr/colorSurface"
                 android:orientation="vertical"
                 android:paddingTop="60dp"
                 android:paddingBottom="60dp" />
