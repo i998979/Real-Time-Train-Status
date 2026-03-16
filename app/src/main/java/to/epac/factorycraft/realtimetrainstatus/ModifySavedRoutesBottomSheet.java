@@ -142,6 +142,9 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
             public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
                 super.clearView(recyclerView, viewHolder);
                 savedRouteManager.reorderRoutes(savedRoutes);
+
+                if (mListener != null)
+                    mListener.onDataChanged();
             }
         });
         itemTouchHelper.attachToRecyclerView(rvSavedRoutes);
