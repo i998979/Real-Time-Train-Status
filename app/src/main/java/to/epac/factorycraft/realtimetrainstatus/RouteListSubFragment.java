@@ -2,7 +2,6 @@ package to.epac.factorycraft.realtimetrainstatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -26,13 +25,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -48,20 +45,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class RouteListFragment extends Fragment {
+public class RouteListSubFragment extends Fragment {
 
     private HRConfig hrConf;
     private SharedPreferences prefs;
 
-    MaterialButton btnReturn;
+    private MaterialButton btnClose;
+    private MaterialButton btnReturn;
 
-    TextView tvOrigin;
-    TextView tvDest;
-    TextView tvStart;
+    private TextView tvOrigin;
+    private TextView tvDest;
+    private TextView tvStart;
 
     private RecyclerView rvRoutes;
     private RouteAdapter adapter;
-    private TabLayout tabLayout;
 
 
     private List<String> alertLineCodes = new ArrayList<>();
@@ -69,11 +66,6 @@ public class RouteListFragment extends Fragment {
 
     private JSONObject routeData;
     private List<JSONObject> fullRouteList = new ArrayList<>();
-    private List<JSONObject> routeList = new ArrayList<>();
-
-    private int minTime;
-    private int minInter;
-    private float minFare;
 
     private Calendar startAt = null;
 
@@ -83,15 +75,20 @@ public class RouteListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_route_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_route_list_bottomsheet, container, false);
 
         prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         hrConf = HRConfig.getInstance(requireContext());
 
         btnReturn = view.findViewById(R.id.btn_return);
         btnReturn.setOnClickListener(v -> {
-            if (getParentFragmentManager().getBackStackEntryCount() > 0)
-                getParentFragmentManager().popBackStack();
+            getParentFragmentManager().popBackStack();
+        });
+        btnClose = view.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> {
+            if (getParentFragment() instanceof RouteHostBottomSheet) {
+                ((RouteHostBottomSheet) getParentFragment()).dismiss();
+            }
         });
 
         String originId = getArguments().getString(RouteSearchFragment.ORIGIN_ID);
@@ -100,7 +97,7 @@ public class RouteListFragment extends Fragment {
         tvOrigin = view.findViewById(R.id.tv_header_origin);
         tvDest = view.findViewById(R.id.tv_header_dest);
         tvOrigin.setText(hrConf.getStationName(Integer.parseInt(originId)));
-        tvDest.setText(hrConf.getStationName(Integer.parseInt(dID)));
+        tvDest.setText(hrConf.getStationName(Integer.parseInt(destId)));
 
         tvStart = view.findViewById(R.id.tv_journey_start);
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
@@ -120,7 +117,7 @@ public class RouteListFragment extends Fragment {
 
         rvRoutes = view.findViewById(R.id.rv_routes);
         rvRoutes.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        adapter = new RouteAdapter();
+        adapter = new RouteListSubFragment.RouteAdapter();
         rvRoutes.setAdapter(adapter);
 
         // Once RecyclerView is drawn, draw background 15mins line
@@ -130,38 +127,19 @@ public class RouteListFragment extends Fragment {
                 if (rvRoutes.getHeight() > 0) {
                     rvHeight = rvRoutes.getHeight();
 
-                    if (!routeList.isEmpty()) {
-                        updateBackground();
-                        adapter.notifyDataSetChanged();
-                    }
+                    updateBackground();
+                    adapter.notifyDataSetChanged();
 
                     rvRoutes.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 }
             }
         });
 
-        tabLayout = view.findViewById(R.id.tab_layout);
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                filterRoutes(tab.getPosition());
-            }
+        fetchData(originId, destId);
 
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
-        });
-        if (getArguments() != null && getArguments().getBoolean("hide_tabs", false)) {
-            tabLayout.setVisibility(View.GONE);
-        }
-
-        fetchData(originId, dID);
         return view;
     }
+
 
     private void fetchData(String origin, String dest) {
         new Thread(() -> {
@@ -217,9 +195,6 @@ public class RouteListFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     List<JSONObject> routes = new ArrayList<>();
 
-                    // Show last train designated route when 1 hour before last train
-                    checkAndShowLastTrain();
-
                     // Find longest journey time route
                     try {
                         JSONArray data = routeData.getJSONArray("routes");
@@ -266,25 +241,6 @@ public class RouteListFragment extends Fragment {
                     }
                     startAt = cal;
 
-
-                    // Find min time, min interchange, min fare
-                    minTime = Integer.MAX_VALUE;
-                    minInter = Integer.MAX_VALUE;
-                    minFare = Float.MAX_VALUE;
-                    for (JSONObject r : fullRouteList) {
-                        try {
-                            int journeyTime = getJourneyTime(r.getJSONArray("path"));
-                            int inter = r.getInt("interchangeStationsNo");
-                            float fare = getFare(r);
-
-                            if (journeyTime < minTime) minTime = journeyTime;
-                            if (inter < minInter) minInter = inter;
-                            if (fare < minFare) minFare = fare;
-                        } catch (Exception e) {
-                        }
-                    }
-
-                    filterRoutes(tabLayout.getSelectedTabPosition());
                     updateBackground();
                     adapter.notifyDataSetChanged();
                 });
@@ -292,162 +248,6 @@ public class RouteListFragment extends Fragment {
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    private void checkAndShowLastTrain() {
-        try {
-            JSONObject lastTrain = routeData.getJSONObject("lastTrain");
-            String time = lastTrain.getString("time");
-            String[] timeParts = time.split(":");
-            int lastTrainMinutes = Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1]);
-
-            Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-            int nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
-
-            int diff = lastTrainMinutes - nowMinutes;
-            if (diff >= 0 && diff <= 60) {
-                updateNoticeCard();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateNoticeCard() {
-        CardView noticeCard = getView().findViewById(R.id.notice_card);
-        LinearLayout layoutSegments = getView().findViewById(R.id.layout_card_segments);
-        TextView tvTitle = getView().findViewById(R.id.tv_card_title);
-        TextView tvRemark = getView().findViewById(R.id.tv_card_remark);
-        MaterialButton btnClose = getView().findViewById(R.id.btn_close);
-
-        try {
-            JSONObject lastTrain = routeData.getJSONObject("lastTrain");
-            String remark = routeData.getString("firstLastTrainRemark");
-            String time = lastTrain.getString("time");
-            JSONArray interchanges = lastTrain.optJSONArray("interchange");
-            JSONArray links = lastTrain.getJSONArray("links");
-
-            tvTitle.setText("尾班車: " + time);
-            tvRemark.setText(remark);
-
-            layoutSegments.removeAllViews();
-
-            String originId = getArguments().getString(RouteSearchFragment.ORIGIN_ID);
-            String destId = getArguments().getString(RouteSearchFragment.DEST_ID);
-
-            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(originId)), false);
-
-            int interchangePointer = 0;
-            String currentStationId = originId;
-
-            for (int i = 0; i < links.length(); i++) {
-                String lineCode = links.getString(i);
-
-                if (interchanges != null && interchangePointer < interchanges.length()) {
-                    String nextId = interchanges.getString(interchangePointer);
-
-                    if ((currentStationId.equals("3") && nextId.equals("80")) ||
-                            (currentStationId.equals("80") && nextId.equals("3"))) {
-
-                        addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(nextId)), true);
-                        currentStationId = nextId;
-                        interchangePointer++;
-                    }
-                }
-
-                HRConfig.Line line = hrConf.getLineByAlias(lineCode);
-                addTrainSegmentViewToCard(layoutSegments, line);
-
-                if (i < links.length() - 1 && interchanges != null && interchangePointer < interchanges.length()) {
-                    if (interchangePointer + 1 < interchanges.length()) {
-                        String s1 = interchanges.getString(interchangePointer);
-                        String s2 = interchanges.getString(interchangePointer + 1);
-
-                        if ((s1.equals("1") && s2.equals("44")) || (s1.equals("44") && s2.equals("1"))) {
-                            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(s1)), false);
-                            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(s2)), true);
-                            currentStationId = s2;
-                            interchangePointer += 2;
-                            continue;
-                        }
-                    }
-
-                    String stationId = interchanges.getString(interchangePointer);
-                    addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(stationId)), false);
-                    currentStationId = stationId;
-                    interchangePointer++;
-                }
-            }
-
-            addStationViewToCard(layoutSegments, hrConf.getStationName(Integer.parseInt(destId)), false);
-
-            btnClose.setOnClickListener(v -> noticeCard.setVisibility(View.GONE));
-            noticeCard.setVisibility(View.VISIBLE);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            noticeCard.setVisibility(View.GONE);
-        }
-    }
-
-    private void addStationViewToCard(LinearLayout container, String stationName, boolean walk) {
-        if (walk) {
-            TextView tvWalk = new TextView(requireContext());
-            LinearLayout.LayoutParams walkParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            walkParams.gravity = Gravity.CENTER_VERTICAL;
-            tvWalk.setLayoutParams(walkParams);
-
-            tvWalk.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
-            tvWalk.setCompoundDrawablePadding(0);
-            tvWalk.setGravity(Gravity.CENTER);
-
-            tvWalk.setCompoundDrawableTintList(ColorStateList.valueOf(Color.WHITE));
-
-            container.addView(tvWalk);
-        }
-
-        TextView tv = new TextView(requireContext());
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.CENTER_VERTICAL;
-        tv.setPadding(Utils.dpToPx(requireContext(), 6), 0, Utils.dpToPx(requireContext(), 6), 0);
-        tv.setLayoutParams(params);
-        tv.setText(stationName);
-        tv.setTextSize(12);
-        tv.setGravity(Gravity.CENTER);
-        tv.setTextColor(Color.WHITE);
-        container.addView(tv);
-    }
-
-    private void addTrainSegmentViewToCard(LinearLayout container, HRConfig.Line line) {
-        FrameLayout segmentContainer = new FrameLayout(requireContext());
-        segmentContainer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        FrameLayout badgeContainer = new FrameLayout(requireContext());
-        FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 32), Utils.dpToPx(requireContext(), 32));
-        badgeParams.gravity = Gravity.CENTER;
-        badgeContainer.setLayoutParams(badgeParams);
-
-        GradientDrawable badgeBg = new GradientDrawable();
-        badgeBg.setShape(GradientDrawable.RECTANGLE);
-        badgeBg.setCornerRadius(Utils.dpToPx(requireContext(), 4));
-        badgeBg.setColor(Color.parseColor("#" + line.color));
-        badgeContainer.setBackground(badgeBg);
-
-        TextView tvLineCode = new TextView(requireContext());
-        FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 26), Utils.dpToPx(requireContext(), 26));
-        textParams.gravity = Gravity.CENTER;
-        tvLineCode.setBackgroundColor(Color.WHITE);
-        tvLineCode.setLayoutParams(textParams);
-        tvLineCode.setText(line.alias);
-        tvLineCode.setTextColor(Color.BLACK);
-        tvLineCode.setTextSize(10);
-        tvLineCode.setTypeface(null, Typeface.BOLD);
-        tvLineCode.setGravity(Gravity.CENTER);
-        badgeContainer.addView(tvLineCode);
-        segmentContainer.addView(badgeContainer);
-
-        container.addView(segmentContainer);
     }
 
     private void updateBackground() {
@@ -488,47 +288,8 @@ public class RouteListFragment extends Fragment {
         });
     }
 
-    private int getJourneyTime(JSONArray path) {
-        List<VisualSegment> temp = parsePathToSegments(path, 0, 0);
-        int total = 0;
-        for (VisualSegment s : temp) total += s.duration;
-        return total;
-    }
 
-    private void filterRoutes(int position) {
-        routeList.clear();
-        if (position == 0) {
-            routeList.addAll(fullRouteList);
-        } else {
-            JSONObject best = null;
-            for (JSONObject r : fullRouteList) {
-                if (best == null) {
-                    best = r;
-                    continue;
-                }
-                try {
-                    if (position == 1) {
-                        if (r.getInt("time") < best.getInt("time")) best = r;
-                    } else if (position == 2) {
-                        if (r.getInt("interchangeStationsNo") < best.getInt("interchangeStationsNo"))
-                            best = r;
-                    } else if (position == 3) {
-                        float rFare = getFare(r);
-                        float bFare = getFare(best);
-                        if (rFare < bFare) best = r;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (best != null) routeList.add(best);
-        }
-        adapter.notifyDataSetChanged();
-        rvRoutes.scrollToPosition(0);
-    }
-
-
-    private class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.ViewHolder> {
+    private class RouteAdapter extends RecyclerView.Adapter<RouteListSubFragment.RouteAdapter.ViewHolder> {
         private class ViewHolder extends RecyclerView.ViewHolder {
             LinearLayout routeLayout;
             LinearLayout layoutVisualSegments;
@@ -549,19 +310,19 @@ public class RouteListFragment extends Fragment {
 
         @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_route_visual, parent, false));
+        public RouteListSubFragment.RouteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new RouteListSubFragment.RouteAdapter.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_route_visual, parent, false));
         }
 
         @Override
         public int getItemCount() {
-            return routeList.size();
+            return fullRouteList.size();
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull RouteListSubFragment.RouteAdapter.ViewHolder holder, int position) {
             try {
-                JSONObject route = routeList.get(position);
+                JSONObject route = fullRouteList.get(position);
 
                 List<VisualSegment> segments = parsePathToSegments(route.getJSONArray("path"),
                         startAt.get(Calendar.HOUR_OF_DAY), startAt.get(Calendar.MINUTE));
@@ -586,56 +347,21 @@ public class RouteListFragment extends Fragment {
                 // Apply min time/interchange/fare badge
                 holder.layoutStatusBadges.removeAllViews();
 
-                String[] texts = {"早", "樂", "安"};
-                String[] colors = {"#2AB3D4", "#3DBC7F", "#FFAE0C"};
-                boolean[] match = {
-                        getJourneyTime(route.getJSONArray("path")) == minTime,
-                        route.getInt("interchangeStationsNo") == minInter,
-                        getFare(route) == minFare
-                };
 
-                for (int i = 0; i < texts.length; i++) {
-                    if (match[i]) {
-                        TextView tv = new TextView(getContext());
-                        int size = Utils.dpToPx(requireContext(), 17);
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
-                        lp.setMargins(Utils.dpToPx(requireContext(), 2), 0, Utils.dpToPx(requireContext(), 2), 0);
-                        tv.setLayoutParams(lp);
-
-                        tv.setText(texts[i]);
-                        tv.setTextColor(Color.WHITE);
-                        tv.setTextSize(9);
-                        tv.setGravity(Gravity.CENTER);
-                        tv.setTypeface(null, Typeface.BOLD);
-
-                        GradientDrawable bg = new GradientDrawable();
-                        bg.setShape(GradientDrawable.RECTANGLE);
-                        bg.setCornerRadius(Utils.dpToPx(requireContext(), 4));
-                        bg.setColor(Color.parseColor(colors[i]));
-                        tv.setBackground(bg);
-
-                        holder.layoutStatusBadges.addView(tv);
-                    }
-                }
-
-
-                // Apply onClickListener
+                // On route item click: close this bottom sheet and open route detail bottom sheet
                 holder.routeLayout.setOnClickListener(v -> {
-                    RouteDetailFragment detailFragment = new RouteDetailFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("route_data", routeData.toString());
-                    bundle.putInt("selected_route", position);
-                    bundle.putString("start_time", String.format(Locale.getDefault(), "%02d:%02d",
-                            startAt.get(Calendar.HOUR_OF_DAY), startAt.get(Calendar.MINUTE)));
-                    bundle.putString("traffic_news", trafficNews);
-                    detailFragment.setArguments(bundle);
+                    RouteDetailSubFragment detailFrag = new RouteDetailSubFragment();
 
-                    requireActivity().getSupportFragmentManager().beginTransaction()
-                            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
-                                    android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-                            .replace(R.id.main_container, detailFragment)
-                            .addToBackStack("DETAIL_PAGE")
-                            .commit();
+                    Bundle args = new Bundle();
+                    args.putString("route_data", routeData.toString());
+                    args.putInt("selected_route", position);
+                    args.putString("start_time", String.format(Locale.getDefault(), "%02d:%02d", firstSeg.startH, firstSeg.startM));
+                    args.putString("traffic_news", trafficNews);
+                    detailFrag.setArguments(args);
+
+                    if (getParentFragment() instanceof RouteHostBottomSheet) {
+                        ((RouteHostBottomSheet) getParentFragment()).navigateTo(detailFrag);
+                    }
                 });
 
 
@@ -648,7 +374,7 @@ public class RouteListFragment extends Fragment {
         }
     }
 
-    private void drawVisualSegments(RouteAdapter.ViewHolder holder, List<VisualSegment> segments, int adjustedTime) {
+    private void drawVisualSegments(RouteListSubFragment.RouteAdapter.ViewHolder holder, List<VisualSegment> segments, int adjustedTime) {
         int verticalPadding = Utils.dpToPx(requireContext(), 14);
         int badgeSize = Utils.dpToPx(requireContext(), 32);
         int stationSize = Utils.dpToPx(requireContext(), 32);
