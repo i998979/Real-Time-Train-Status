@@ -32,8 +32,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
-public class SearchInputFragment extends Fragment {
+public class SearchInputSubFragment extends Fragment {
+
     private SharedPreferences prefs;
+
+    private MaterialButton btnClose;
 
     private View layoutOrigin;
     private TextView tvOrigin;
@@ -54,7 +57,7 @@ public class SearchInputFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_search_input, container, false);
+        View view = inflater.inflate(R.layout.fragment_search_input_bottomsheet, container, false);
 
         prefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         if (!prefs.contains(MainActivity.KEY_WALK_SPEED))
@@ -66,6 +69,13 @@ public class SearchInputFragment extends Fragment {
 
         selectedOriginID = prefs.getString(MainActivity.KEY_ORIGIN_ID, null);
         selectedDestID = prefs.getString(MainActivity.KEY_DEST_ID, null);
+
+        btnClose = view.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> {
+            if (getParentFragment() instanceof RouteHostBottomSheet) {
+                ((RouteHostBottomSheet) getParentFragment()).dismiss();
+            }
+        });
 
         layoutOrigin = view.findViewById(R.id.layout_origin);
         tvOrigin = view.findViewById(R.id.tv_origin_name);
@@ -111,20 +121,18 @@ public class SearchInputFragment extends Fragment {
 
         btnGo = view.findViewById(R.id.btn_go);
         btnGo.setOnClickListener(v -> {
-            HistoryManager.getInstance(requireContext()).saveRouteSearch(selectedOriginID, selectedDestID, tvOrigin.getText().toString(), tvDest.getText().toString());
+            HistoryManager.getInstance(requireContext()).saveRouteSearch(
+                    selectedOriginID, selectedDestID, tvOrigin.getText().toString(), tvDest.getText().toString());
 
-            RouteListFragment fragment = new RouteListFragment();
+            RouteListSubFragment fragment = new RouteListSubFragment();
+            Bundle args = new Bundle();
+            args.putString(RouteSearchFragment.ORIGIN_ID, selectedOriginID);
+            args.putString(RouteSearchFragment.DEST_ID, selectedDestID);
+            fragment.setArguments(args);
 
-            Bundle bundle = new Bundle();
-            bundle.putString(RouteSearchFragment.ORIGIN_ID, selectedOriginID);
-            bundle.putString(RouteSearchFragment.DEST_ID, selectedDestID);
-            fragment.setArguments(bundle);
-
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-                    .replace(R.id.main_container, fragment)
-                    .addToBackStack("LIST_PAGE")
-                    .commit();
+            if (getParentFragment() instanceof RouteHostBottomSheet) {
+                ((RouteHostBottomSheet) getParentFragment()).navigateTo(fragment, true);
+            }
         });
 
         updateStationDisplay(tvOrigin, selectedOriginID, "出發地");

@@ -360,7 +360,7 @@ public class RouteListSubFragment extends Fragment {
                     detailFrag.setArguments(args);
 
                     if (getParentFragment() instanceof RouteHostBottomSheet) {
-                        ((RouteHostBottomSheet) getParentFragment()).navigateTo(detailFrag);
+                        ((RouteHostBottomSheet) getParentFragment()).navigateTo(detailFrag, true);
                     }
                 });
 

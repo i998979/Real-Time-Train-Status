@@ -108,16 +108,8 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
 
         rvSavedRoutes = view.findViewById(R.id.rv_saved_routes);
         rvSavedRoutes.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new SavedRouteAdapter(savedRoutes, selectedPositions, new SavedRouteAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(SavedRouteManager.SavedRoute route) {
-                showRouteListBottomSheet(route.getOriginID(), route.getDestID());
-            }
-
-            @Override
-            public void onSelectionChanged() {
-                updateUI();
-            }
+        adapter = new SavedRouteAdapter(savedRoutes, selectedPositions, () -> {
+            updateUI();
         });
         rvSavedRoutes.setAdapter(adapter);
 
@@ -200,16 +192,11 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void showSearchInputBottomSheet() {
-        RouteHostBottomSheet hostSheet = RouteHostBottomSheet.newInstance();
+        RouteHostBottomSheet hostSheet = new RouteHostBottomSheet();
         hostSheet.setOnRouteAddedListener(() -> {
             refreshData();
         });
         hostSheet.show(getParentFragmentManager(), "route_host_nav");
-    }
-
-    private void showRouteListBottomSheet(String originID, String destID) {
-        RouteHostBottomSheet hostSheet = RouteHostBottomSheet.newInstance(originID, destID);
-        hostSheet.show(getParentFragmentManager(), "route_host_bottom_sheet");
     }
 
 
@@ -219,8 +206,6 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
         private final Set<Integer> selectedPositions;
 
         public interface OnItemClickListener {
-            void onItemClick(SavedRouteManager.SavedRoute route);
-
             void onSelectionChanged();
         }
 
@@ -255,7 +240,7 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
             holder.cbSelect.setImageTintList(ColorStateList.valueOf(isSelected ?
                     ContextCompat.getColor(holder.itemView.getContext(), R.color.button_green) : colorOnSurface));
 
-            holder.cbSelect.setOnClickListener(v -> {
+            holder.itemView.setOnClickListener(v -> {
                 if (selectedPositions.contains(position)) {
                     selectedPositions.remove(position);
                 } else {
@@ -263,8 +248,6 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
                 }
                 listener.onSelectionChanged();
             });
-
-            holder.itemView.setOnClickListener(v -> listener.onItemClick(route));
         }
 
         @Override
