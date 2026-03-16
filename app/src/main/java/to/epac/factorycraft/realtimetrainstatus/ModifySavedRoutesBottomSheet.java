@@ -75,7 +75,7 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_modify_saved_routes, container, false);
+        return inflater.inflate(R.layout.fragment_modify_saved_routes_bottomsheet, container, false);
     }
 
     @Override
