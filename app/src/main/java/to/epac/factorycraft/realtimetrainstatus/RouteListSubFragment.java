@@ -181,7 +181,7 @@ public class RouteListSubFragment extends Fragment {
 
         new Thread(() -> {
             try {
-                URL url = new URL("https://www.mtr.com.hk/share/customer/jp/api/HRRoutes/?o=" + origin + "&d=" + dest + "&lang=C");
+                URL url = new URL(MainActivity.ROUTE_URL + "?o=" + origin + "&d=" + dest + "&lang=C");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();

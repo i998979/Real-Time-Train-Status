@@ -187,8 +187,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                     : lineCode.equalsIgnoreCase("drl") ? "4両"
                     : lineCode.equalsIgnoreCase("sil") ? "3両" : "8両");
 
-            updateBadgeCrowd(badge, trip);
-
             if (container instanceof FrameLayout) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) badge.getLayoutParams();
                 params.gravity = isUp ? (Gravity.CENTER_VERTICAL | Gravity.END) : (Gravity.CENTER_VERTICAL | Gravity.START);
@@ -206,46 +204,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             });
 
             container.addView(badge);
-        }
-    }
-
-    private void updateBadgeCrowd(View badgeView, Trip trip) {
-        double totalPercent = 0;
-        int carCount = trip.listCars.size();
-
-        for (int i = 0; i < carCount; i++) {
-            Car car = trip.listCars.get(i);
-            int capacity = (lineCode.equalsIgnoreCase("eal") && i == 3) ? 150 : 250;
-            double load = (double) car.passengerCount / capacity;
-            totalPercent += load;
-        }
-
-        double avgPercent = totalPercent / carCount;
-
-        View[] boys = {
-                badgeView.findViewById(R.id.crowd_1),
-                badgeView.findViewById(R.id.crowd_2),
-                badgeView.findViewById(R.id.crowd_3),
-                badgeView.findViewById(R.id.crowd_4),
-                badgeView.findViewById(R.id.crowd_5)
-        };
-
-        int color;
-        if (avgPercent < 0.4) {
-            color = 0xFF00FF00;
-        } else if (avgPercent < 0.8) {
-            color = 0xFFFFFF00;
-        } else {
-            color = 0xFFFF0000;
-        }
-
-        for (int i = 0; i < 5; i++) {
-            double threshold = (i + 1) * 0.2;
-            if (avgPercent >= threshold) {
-                boys[i].setBackgroundTintList(ColorStateList.valueOf(color));
-            } else {
-                boys[i].setBackgroundTintList(ColorStateList.valueOf(0x33AAAAAA));
-            }
         }
     }
 
@@ -453,18 +411,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 if (trip.isOpenData) {
                     v.findViewById(R.id.tv_train_consist).setVisibility(View.GONE);
                     v.findViewById(R.id.tv_train_number).setVisibility(View.GONE);
-                } else {
-                    if (lineCode.equalsIgnoreCase("eal")) {
-                        int ts = Integer.parseInt(trip.trainId);
-                        ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts - 2, ts));
-                    } else if (lineCode.equalsIgnoreCase("tml")) {
-                        int ts = Integer.parseInt(trip.trainId);
-                        if (ts % 2 == 0)
-                            ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts - 1, ts));
-                        else
-                            ((TextView) v.findViewById(R.id.tv_train_consist)).setText(String.format("D%03d/D%03d", ts, ts + 1));
-                    }
-                    ((TextView) v.findViewById(R.id.tv_train_number)).setText("列車編號：" + trip.td);
                 }
                 CardView crowdLayout = v.findViewById(R.id.crowd_layout);
                 updateTrainCrowd(crowdLayout, trip, v);
@@ -549,17 +495,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
     private boolean isUp(Trip trip) {
         if (trip.isOpenData) return trip.isUp;
 
-        if (lineCode.equalsIgnoreCase("eal")) {
-            char lastChar = trip.td.charAt(trip.td.length() - 1);
-            if (Character.isDigit(lastChar)) {
-                return (lastChar - '0') % 2 != 0;
-            }
-        }
-
-        if (lineCode.equalsIgnoreCase("tml")) {
-            return Utils.covertStationOrder(trip.currentStationCode) < Utils.covertStationOrder(trip.destinationStationCode);
-        }
-
         return false;
     }
 
@@ -571,44 +506,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     private void bindStation(StationViewHolder h, int stationIdx) {
         int code = stationCodes[stationIdx];
-        /*FrameLayout container = (FrameLayout) h.railLine.getParent();
-
-        // 1. 移除舊有的轉乘線以利 ViewHolder 重用
-        View oldInterchange = container.findViewWithTag("dynamic_interchange");
-        if (oldInterchange != null) container.removeView(oldInterchange);
-
-        // 2. 判斷轉乘顏色（紅磡站）
-        int interchangeColor = -1;
-        if (lineCode.equalsIgnoreCase("eal") && code == 21) {
-            interchangeColor = Color.parseColor("#9A3820"); // 屯馬綫棕色
-        }
-
-        // 3. 動態插入與精確對齊
-        if (interchangeColor != -1) {
-            float density = context.getResources().getDisplayMetrics().density;
-
-            ImageView iv = new ImageView(context);
-            iv.setTag("dynamic_interchange");
-
-            Drawable curve = ContextCompat.getDrawable(context, R.drawable.interchange_tml_up).mutate();
-            curve.setTint(interchangeColor);
-            iv.setImageDrawable(curve);
-
-            // 寬度設為 320dp 以確保水平長度足夠
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    (int) (320 * density),
-                    (int) (100 * density)
-            );
-
-            // 關鍵對齊步驟：
-            // Gravity.END 讓 ImageView 的右側貼齊容器右側
-            // rightMargin = 10dp 讓 ImageView 向左移 10dp，使其右邊界剛好落在 20dp 容器的中心線 (即主線中心)
-            params.gravity = Gravity.END;
-            params.rightMargin = (int) (10 * density);
-
-            // 插入到 index 0，確保它在主線 rail_line 和車站圓點的下方
-            container.addView(iv, 0, params);
-        }*/
 
         h.tvStation.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, code), true));
         h.tvStation.setTag(Utils.idToCode(context, lineCode, code));
@@ -632,18 +529,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 if (trip.ttnt > 0) continue;
 
                 if (trip.nextStationCode == code) {
-                    if (isUp(trip))
-                        upTrips.add(trip);
-                    else
-                        dnTrips.add(trip);
-                }
-            }
-            // Roctec
-            else {
-                if (isOutdated(trip)) continue;
-                if (trip.trainSpeed != 0) continue;
-
-                if (trip.currentStationCode == code) {
                     if (isUp(trip))
                         upTrips.add(trip);
                     else
@@ -684,14 +569,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                     else
                         dnTrips.add(trip);
                 }
-            } else {
-                if (isOutdated(trip)) continue;
-                if (!(trip.trainSpeed > 0)) continue;
-
-                if (isUp(trip) && trip.nextStationCode == currentCode && trip.currentStationCode == nextNodeCode)
-                    upTrips.add(trip);
-                else if (!isUp(trip) && trip.nextStationCode == nextNodeCode && trip.currentStationCode == currentCode)
-                    dnTrips.add(trip);
             }
         }
 
@@ -726,42 +603,11 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 if (trip.ttnt <= 0) continue;
 
                 if (isUp(trip)) {
-                    // UP (北行往羅湖/落馬洲): 進入分叉前，目標是 currentSector
                     if (trip.nextStationCode == currentSector)
                         isAtThisSegment = true;
                 } else {
-                    // DN (南行往金鐘): 進入匯合區間，目標應該是 nextSector (南方的車站)
                     if (trip.nextStationCode == nextSector)
                         isAtThisSegment = true;
-                }
-            } else {
-                if (isOutdated(trip)) continue;
-                if (!(trip.trainSpeed > 0)) continue;
-
-                if (isUp(trip)) {
-                    if (currentSector == 13 && nextSector == 12) {
-                        if (trip.nextStationCode == 13 || trip.nextStationCode == 14)
-                            isAtThisSegment = true;
-                    } else if (currentSector == 8 && nextSector == 6) {
-                        if (trip.nextStationCode == 8) isAtThisSegment = true;
-                    } else if (currentSector == 6 && nextSector == 5) {
-                        if (trip.nextStationCode == 6 || trip.nextStationCode == 7)
-                            isAtThisSegment = true;
-                    }
-                } else {
-                    if (currentSector == 13 && nextSector == 12) {
-                        if ((trip.currentStationCode == 13 || trip.currentStationCode == 14) && trip.nextStationCode == 12) {
-                            isAtThisSegment = true;
-                        }
-                    } else if (currentSector == 8 && nextSector == 6) {
-                        if (trip.currentStationCode == 8 && (trip.nextStationCode == 6 || trip.nextStationCode == 7)) {
-                            isAtThisSegment = true;
-                        }
-                    } else if (currentSector == 6 && nextSector == 5) {
-                        if ((trip.currentStationCode == 6 || trip.currentStationCode == 7) && trip.nextStationCode == 5) {
-                            isAtThisSegment = true;
-                        }
-                    }
                 }
             }
 
@@ -829,17 +675,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 if (trip.nextStationCode == mainCode) {
                     isAtMain = true;
                 } else if (trip.nextStationCode == spurCode) {
-                    isAtSpur = true;
-                }
-            }
-            // Roctec
-            else {
-                if (isOutdated(trip)) continue;
-                if (trip.trainSpeed != 0) continue;
-
-                if (trip.currentStationCode == mainCode) {
-                    isAtMain = true;
-                } else if (trip.currentStationCode == spurCode) {
                     isAtSpur = true;
                 }
             }

@@ -3,6 +3,9 @@ package to.epac.factorycraft.realtimetrainstatus;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -13,6 +16,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -47,6 +52,31 @@ public class SavedLineActivity extends AppCompatActivity {
         MaterialButton btnClose = findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> {
             finish();
+        });
+        MaterialButton btnGuide = findViewById(R.id.btn_guide);
+        btnGuide.setOnClickListener(v -> {
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+
+            View sheetView = LayoutInflater.from(this).inflate(R.layout.layout_train_location_guide_bottom_sheet, null);
+            bottomSheetDialog.setContentView(sheetView);
+
+            View parent = (View) sheetView.getParent();
+            BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(parent);
+            int displayHeight = getResources().getDisplayMetrics().heightPixels;
+            int targetHeight = (int) (displayHeight * 0.9);
+            behavior.setPeekHeight(targetHeight);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+            ViewGroup.LayoutParams lp = parent.getLayoutParams();
+            lp.height = targetHeight;
+            parent.setLayoutParams(lp);
+
+            MaterialButton btnClose1 = sheetView.findViewById(R.id.btn_close);
+            btnClose1.setOnClickListener(view -> {
+                bottomSheetDialog.dismiss();
+            });
+
+            bottomSheetDialog.show();
         });
 
         ViewPager2 pagerContent = findViewById(R.id.pager_content);

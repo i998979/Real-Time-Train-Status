@@ -3,8 +3,8 @@
     android:description="@string/widget_octopus_description"
     android:initialKeyguardLayout="@layout/widget_octopus"
     android:initialLayout="@layout/widget_octopus"
-    android:minWidth="110dp"
-    android:minHeight="110dp"
+    android:minWidth="80dp"
+    android:minHeight="80dp"
     android:previewImage="@drawable/example_appwidget_preview"
 
     android:previewLayout="@layout/widget_octopus"

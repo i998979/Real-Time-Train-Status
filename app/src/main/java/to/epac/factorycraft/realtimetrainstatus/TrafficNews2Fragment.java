@@ -40,7 +40,6 @@ public class TrafficNews2Fragment extends Fragment {
     TextView tvReason;
 
     TextView tvDetail;
-    WebView wvDetail;
 
     @Nullable
     @Override
@@ -69,10 +68,6 @@ public class TrafficNews2Fragment extends Fragment {
         tvReason = view.findViewById(R.id.tv_reason);
 
         tvDetail = view.findViewById(R.id.tv_detail);
-        wvDetail = view.findViewById(R.id.wv_detail);
-        WebSettings webSettings = wvDetail.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        wvDetail.setWebViewClient(new WebViewClient());
 
 
         String lineCode = getArguments().getString("line_code");
@@ -123,10 +118,6 @@ public class TrafficNews2Fragment extends Fragment {
 
                     String cause = msgObj.optString("cause_tc", "").trim();
                     detail = cause.equalsIgnoreCase("null") ? "" : cause;
-
-                    String url = msgObj.optString("url_tc", "").trim();
-                    if (!url.isEmpty())
-                        wvDetail.loadUrl(url);
 
                     parseAffectedAreas(msgObj.optJSONObject("affected_areas"));
                 }

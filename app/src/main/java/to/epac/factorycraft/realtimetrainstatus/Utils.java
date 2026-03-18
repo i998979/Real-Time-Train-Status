@@ -6,12 +6,7 @@ import android.util.TypedValue;
 
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.maps.model.LatLng;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Utils {
@@ -128,90 +123,6 @@ public class Utils {
             Log.e("Utils", "Time parse error: " + timeStr);
             return 0;
         }
-    }
-
-    public static int covertStationOrder(int code) {
-        switch (code) {
-            case 1:
-                return 16;
-            case 14:
-                return 17;
-            case 21:
-                return 9;
-            case 22:
-                return 8;
-            case 23:
-                return 7;
-            case 24:
-                return 6;
-            case 25:
-                return 5;
-            case 26:
-                return 4;
-            case 27:
-                return 3;
-            case 28:
-                return 2;
-            case 29:
-                return 1;
-            case 41:
-                return 19;
-            case 42:
-                return 20;
-            case 43:
-                return 21;
-            case 44:
-                return 22;
-            case 45:
-                return 23;
-            case 46:
-                return 24;
-            case 47:
-                return 25;
-            case 48:
-                return 26;
-            case 49:
-                return 27;
-            case 50:
-                return 18;
-            case 61:
-                return 15;
-            case 62:
-                return 14;
-            case 63:
-                return 13;
-            case 64:
-                return 12;
-            case 65:
-                return 11;
-            case 66:
-                return 10;
-            default:
-                return 0;
-        }
-    }
-
-    public static List<LatLng> getLatLngs(String s) {
-        List<LatLng> latLngs = new ArrayList<>();
-
-        String[] data = s.split(" ");
-        for (String s1 : data) {
-            latLngs.add(getLatLng(s1));
-        }
-
-        return latLngs;
-    }
-
-    public static LatLng getLatLng(String s) {
-        double lng = Double.parseDouble(s.split(",")[0]);
-        double lat = Double.parseDouble(s.split(",")[1]);
-        return new LatLng(lat, lng);
-    }
-
-    public static boolean isPassengerTrain(String td) {
-        List<String> headCode = new ArrayList<>(Arrays.asList("FF", "SS", "VL", "VT", "VV", "VW", "DP", "XX", "TT"));
-
-        return !(headCode.contains(td.substring(0, 2)) || td.equals("UNKNOWN"));
     }
 
 

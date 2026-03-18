@@ -201,11 +201,6 @@ public class TrainLocationFragment extends Fragment {
                             }
                         }
                     }
-                } else {
-                    String raw = download(lineConfig.apiUrl, lineConfig.apiKey);
-                    if (raw != null) {
-                        rawList.addAll(parseRoctecJson(raw));
-                    }
                 }
 
                 List<Trip> cleanList = processPhysicsBasedDedup(rawList);
@@ -238,60 +233,6 @@ public class TrainLocationFragment extends Fragment {
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    private List<Trip> parseRoctecJson(String json) throws Exception {
-        List<Trip> list = new ArrayList<>();
-        JSONArray array;
-
-        // TML format
-        if (json.trim().startsWith("{")) {
-            JSONObject root = new JSONObject(json);
-            array = root.getJSONArray("Items");
-        }
-        // EAL format
-        else {
-            array = new JSONArray(json);
-        }
-
-        for (int i = 0; i < array.length(); i++) {
-            JSONObject obj = array.getJSONObject(i);
-
-            List<Car> cars = new ArrayList<>();
-            if (obj.has("listCars")) {
-                JSONArray carArray = obj.getJSONArray("listCars");
-                for (int j = 0; j < carArray.length(); j++) {
-                    JSONObject c = carArray.getJSONObject(j);
-                    cars.add(new Car(c.optInt("carLoad"), c.optInt("passengerCount"),
-                            c.optString("carName"), c.optInt("passengerLoad")));
-                }
-            }
-
-            String trainId = obj.optString("trainId");
-
-            String td = obj.optString("td", "UNKNOWN");
-            if (td.equals("UNKNOWN")) td = trainId;
-
-            int doorStatus = 0;
-            Object doorObj = obj.opt("doorStatus");
-            if (doorObj instanceof Boolean) {
-                doorStatus = (Boolean) doorObj ? 1 : 0;
-            } else if (doorObj instanceof String) {
-                doorStatus = Integer.parseInt((String) doorObj);
-            }
-
-            // TODO: TML uses distanceFromCurrentStation instead of targetDistance
-            int targetDist = obj.has("targetDistance") ?
-                    obj.optInt("targetDistance") :
-                    obj.optInt("distanceFromCurrentStation", 0);
-
-            list.add(new Trip(trainId, "", obj.optDouble("trainSpeed", 0.0),
-                    obj.optInt("currentStationCode"), obj.optInt("nextStationCode"), obj.optInt("destinationStationCode"),
-                    cars, obj.optLong("receivedTime"), obj.optLong("ttl"),
-                    doorStatus, td, targetDist, obj.optInt("startDistance", 0)
-            ));
-        }
-        return list;
     }
 
     private List<Trip> parseNtJson(JSONObject stationJson, String station) throws Exception {

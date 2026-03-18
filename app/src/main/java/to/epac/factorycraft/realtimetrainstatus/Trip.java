@@ -102,38 +102,4 @@ public class Trip {
         this.startDistance = 0;
         this.ttl = 0;
     }
-
-    /**
-     * Roctec API
-     */
-    public Trip(String trainId, String trainType, double trainSpeed, int currentStationCode,
-                int nextStationCode, int destinationStationCode, List<Car> listCars,
-                long receivedTime, long ttl, int doorStatus, String td,
-                int targetDistance, int startDistance) {
-        this.isOpenData = false;
-        this.trainId = trainId;
-        this.trainType = trainType;
-        this.trainSpeed = trainSpeed;
-        this.currentStationCode = currentStationCode;
-        this.nextStationCode = nextStationCode;
-        this.destinationStationCode = destinationStationCode;
-
-        this.listCars = new ArrayList<>();
-        if (listCars != null) this.listCars = listCars;
-
-        this.receivedTime = receivedTime;
-        this.ttl = ttl;
-        this.doorStatus = doorStatus;
-        this.td = td;
-        this.targetDistance = targetDistance;
-        this.startDistance = startDistance;
-
-        // Initialize Next Train fields
-        this.stationPredictions = new HashMap<>();
-        this.seq = 0;
-        this.time = 0;
-        this.ttnt = 0;
-        this.route = "";
-        this.timeType = "";
-    }
 }

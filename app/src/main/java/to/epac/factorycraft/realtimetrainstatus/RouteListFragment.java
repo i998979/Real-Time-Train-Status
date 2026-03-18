@@ -203,7 +203,7 @@ public class RouteListFragment extends Fragment {
 
         new Thread(() -> {
             try {
-                URL url = new URL("https://www.mtr.com.hk/share/customer/jp/api/HRRoutes/?o=" + origin + "&d=" + dest + "&lang=C");
+                URL url = new URL(MainActivity.ROUTE_URL + "?o=" + origin + "&d=" + dest + "&lang=C");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();
@@ -323,13 +323,11 @@ public class RouteListFragment extends Fragment {
 
         try {
             JSONObject lastTrain = routeData.getJSONObject("lastTrain");
-            String remark = routeData.getString("firstLastTrainRemark");
             String time = lastTrain.getString("time");
             JSONArray interchanges = lastTrain.optJSONArray("interchange");
             JSONArray links = lastTrain.getJSONArray("links");
 
             tvTitle.setText("尾班車: " + time);
-            tvRemark.setText(remark);
 
             layoutSegments.removeAllViews();
 
@@ -827,7 +825,7 @@ public class RouteListFragment extends Fragment {
             GradientDrawable bgTvWalk = new GradientDrawable();
             bgTvWalk.setShape(GradientDrawable.RECTANGLE);
             bgTvWalk.setCornerRadius(Utils.dpToPx(requireContext(), 4));
-            bgTvWalk.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceInverse));
+            bgTvWalk.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant));
             tvWalk.setBackground(bgTvWalk);
             tvWalk.setPadding(Utils.dpToPx(requireContext(), 4), Utils.dpToPx(requireContext(), 2), Utils.dpToPx(requireContext(), 4), Utils.dpToPx(requireContext(), 2));
             walkContainer.addView(tvWalk);

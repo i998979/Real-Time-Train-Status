@@ -22,34 +22,10 @@
 
         <View
             android:id="@+id/crowd_1"
-            android:layout_width="5dp"
+            android:layout_width="15dp"
             android:layout_height="10dp"
-            android:background="@drawable/baseline_boy_24" />
+            android:background="@drawable/outline_horizontal_rule_24" />
 
-        <View
-            android:id="@+id/crowd_2"
-            android:layout_width="5dp"
-            android:layout_height="10dp"
-            android:background="@drawable/baseline_boy_24" />
-
-        <View
-            android:id="@+id/crowd_3"
-            android:layout_width="5dp"
-            android:layout_height="10dp"
-            android:background="@drawable/baseline_boy_24" />
-
-        <View
-            android:id="@+id/crowd_4"
-            android:layout_width="5dp"
-            android:layout_height="10dp"
-            android:background="@drawable/baseline_boy_24" />
-
-        <View
-            android:id="@+id/crowd_5"
-            android:layout_width="5dp"
-            android:layout_height="10dp"
-            android:background="@drawable/baseline_boy_24"
-            android:padding="-5dp" />
     </LinearLayout>
 
     <View

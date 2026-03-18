@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,8 @@ import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
@@ -70,6 +73,31 @@ public class TrainLocationActivity extends AppCompatActivity {
         MaterialButton btnClose = findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> {
             finish();
+        });
+        MaterialButton btnGuide = findViewById(R.id.btn_guide);
+        btnGuide.setOnClickListener(v -> {
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+
+            View sheetView = LayoutInflater.from(this).inflate(R.layout.layout_train_location_guide_bottom_sheet, null);
+            bottomSheetDialog.setContentView(sheetView);
+
+            View parent = (View) sheetView.getParent();
+            BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(parent);
+            int displayHeight = getResources().getDisplayMetrics().heightPixels;
+            int targetHeight = (int) (displayHeight * 0.9);
+            behavior.setPeekHeight(targetHeight);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+            ViewGroup.LayoutParams lp = parent.getLayoutParams();
+            lp.height = targetHeight;
+            parent.setLayoutParams(lp);
+
+            MaterialButton btnClose1 = sheetView.findViewById(R.id.btn_close);
+            btnClose1.setOnClickListener(view -> {
+                bottomSheetDialog.dismiss();
+            });
+
+            bottomSheetDialog.show();
         });
 
         MaterialButton btnRefresh = findViewById(R.id.btn_refresh);
@@ -257,11 +285,6 @@ public class TrainLocationActivity extends AppCompatActivity {
                             }
                         }
                     }
-                } else {
-                    String raw = download(lineConfig.apiUrl, lineConfig.apiKey);
-                    if (raw != null) {
-                        rawList.addAll(parseRoctecJson(raw));
-                    }
                 }
 
                 List<Trip> cleanList = processPhysicsBasedDedup(rawList);
@@ -292,60 +315,6 @@ public class TrainLocationActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    private List<Trip> parseRoctecJson(String json) throws Exception {
-        List<Trip> list = new ArrayList<>();
-        JSONArray array;
-
-        // TML format
-        if (json.trim().startsWith("{")) {
-            JSONObject root = new JSONObject(json);
-            array = root.getJSONArray("Items");
-        }
-        // EAL format
-        else {
-            array = new JSONArray(json);
-        }
-
-        for (int i = 0; i < array.length(); i++) {
-            JSONObject obj = array.getJSONObject(i);
-
-            List<Car> cars = new ArrayList<>();
-            if (obj.has("listCars")) {
-                JSONArray carArray = obj.getJSONArray("listCars");
-                for (int j = 0; j < carArray.length(); j++) {
-                    JSONObject c = carArray.getJSONObject(j);
-                    cars.add(new Car(c.optInt("carLoad"), c.optInt("passengerCount"),
-                            c.optString("carName"), c.optInt("passengerLoad")));
-                }
-            }
-
-            String trainId = obj.optString("trainId");
-
-            String td = obj.optString("td", "UNKNOWN");
-            if (td.equals("UNKNOWN")) td = trainId;
-
-            int doorStatus = 0;
-            Object doorObj = obj.opt("doorStatus");
-            if (doorObj instanceof Boolean) {
-                doorStatus = (Boolean) doorObj ? 1 : 0;
-            } else if (doorObj instanceof String) {
-                doorStatus = Integer.parseInt((String) doorObj);
-            }
-
-            // TODO: TML uses distanceFromCurrentStation instead of targetDistance
-            int targetDist = obj.has("targetDistance") ?
-                    obj.optInt("targetDistance") :
-                    obj.optInt("distanceFromCurrentStation", 0);
-
-            list.add(new Trip(trainId, "", obj.optDouble("trainSpeed", 0.0),
-                    obj.optInt("currentStationCode"), obj.optInt("nextStationCode"), obj.optInt("destinationStationCode"),
-                    cars, obj.optLong("receivedTime"), obj.optLong("ttl"),
-                    doorStatus, td, targetDist, obj.optInt("startDistance", 0)
-            ));
-        }
-        return list;
     }
 
     private List<Trip> parseNtJson(JSONObject stationJson, String station) throws Exception {

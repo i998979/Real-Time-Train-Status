@@ -43,8 +43,6 @@ public class LineSelectorFragment extends Fragment {
             headerBar.setVisibility(showHeader ? View.VISIBLE : View.GONE);
         }
 
-        Switch openData = view.findViewById(R.id.open_data);
-
         MaterialButton btnSearch = view.findViewById(R.id.btn_search);
         searchLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -54,7 +52,7 @@ public class LineSelectorFragment extends Fragment {
                         if (code != null) {
                             Intent intent = new Intent(getContext(), TrainLocationActivity.class);
                             intent.putExtra("LINE_CODE", code.toLowerCase());
-                            intent.putExtra("DATA_SOURCE", openData.isChecked() ? "OPENDATA" : "ROCTEC");
+                            intent.putExtra("DATA_SOURCE", "OPENDATA");
                             startActivity(intent);
                         }
                     }
@@ -83,7 +81,7 @@ public class LineSelectorFragment extends Fragment {
         LineSelectorAdapter adapter = new LineSelectorAdapter(display, line -> {
             Intent intent = new Intent(getContext(), TrainLocationActivity.class);
             intent.putExtra("LINE_CODE", line.alias.toLowerCase());
-            intent.putExtra("DATA_SOURCE", openData.isChecked() ? "OPENDATA" : "ROCTEC");
+            intent.putExtra("DATA_SOURCE", "OPENDATA");
             startActivity(intent);
         });
 

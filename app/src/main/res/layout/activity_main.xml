@@ -18,7 +18,7 @@
         android:background="?attr/colorSecondary"
         android:minHeight="0dp"
         app:itemActiveIndicatorStyle="@null"
-        app:itemIconSize="32dp"
+        app:itemIconSize="26dp"
         app:itemIconTint="@color/nav_item_color"
         app:itemPaddingBottom="4dp"
         app:itemPaddingTop="4dp"

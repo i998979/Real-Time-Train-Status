@@ -106,7 +106,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:maxLines="1"
-                    android:text="沒有任何延誤"
+                    android:text="列車服務正常"
                     android:textColor="?attr/colorOutline"
                     android:textSize="14sp" />
 

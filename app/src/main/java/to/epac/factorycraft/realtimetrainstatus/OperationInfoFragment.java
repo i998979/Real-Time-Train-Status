@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class OperationInfoFragment extends Fragment {
-    private static final List<String> subTitles = Arrays.asList("常用查看路綫", "運行情報", "列車走行位置", "地圖");
+    private static final List<String> subTitles = Arrays.asList("常用查看路綫", "運行情報", "列車走行位置");
 
     private SharedPreferences prefs;
 
@@ -49,15 +49,6 @@ public class OperationInfoFragment extends Fragment {
         pagerContent.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                if (position == 3) {
-                    Intent intent = new Intent(requireContext(), MapsActivity.class);
-                    startActivity(intent);
-
-                    pagerContent.post(() -> pagerContent.setCurrentItem(2, false));
-
-                    return;
-                }
-
                 prefs.edit()
                         .putInt(MainActivity.KEY_OPERATIONINFO_LAST_TAB, position)
                         .apply();
@@ -100,8 +91,6 @@ public class OperationInfoFragment extends Fragment {
                     return new TrafficNewsFragment();
                 case 2: // Realtime Train Location
                     return new LineSelectorFragment();
-                case 3: // Map
-                    return new Fragment();
                 default:
                     return new Fragment();
             }

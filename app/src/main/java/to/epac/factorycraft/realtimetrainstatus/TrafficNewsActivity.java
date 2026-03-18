@@ -29,7 +29,6 @@ public class TrafficNewsActivity extends AppCompatActivity {
     TextView tvLineSection;
     TextView tvReason;
     TextView tvDetail;
-    WebView wvDetail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +49,6 @@ public class TrafficNewsActivity extends AppCompatActivity {
         tvLineSection = findViewById(R.id.tv_line_section);
         tvReason = findViewById(R.id.tv_reason);
         tvDetail = findViewById(R.id.tv_detail);
-
-        wvDetail = findViewById(R.id.wv_detail);
-        WebSettings webSettings = wvDetail.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        wvDetail.setWebViewClient(new WebViewClient());
 
         String lineCode = getIntent().getStringExtra("line_code");
         String lineNameTc = getIntent().getStringExtra("line_name_tc");
@@ -85,10 +79,6 @@ public class TrafficNewsActivity extends AppCompatActivity {
 
                     String cause = msgObj.optString("cause_tc", "").trim();
                     detail = cause.equalsIgnoreCase("null") ? "" : cause;
-
-                    String url = msgObj.optString("url_tc", "").trim();
-                    if (!url.isEmpty())
-                        wvDetail.loadUrl(url);
 
                     parseAffectedAreas(msgObj.optJSONObject("affected_areas"));
                 }
