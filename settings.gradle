@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Real Time Train Status"
+rootProject.name = "Transit App"
 include ':app'

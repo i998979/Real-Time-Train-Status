@@ -15,4 +15,4 @@
 local.properties
 /app/release/app-release.apk
 /app/release/output-metadata.json
-/app/src/main/java/to/epac/factorycraft/realtimetrainstatus/AES.java
+/app/src/main/java/to/epac/factorycraft/transitapp/AES.java
