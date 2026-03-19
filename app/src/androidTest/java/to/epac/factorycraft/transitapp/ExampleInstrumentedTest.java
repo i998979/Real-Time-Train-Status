@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("to.epac.factorycraft.realtimetrainstatus", appContext.getPackageName());
+        assertEquals("to.epac.factorycraft.transitapp", appContext.getPackageName());
     }
 }
