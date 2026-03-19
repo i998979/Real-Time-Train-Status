@@ -498,12 +498,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         return false;
     }
 
-    private boolean isOutdated(Trip trip) {
-        if (!trip.isOpenData) return (System.currentTimeMillis() - trip.receivedTime) > 60000;
-
-        return false;
-    }
-
     private void bindStation(StationViewHolder h, int stationIdx) {
         int code = stationCodes[stationIdx];
 

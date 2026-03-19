@@ -32,6 +32,11 @@ public class Utils {
     public static int codeToId(Context context, String line, String code) {
         LineConfig config = LineConfig.get(context, line);
 
+        if (line.equalsIgnoreCase("eal")) {
+            if (code.equalsIgnoreCase("LMC")) return 14;
+            if (code.equalsIgnoreCase("RAC")) return 7;
+        }
+
         if (config.stationCodes == null || code == null) return -1;
 
         for (int i = 0; i < config.stationCodes.length; i++) {
