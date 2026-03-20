@@ -131,7 +131,7 @@ public class TrafficNewsActivity extends AppCompatActivity {
         switch (status.toLowerCase()) {
             case "yellow":
                 displayStatus = "服務延誤";
-                iconRes = R.drawable.outline_exclamation_24;
+                iconRes = R.drawable.outline_change_history_24;
                 iconColor = Color.parseColor("#FFA500");
                 break;
             case "red":

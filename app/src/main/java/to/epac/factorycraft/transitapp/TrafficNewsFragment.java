@@ -335,7 +335,7 @@ public class TrafficNewsFragment extends Fragment {
                 break;
             case "yellow":
                 tvStatus.setText("服務延誤");
-                ivIcon.setImageResource(R.drawable.outline_exclamation_24);
+                ivIcon.setImageResource(R.drawable.outline_change_history_24);
                 ivIcon.setColorFilter(Color.parseColor("#FFA500"));
                 break;
             case "red":
