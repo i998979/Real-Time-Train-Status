@@ -17,7 +17,7 @@
             android:id="@+id/tv_delete"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:gravity="right|center_vertical"
+            android:gravity="end|center_vertical"
             android:paddingHorizontal="16dp"
             android:text="刪除"
             android:textColor="@color/button_green"
@@ -46,18 +46,12 @@
         android:visibility="gone"
         tools:visibility="gone">
 
-        <FrameLayout
-            android:layout_width="140dp"
-            android:layout_height="140dp"
-            android:background="@drawable/baseline_trip_origin_24">
-
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_search"
-                app:tint="#96ADBB" />
-        </FrameLayout>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_menu_search"
+            app:tint="#96ADBB" />
 
         <TextView
             android:layout_width="wrap_content"

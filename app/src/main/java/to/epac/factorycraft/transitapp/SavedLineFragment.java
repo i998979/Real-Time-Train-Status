@@ -63,6 +63,7 @@ public class SavedLineFragment extends Fragment {
     SearchAdapter searchAdapter;
 
     private SwipeRefreshLayout swipeRefreshLayout;
+    private LinearLayout nthMessage;
     private RelativeLayout layoutEmpty;
     private NestedScrollView vSavedLines;
     private LinearLayout statusContainer;
@@ -89,6 +90,7 @@ public class SavedLineFragment extends Fragment {
 
 
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        nthMessage = view.findViewById(R.id.layout_nth);
         layoutEmpty = view.findViewById(R.id.layout_empty);
         vSavedLines = view.findViewById(R.id.v_saved_lines);
         statusContainer = view.findViewById(R.id.status_container);
@@ -104,20 +106,6 @@ public class SavedLineFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             fetchSavedLinesData();
         });
-
-        Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
-        int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
-
-        int startTime = 1 * 60 + 30; // 01:30
-        int endTime = 5 * 60;        // 05:00
-
-        boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
-
-        LinearLayout nthMessage = view.findViewById(R.id.layout_nth);
-        if (isMaintenanceTime)
-            nthMessage.setVisibility(View.VISIBLE);
-        else
-            nthMessage.setVisibility(View.GONE);
 
         refreshUIState();
 
@@ -332,6 +320,19 @@ public class SavedLineFragment extends Fragment {
 
 
     private void refreshUIState() {
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+        int currentTimeInMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+
+        int startTime = 1 * 60 + 30; // 01:30
+        int endTime = 5 * 60;        // 05:00
+
+        boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
+
+        if (isMaintenanceTime && !getSavedLinesList().isEmpty())
+            nthMessage.setVisibility(View.VISIBLE);
+        else
+            nthMessage.setVisibility(View.GONE);
+
         String savedCsv = prefs.getString(KEY_SAVED_LINES, "");
         if (savedCsv.isEmpty()) {
             layoutEmpty.setVisibility(View.VISIBLE);
