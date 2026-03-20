@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:lineSpacingExtra="4dp"
-        android:text="列車走行位置情報或與列車實際位置有異，切勿以此作唯一參考。\n若有列車服務調整，延誤及/或暫停，列車走行位置情報或會中止提供。\n我們對於任何因使用列車走行位置情報所導致的損害，均不負上任何責任。"
+        android:text="列車走行位置情報透過Next Train資料作出估算，或與列車實際位置有異，切勿以此作唯一參考。\n若有列車服務調整，延誤及/或暫停，列車走行位置情報或會中止提供。\n我們對於任何因使用列車走行位置情報所導致的損害，均不負上任何責任。"
         android:textSize="16sp" />
 
 </LinearLayout>
