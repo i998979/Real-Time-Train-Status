@@ -326,8 +326,7 @@ public class SavedLineFragment extends Fragment {
         int startTime = 1 * 60 + 30; // 01:30
         int endTime = 5 * 60;        // 05:00
 
-        // boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
-        boolean isMaintenanceTime = false;
+        boolean isMaintenanceTime = currentTimeInMinutes >= startTime && currentTimeInMinutes < endTime;
 
         if (isMaintenanceTime && !getSavedLinesList().isEmpty())
             nthMessage.setVisibility(View.VISIBLE);
@@ -412,7 +411,7 @@ public class SavedLineFragment extends Fragment {
                                     if (isApiDelay || isTimeBlank) {
                                         String currentStatus = tLine.getString("status").toLowerCase();
                                         if (currentStatus.equals("green")) {
-                                            tLine.put("status", "yellow");
+                                            tLine.put("status", "orange");
                                             String original = tLine.optString("messages", "");
                                             String nexttrain = "列車服務可能受阻，詳情請留意官方發出的最新車務資訊。";
                                             tLine.put("messages", !original.isEmpty() ? original : nexttrain);

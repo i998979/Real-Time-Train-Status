@@ -10,6 +10,7 @@
         android:layout_height="56dp"
         android:layout_alignParentBottom="true"
         android:background="?attr/colorSurface"
+        android:elevation="16dp"
         app:tabGravity="fill"
         app:tabIndicatorColor="@color/button_green"
         app:tabIndicatorFullWidth="true"

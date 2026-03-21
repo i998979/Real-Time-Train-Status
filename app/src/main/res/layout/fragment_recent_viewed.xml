@@ -41,6 +41,7 @@
         android:id="@+id/layout_empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/bg_tint"
         android:gravity="center"
         android:orientation="vertical"
         android:visibility="gone"
@@ -57,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="沒有路綫檢索履歷"
+            android:text="沒有經路檢索履歷"
             android:textSize="18sp"
             android:textStyle="bold" />
     </LinearLayout>
