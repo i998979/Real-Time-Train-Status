@@ -77,6 +77,9 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (lineCode.equalsIgnoreCase("eal")) {
                 int code = stationCodes[idx];
                 if (code == 6 || code == 7 || code == 13 || code == 14) return TYPE_PARALLEL;
+            } else if (lineCode.equalsIgnoreCase("tkl")) {
+                int code = stationCodes[idx];
+                if (code == 131 || code == 132) return TYPE_PARALLEL;
             }
             return TYPE_STATION;
         } else {
@@ -96,6 +99,12 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                         (curr == 8 && (next == 6 || next == 7));
 
                 if (isBorder || isFotRac) return TYPE_BRANCH;
+            } else if (lineCode.equalsIgnoreCase("tkl")) {
+                int curr = stationCodes[idx];
+                int next = stationCodes[idx + 1];
+
+                if ((curr == 133 && (next == 132 || next == 131)) ||
+                        (next == 133 && (curr == 132 || curr == 131))) return TYPE_BRANCH;
             }
             return TYPE_BETWEEN;
         }
@@ -579,12 +588,16 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         int currentSector = stationCodes[stationIdx];
         int nextSector = stationCodes[stationIdx + 1];
 
-        if (currentSector == 12 && (nextSector == 13 || nextSector == 14))
-            h.imgRail.setImageResource(R.drawable.rail_branch_split);
-        else if ((nextSector == 6 || nextSector == 7))
-            h.imgRail.setImageResource(R.drawable.rail_branch_split);
-        else
-            h.imgRail.setImageResource(R.drawable.rail_branch_merge);
+        if (currentSector == 12 && (nextSector == 13 || nextSector == 14)) {
+            h.railLine.setBackgroundResource(R.drawable.rail_branch_split);
+            // h.imgRail.setImageResource(R.drawable.rail_branch_split);
+        } else if ((nextSector == 6 || nextSector == 7)) {
+            h.railLine.setBackgroundResource(R.drawable.rail_branch_split);
+            // h.imgRail.setImageResource(R.drawable.rail_branch_split);
+        } else {
+            h.railLine.setBackgroundResource(R.drawable.rail_branch_merge);
+            // h.imgRail.setImageResource(R.drawable.rail_branch_merge);
+        }
 
 
         List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
@@ -635,8 +648,11 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     private void bindParallel(ParallelViewHolder h, int stationIdx) {
         int code = stationCodes[stationIdx];
-        int mainCode = (code == 6 || code == 7) ? 6 : 13;
-        int spurCode = (code == 6 || code == 7) ? 7 : 14;
+        int mainCode = code;
+        if (lineCode.equalsIgnoreCase("eal")) mainCode = (code == 6 || code == 7) ? 6 : 13;
+        int spurCode = code;
+        if (lineCode.equalsIgnoreCase("eal")) spurCode = (code == 6 || code == 7) ? 7 : 14;
+        if (lineCode.equalsIgnoreCase("tkl")) spurCode = 131;
 
         h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
         h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
@@ -733,7 +749,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         BranchViewHolder(View v) {
             super(v);
             railLine = v.findViewById(R.id.rail_line);
-            imgRail = v.findViewById(R.id.img_branch_rail);
+            // imgRail = v.findViewById(R.id.img_branch_rail);
             upMain = v.findViewById(R.id.train_up_main);
             dnMain = v.findViewById(R.id.train_dn_main);
             upSpur = v.findViewById(R.id.train_up_spur);

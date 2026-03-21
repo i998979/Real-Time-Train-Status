@@ -18,6 +18,9 @@ public class Utils {
             if (id == 14) return "LMC";
             if (id == 7) return "RAC";
         }
+        if (line.equalsIgnoreCase("tkl")) {
+            if (id == 131) return "LHP";
+        }
 
         if (config.stationIDs == null) return String.valueOf(id);
 
@@ -35,6 +38,9 @@ public class Utils {
         if (line.equalsIgnoreCase("eal")) {
             if (code.equalsIgnoreCase("LMC")) return 14;
             if (code.equalsIgnoreCase("RAC")) return 7;
+        }
+        if (line.equalsIgnoreCase("tkl")) {
+            if (code.equalsIgnoreCase("LHP")) return 131;
         }
 
         if (config.stationCodes == null || code == null) return -1;
