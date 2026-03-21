@@ -537,15 +537,15 @@ public class SavedLineFragment extends Fragment {
 
     private void updateStatusUI(String status, TextView tvStatus, ImageView ivIcon) {
         switch (status.toLowerCase()) {
-            case "green":
-                tvStatus.setText("服務正常");
-                ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
-                ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
-                break;
             case "yellow":
                 tvStatus.setText("服務延誤");
                 ivIcon.setImageResource(R.drawable.outline_change_history_24);
                 ivIcon.setColorFilter(Color.parseColor("#FFA500"));
+                break;
+            case "orange":
+                tvStatus.setText("服務資訊");
+                ivIcon.setImageResource(R.drawable.outline_exclamation_24);
+                ivIcon.setColorFilter(Color.parseColor("#F3B563"));
                 break;
             case "red":
                 tvStatus.setText("服務受阻");
@@ -566,6 +566,12 @@ public class SavedLineFragment extends Fragment {
                 tvStatus.setText("非服務時間");
                 ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
                 ivIcon.setColorFilter(Color.GRAY);
+                break;
+            case "green":
+            default:
+                tvStatus.setText("服務正常");
+                ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
+                ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
                 break;
         }
     }

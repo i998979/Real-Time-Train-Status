@@ -559,6 +559,11 @@ public class RouteDetailSubFragment extends Fragment {
                 ivIcon.setImageResource(R.drawable.outline_change_history_24);
                 ivIcon.setColorFilter(Color.parseColor("#FFA500"));
                 break;
+            case "orange":
+                tvStatus.setText("服務資訊");
+                ivIcon.setImageResource(R.drawable.outline_exclamation_24);
+                ivIcon.setColorFilter(Color.parseColor("#F3B563"));
+                break;
             case "red":
                 tvStatus.setText("服務受阻");
                 ivIcon.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
@@ -573,6 +578,12 @@ public class RouteDetailSubFragment extends Fragment {
                 tvStatus.setText("熱帶氣旋警告生效");
                 ivIcon.setImageResource(R.drawable.baseline_storm_24);
                 ivIcon.setColorFilter(Color.parseColor("#00BCD4"));
+                break;
+            case "green":
+            default:
+                tvStatus.setText("服務正常");
+                ivIcon.setImageResource(R.drawable.baseline_trip_origin_24);
+                ivIcon.setColorFilter(Color.parseColor("#49AD7F"));
                 break;
         }
     }

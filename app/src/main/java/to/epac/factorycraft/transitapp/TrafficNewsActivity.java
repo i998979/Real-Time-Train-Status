@@ -134,6 +134,11 @@ public class TrafficNewsActivity extends AppCompatActivity {
                 iconRes = R.drawable.outline_change_history_24;
                 iconColor = Color.parseColor("#FFA500");
                 break;
+            case "orange":
+                displayStatus = "服務資訊";
+                iconRes = R.drawable.outline_exclamation_24;
+                iconColor = Color.parseColor("#F3B563");
+                break;
             case "red":
                 displayStatus = "服務受阻";
                 iconRes = android.R.drawable.ic_menu_close_clear_cancel;
