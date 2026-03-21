@@ -48,21 +48,19 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_guide"
                 style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginStart="12dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_circle_border"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
                 android:insetLeft="0dp"
                 android:insetTop="0dp"
                 android:insetRight="0dp"
                 android:insetBottom="0dp"
                 android:padding="0dp"
-                app:backgroundTint="@null"
-                app:icon="@drawable/outline_question_mark_24"
+                app:icon="@drawable/outline_help_24"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
-                app:iconSize="28dp"
+                app:iconSize="36dp"
                 app:iconTint="#92ADBB" />
 
             <LinearLayout
