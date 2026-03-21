@@ -58,7 +58,7 @@
 
         <activity
             android:name=".HistoryDeleteActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -73,16 +73,16 @@
             android:exported="false" />
         <activity
             android:name=".SearchActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".StationActivity"
             android:exported="false" />
         <activity
             android:name=".TrafficNewsActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".TrainLocationActivity"
-            android:exported="true" />
+            android:exported="false" />
     </application>
 
 </manifest>
