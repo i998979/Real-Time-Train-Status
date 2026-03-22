@@ -2,16 +2,16 @@
     android:width="240dp"
     android:height="100dp"
     android:viewportWidth="240"
-    android:viewportHeight="80">
+    android:viewportHeight="100">
 
     <path
-        android:pathData="M90,-10 L120,80"
+        android:pathData="M90,0 L150,0"
         android:strokeColor="#52B4E5"
-        android:strokeWidth="6" />
+        android:strokeWidth="10" />
 
     <path
-        android:pathData="M150,-10 L120,80"
+        android:pathData="M120,0 L120,100"
         android:strokeColor="#52B4E5"
-        android:strokeWidth="6" />
+        android:strokeWidth="5" />
 
 </vector>
