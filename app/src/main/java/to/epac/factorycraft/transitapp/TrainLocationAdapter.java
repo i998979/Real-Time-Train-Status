@@ -655,7 +655,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (lineCode.equalsIgnoreCase("tkl")) spurCode = 131;
 
         h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-        h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+        // h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
         h.tvMain.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, mainCode), true));
         h.tvMain.setTag(Utils.idToCode(context, lineCode, mainCode));
@@ -765,7 +765,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         ParallelViewHolder(View v) {
             super(v);
             railLine = v.findViewById(R.id.rail_line);
-            railLine2 = v.findViewById(R.id.rail_line2);
+            // railLine2 = v.findViewById(R.id.rail_line2);
             tvMain = v.findViewById(R.id.tv_station_main);
             tvSpur = v.findViewById(R.id.tv_station_spur);
             upMain = v.findViewById(R.id.train_up_main);
