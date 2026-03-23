@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String OCTOPUS_PACKAGE = "com.octopuscards.nfc_reader";
     public static final String MTRMOBILE_PACKAGE = "com.mtr.mtrmobile";
 
-    public static final String ROUTE_URL = "https://transitapp.brianx2x.workers.dev/";
+    public static final String ROUTE_URL = "https://www.mtr.com.hk/share/customer/jp/api/HRRoutes/";
 
 
     public static final Map<String, String> NEXTTRAIN_CHECK_STATIONS = new HashMap<>() {{

@@ -39,7 +39,7 @@ public class MenuActivity extends AppCompatActivity {
         });
 
         btnFeedback.setOnClickListener(v -> {
-            showSnackBar(menuLayout, Color.parseColor("#58A473"), "感謝花時間告訴我們你的想法。");
+            showSnackBar(menuLayout, Color.parseColor("#58A473"), "感謝您花時間告訴我們您的想法。");
         });
     }
 
