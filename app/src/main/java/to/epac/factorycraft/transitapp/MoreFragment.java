@@ -18,12 +18,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.gridlayout.widget.GridLayout;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 public class MoreFragment extends Fragment {
 
     private PackageManager pm;
 
+    private MaterialButton btnMenu;
     private MaterialCardView btnOctopus;
     private MaterialCardView btnMtrMobile;
     private LinearLayout mediaContainer;
@@ -36,6 +38,11 @@ public class MoreFragment extends Fragment {
 
         pm = requireContext().getPackageManager();
 
+        btnMenu = view.findViewById(R.id.btn_menu);
+        btnMenu.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), MenuActivity.class);
+            v.getContext().startActivity(intent);
+        });
         btnOctopus = view.findViewById(R.id.btn_octopus);
         btnOctopus.setOnClickListener(v -> openExternalApp(MainActivity.OCTOPUS_PACKAGE));
         btnMtrMobile = view.findViewById(R.id.btn_mtrmobile);

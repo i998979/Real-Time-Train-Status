@@ -28,6 +28,8 @@
     <color name="label_bg_tint">#80909090</color>
     <color name="train_bg_tint">#F0EFF3</color>
     <color name="line_badge_bg_tint">#FFFFFF</color>
+    <color name="button_tint">#F0EFF4</color>
     <color name="bg_tint">#F0EFF3</color>
+    <color name="bg2_tint">#FCFCFC</color>
     <color name="button_green">#6ec08d</color>
 </resources>
