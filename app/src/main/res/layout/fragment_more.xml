@@ -11,8 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:background="#4BAC7F"
-        android:orientation="vertical"
-        android:paddingBottom="16dp">
+        android:orientation="vertical">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -51,7 +50,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="32dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btn_mtrmobile"
@@ -139,5 +139,61 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/topGreenSection"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/layout_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="32dp"> <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="鐵路 Media"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+            <HorizontalScrollView
+                android:id="@+id/layout_media"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/media_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="社交媒體"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <androidx.gridlayout.widget.GridLayout
+                android:id="@+id/grid_menu_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:alignmentMode="alignMargins"
+                app:columnCount="2" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </RelativeLayout>
