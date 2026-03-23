@@ -5,8 +5,10 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurfaceContainerLowest"
     android:orientation="vertical"
+    android:overScrollMode="never"
     android:paddingHorizontal="20dp"
-    android:paddingTop="20dp">
+    android:paddingTop="20dp"
+    android:scrollbars="none">
 
     <LinearLayout
         style="@style/Widget.Material3.BottomSheet"

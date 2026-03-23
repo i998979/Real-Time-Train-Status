@@ -80,7 +80,9 @@
                 android:id="@+id/v_saved_lines"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:overScrollMode="never"
                 android:paddingVertical="16dp"
+                android:scrollbars="none"
                 android:visibility="gone">
 
                 <LinearLayout
