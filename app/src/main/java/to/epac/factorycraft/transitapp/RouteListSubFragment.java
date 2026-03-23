@@ -404,7 +404,7 @@ public class RouteListSubFragment extends Fragment {
             }
 
             int neededSpaceForCircle = interchangeSize + Utils.dpToPx(requireContext(), 10);
-            boolean shouldShowInterchange = availableContentPx - totalStaticPx >= Utils.dpToPx(requireContext(), 60);
+            boolean shouldShowInterchange = availableContentPx >= Utils.dpToPx(requireContext(), 60);
 
             int finalAvailableContentPx = availableContentPx - (shouldShowInterchange ? interchangeSize : 0);
             int remainingPx = Math.max(0, finalAvailableContentPx - totalStaticPx);
