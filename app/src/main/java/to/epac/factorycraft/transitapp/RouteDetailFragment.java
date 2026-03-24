@@ -691,7 +691,7 @@ public class RouteDetailFragment extends Fragment {
 
         } catch (IOException e) {
             e.printStackTrace();
-            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖分享失敗。");
+            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖分享失敗");
         }
     }
 
@@ -724,13 +724,13 @@ public class RouteDetailFragment extends Fragment {
                     resolver.update(uri, values, null, null);
 
                     if (success) {
-                        showSnackBar(svRoute, Color.parseColor("#58A473"), "路綫截圖已成功保存。");
+                        showSnackBar(svRoute, Color.parseColor("#58A473"), "路綫截圖已成功保存");
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖保存失敗。");
+            showSnackBar(svRoute, Color.parseColor("#E14158"), "路綫截圖保存失敗");
         }
     }
 

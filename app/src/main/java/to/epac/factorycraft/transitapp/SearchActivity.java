@@ -3,15 +3,19 @@ package to.epac.factorycraft.transitapp;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,6 +23,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +50,7 @@ public class SearchActivity extends AppCompatActivity {
     private final List<String> filteredNames = new ArrayList<>();
     private final List<String> filteredCodes = new ArrayList<>();
 
+    private LinearLayout searchLayout;
     private EditText etSearch;
     private View layoutHistoryHeader;
     private View layoutLocation;
@@ -64,6 +71,8 @@ public class SearchActivity extends AppCompatActivity {
 
         historyManager = HistoryManager.getInstance(this);
         hrConfig = HRConfig.getInstance(this);
+
+        searchLayout = findViewById(R.id.layout_search);
 
         etSearch = findViewById(R.id.et_station_search);
         etSearch.setHint(title);
@@ -130,17 +139,51 @@ public class SearchActivity extends AppCompatActivity {
                 @Override
                 public void onFavoriteClick(int id, String name, String code) {
                     String idStr = String.valueOf(id);
-                    List<String> favs = getFavorites();
+                    String saved = prefs.getString(MainActivity.KEY_FAV_STATIONS, "");
+                    List<String> favorites = saved.isEmpty() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(saved.split(",")));
 
-                    if (favs.contains(idStr))
-                        favs.remove(idStr);
-                    else
-                        favs.add(idStr);
+                    boolean isRemoving = favorites.contains(idStr);
 
-                    prefs.edit().putString(MainActivity.KEY_FAV_STATIONS, TextUtils.join(",", favs)).apply();
+                    if (!isRemoving) {
+                        if (favorites.size() >= 5) {
+                            View view = getLayoutInflater().inflate(R.layout.dialog_fav_limit, null);
+                            AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this)
+                                    .setView(view)
+                                    .create();
+                            view.findViewById(R.id.btn_confirm).setOnClickListener(v -> {
+                                dialog.dismiss();
+                            });
+                            dialog.show();
+                            return;
+                        }
 
-                    ((SearchStationAdapter) adapter).updateFavorites(favs);
+                        favorites.add(idStr);
+                        showSnackBar(searchLayout, Color.parseColor("#58A473"), "已新增至常用車站");
+                    } else {
+                        favorites.remove(idStr);
+                        showSnackBar(searchLayout, Color.parseColor("#58A473"), "已從常用車站刪除");
+                    }
+                    prefs.edit().putString(MainActivity.KEY_FAV_STATIONS, TextUtils.join(",", favorites)).apply();
+
+
+                    if (adapter instanceof SearchStationAdapter) {
+                        ((SearchStationAdapter) adapter).updateFavorites(favorites);
+                    }
                     loadFavoriteChips();
+
+                    if (!isRemoving && !prefs.getBoolean(MainActivity.KEY_FIRST_FAVORITE_USED, false)) {
+                        View view = getLayoutInflater().inflate(R.layout.dialog_fav_first_time, null);
+                        AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this)
+                                .setView(view)
+                                .create();
+
+                        view.findViewById(R.id.btn_confirm).setOnClickListener(v -> {
+                            dialog.dismiss();
+                        });
+
+                        prefs.edit().putBoolean(MainActivity.KEY_FIRST_FAVORITE_USED, true).apply();
+                        dialog.show();
+                    }
                 }
             });
 
@@ -158,7 +201,6 @@ public class SearchActivity extends AppCompatActivity {
             if (search_location) loadFavoriteChips();
         }
     }
-
 
     private List<String> getFavorites() {
         String saved = prefs.getString(MainActivity.KEY_FAV_STATIONS, "");
@@ -279,5 +321,22 @@ public class SearchActivity extends AppCompatActivity {
             ((SearchStationAdapter) adapter).updateData(filteredIds, filteredNames, filteredCodes);
         else if (adapter instanceof SearchLineAdapter)
             ((SearchLineAdapter) adapter).updateData(filteredIds, filteredNames, filteredCodes);
+    }
+
+    private void showSnackBar(View anchor, int color, String message) {
+        Snackbar snackbar = Snackbar.make(anchor, message, Snackbar.LENGTH_SHORT);
+        View snackbarView = snackbar.getView();
+
+        snackbarView.setBackgroundTintList(ColorStateList.valueOf(color));
+        // snackbar.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
+
+        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        textView.setTextColor(Color.WHITE);
+        textView.setTextSize(16);
+
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) snackbarView.getLayoutParams();
+        snackbarView.setLayoutParams(params);
+
+        snackbar.show();
     }
 }
