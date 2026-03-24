@@ -79,6 +79,19 @@ public class SearchActivity extends AppCompatActivity {
 
         layoutLocation = findViewById(R.id.layout_location);
         tvDeleteLoc = findViewById(R.id.tv_delete_loc);
+        tvDeleteLoc.setOnClickListener(v -> {
+            DeleteSavedStationsSheet sheet = new DeleteSavedStationsSheet();
+            sheet.setOnDismissListener(() -> {
+                List<String> updatedFavs = getFavorites();
+
+                if (adapter instanceof SearchStationAdapter) {
+                    ((SearchStationAdapter) adapter).updateFavorites(updatedFavs);
+                }
+
+                loadFavoriteChips();
+            });
+            sheet.show(getSupportFragmentManager(), "DeleteSheet");
+        });
 
         if (!search_location)
             layoutLocation.setVisibility(View.GONE);
@@ -220,7 +233,7 @@ public class SearchActivity extends AppCompatActivity {
         chipStations.removeAllViews();
         if (chipLoc != null) chipStations.addView(chipLoc);
 
-        tvDeleteLoc.setVisibility(favs.isEmpty() ? View.GONE : View.VISIBLE);
+        tvDeleteLoc.setClickable(!favs.isEmpty());
 
         for (String id : favs) {
             try {
