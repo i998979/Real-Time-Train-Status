@@ -80,7 +80,12 @@ public class StationInfoFragment extends Fragment {
         });
 
         View.OnClickListener searchClickListener = v -> {
-            searchLauncher.launch(new Intent(requireContext(), SearchActivity.class));
+            Intent intent = new Intent(requireContext(), SearchActivity.class);
+            intent.putExtra("search_type", SearchActivity.TYPE_STATION);
+            intent.putExtra("search_location", false);
+            intent.putExtra("search_title", "請輸入車站");
+
+            searchLauncher.launch(intent);
         };
         searchBar.setOnClickListener(searchClickListener);
         tvSearchStation.setOnClickListener(searchClickListener);

@@ -17,10 +17,21 @@
 
     <TextView
         android:id="@+id/tv_station"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_weight="1"
         android:text="堅尼地城"
         android:textSize="18sp"
         android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/iv_favorite"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:padding="4dp"
+        android:src="@drawable/baseline_star_24"
+        app:tint="?attr/colorOutline" />
 </LinearLayout>

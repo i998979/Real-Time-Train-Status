@@ -1,8 +1,10 @@
 package to.epac.factorycraft.transitapp;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,10 +19,13 @@ public class SearchStationAdapter extends RecyclerView.Adapter<SearchStationAdap
     private List<String> names = new ArrayList<>();
     private List<String> codes = new ArrayList<>();
 
+    private List<String> favoriteIds = new ArrayList<>();
+
     private final OnStationClickListener listener;
 
     public interface OnStationClickListener {
         void onStationClick(int id, String name, String code);
+        void onFavoriteClick(int id, String name, String code);
     }
 
     public SearchStationAdapter(OnStationClickListener listener) {
@@ -31,7 +36,11 @@ public class SearchStationAdapter extends RecyclerView.Adapter<SearchStationAdap
         this.ids = newIds;
         this.names = newNames;
         this.codes = newCodes;
+        notifyDataSetChanged();
+    }
 
+    public void updateFavorites(List<String> favorites) {
+        this.favoriteIds = favorites;
         notifyDataSetChanged();
     }
 
@@ -48,9 +57,15 @@ public class SearchStationAdapter extends RecyclerView.Adapter<SearchStationAdap
         String name = names.get(position);
         String code = codes.get(position);
 
+        boolean isFavorite = favoriteIds.contains(String.valueOf(id));
+        holder.ivFavorite.setColorFilter(Color.parseColor(isFavorite ? "#6EC08D" : "#E0E0E0"));
+
         holder.tvStation.setText(name);
         holder.itemView.setOnClickListener(v -> {
             listener.onStationClick(id, name, code);
+        });
+        holder.ivFavorite.setOnClickListener(v -> {
+            listener.onFavoriteClick(id, name, code);
         });
     }
 
@@ -62,10 +77,12 @@ public class SearchStationAdapter extends RecyclerView.Adapter<SearchStationAdap
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvStation;
+        ImageView ivFavorite;
 
         private ViewHolder(View itemView) {
             super(itemView);
             tvStation = itemView.findViewById(R.id.tv_station);
+            ivFavorite = itemView.findViewById(R.id.iv_favorite);
         }
     }
 }

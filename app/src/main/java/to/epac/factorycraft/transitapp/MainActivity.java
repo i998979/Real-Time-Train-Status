@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String KEY_LAST_STATION_CODE = "last_station_code";
 
+    public static final String KEY_FAV_STATIONS = "fav_stations";
+
     public static final String KEY_WALK_SPEED = "walk_speed";
     public static final String KEY_TICKET_TYPE = "ticket_type";
     public static final String KEY_FARE_TYPE = "fare_type";

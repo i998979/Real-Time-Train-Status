@@ -2,8 +2,11 @@ package to.epac.factorycraft.transitapp;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
@@ -14,15 +17,25 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SearchActivity extends AppCompatActivity {
+
+    private SharedPreferences prefs;
 
     public static final int TYPE_STATION = 0;
     public static final int TYPE_LINE = 1;
 
     private int currentMode = TYPE_STATION;
+    private boolean search_location = false;
+    private String title = "請輸入車站";
 
     private HistoryManager historyManager;
     private HRConfig hrConfig;
@@ -33,6 +46,8 @@ public class SearchActivity extends AppCompatActivity {
 
     private EditText etSearch;
     private View layoutHistoryHeader;
+    private View layoutLocation;
+    private TextView tvDeleteLoc;
     private RecyclerView rvSearch;
     private RecyclerView.Adapter adapter;
 
@@ -41,13 +56,23 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        prefs = getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE);
+
         currentMode = getIntent().getIntExtra("search_type", TYPE_STATION);
+        search_location = getIntent().getBooleanExtra("search_location", false);
+        title = getIntent().getStringExtra("search_title");
 
         historyManager = HistoryManager.getInstance(this);
         hrConfig = HRConfig.getInstance(this);
 
         etSearch = findViewById(R.id.et_station_search);
-        etSearch.setHint(currentMode == TYPE_LINE ? "搜尋路綫..." : "搜尋車站...");
+        etSearch.setHint(title);
+
+        layoutLocation = findViewById(R.id.layout_location);
+        tvDeleteLoc = findViewById(R.id.tv_delete_loc);
+
+        if (!search_location)
+            layoutLocation.setVisibility(View.GONE);
 
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -59,9 +84,12 @@ public class SearchActivity extends AppCompatActivity {
                 String query = s.toString().trim();
                 if (query.isEmpty()) {
                     layoutHistoryHeader.setVisibility(View.VISIBLE);
+                    if (search_location)
+                        layoutLocation.setVisibility(View.VISIBLE);
                     showHistory();
                 } else {
                     layoutHistoryHeader.setVisibility(View.GONE);
+                    layoutLocation.setVisibility(View.GONE);
                     performSearch(query);
                 }
             }
@@ -76,17 +104,14 @@ public class SearchActivity extends AppCompatActivity {
         });
         layoutHistoryHeader = findViewById(R.id.layout_history_header);
 
-        TextView tvDelete = findViewById(R.id.tv_delete);
-        tvDelete.setOnClickListener(v -> {
+        findViewById(R.id.tv_delete).setOnClickListener(v -> {
             Intent intent = new Intent(this, HistoryDeleteActivity.class);
-            intent.putExtra("history_type",
-                    currentMode == TYPE_LINE ? HistoryDeleteActivity.TYPE_LINE : HistoryDeleteActivity.TYPE_STATION);
+            intent.putExtra("history_type", currentMode == TYPE_LINE ? HistoryDeleteActivity.TYPE_LINE : HistoryDeleteActivity.TYPE_STATION);
             startActivity(intent);
         });
 
         rvSearch = findViewById(R.id.rv_station_results);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvSearch.getContext(), LinearLayoutManager.VERTICAL);
-        rvSearch.addItemDecoration(dividerItemDecoration);
+        rvSearch.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         rvSearch.setLayoutManager(new LinearLayoutManager(this));
 
         if (currentMode == TYPE_LINE) {
@@ -95,14 +120,84 @@ public class SearchActivity extends AppCompatActivity {
                 returnResult(id, name, code);
             });
         } else {
-            adapter = new SearchStationAdapter((id, name, code) -> {
-                historyManager.saveStationSearch(id, name);
-                returnResult(id, name, code);
+            adapter = new SearchStationAdapter(new SearchStationAdapter.OnStationClickListener() {
+                @Override
+                public void onStationClick(int id, String name, String code) {
+                    historyManager.saveStationSearch(id, name);
+                    returnResult(id, name, code);
+                }
+
+                @Override
+                public void onFavoriteClick(int id, String name, String code) {
+                    String idStr = String.valueOf(id);
+                    List<String> favs = getFavorites();
+
+                    if (favs.contains(idStr))
+                        favs.remove(idStr);
+                    else
+                        favs.add(idStr);
+
+                    prefs.edit().putString(MainActivity.KEY_FAV_STATIONS, TextUtils.join(",", favs)).apply();
+
+                    ((SearchStationAdapter) adapter).updateFavorites(favs);
+                    loadFavoriteChips();
+                }
             });
+
+            ((SearchStationAdapter) adapter).updateFavorites(getFavorites());
         }
         rvSearch.setAdapter(adapter);
-
         showHistory();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (etSearch.getText().toString().trim().isEmpty()) {
+            showHistory();
+            if (search_location) loadFavoriteChips();
+        }
+    }
+
+
+    private List<String> getFavorites() {
+        String saved = prefs.getString(MainActivity.KEY_FAV_STATIONS, "");
+        if (saved.isEmpty())
+            return new ArrayList<>();
+
+        return new ArrayList<>(Arrays.asList(saved.split(",")));
+    }
+
+    private void loadFavoriteChips() {
+        if (!search_location) return;
+
+        List<String> favs = getFavorites();
+        ChipGroup chipStations = findViewById(R.id.chip_stations);
+        View chipLoc = findViewById(R.id.chip_loc);
+
+        chipStations.removeAllViews();
+        if (chipLoc != null) chipStations.addView(chipLoc);
+
+        tvDeleteLoc.setVisibility(favs.isEmpty() ? View.GONE : View.VISIBLE);
+
+        for (String id : favs) {
+            try {
+                HRConfig.Station station = hrConfig.getStationById(Integer.parseInt(id));
+
+                Chip chip = new Chip(this, null, com.google.android.material.R.attr.chipStyle);
+                chip.setText(station.name);
+                chip.setTextSize(14);
+                chip.setTypeface(chip.getTypeface(), android.graphics.Typeface.BOLD);
+                chip.setTextColor(Color.WHITE);
+                chip.setChipBackgroundColorResource(R.color.button_green);
+                chip.setChipStrokeWidth(0);
+                chip.setChipCornerRadius(Utils.dpToPx(this, 20));
+
+                chip.setOnClickListener(v -> returnResult(station.id, station.name, station.alias));
+                chipStations.addView(chip);
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     private void returnResult(int id, String name, String code) {
@@ -161,24 +256,28 @@ public class SearchActivity extends AppCompatActivity {
                     filteredCodes.add(line.alias);
                 }
             }
-            ((SearchLineAdapter) adapter).updateData(filteredIds, filteredNames, filteredCodes);
         } else {
+            Set<String> seenAliases = new HashSet<>();
+
             for (HRConfig.Station station : hrConfig.getIdMap().values()) {
+                if (seenAliases.contains(station.alias)) continue;
+
                 if (station.name.toLowerCase().contains(lowerQuery) ||
                         (station.nameEN != null && station.nameEN.toLowerCase().contains(lowerQuery)) ||
                         station.alias.toLowerCase().contains(lowerQuery)) {
+
                     filteredIds.add(station.id);
                     filteredNames.add(station.name);
                     filteredCodes.add(station.alias);
+
+                    seenAliases.add(station.alias);
                 }
             }
-            ((SearchStationAdapter) adapter).updateData(filteredIds, filteredNames, filteredCodes);
         }
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (etSearch.getText().toString().trim().isEmpty()) showHistory();
+        if (adapter instanceof SearchStationAdapter)
+            ((SearchStationAdapter) adapter).updateData(filteredIds, filteredNames, filteredCodes);
+        else if (adapter instanceof SearchLineAdapter)
+            ((SearchLineAdapter) adapter).updateData(filteredIds, filteredNames, filteredCodes);
     }
 }

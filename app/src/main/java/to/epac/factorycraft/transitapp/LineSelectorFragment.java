@@ -60,6 +60,8 @@ public class LineSelectorFragment extends Fragment {
         btnSearch.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), SearchActivity.class);
             intent.putExtra("search_type", SearchActivity.TYPE_LINE);
+            intent.putExtra("search_location", false);
+            intent.putExtra("search_title", "請輸入路綫");
             searchLauncher.launch(intent);
         });
 

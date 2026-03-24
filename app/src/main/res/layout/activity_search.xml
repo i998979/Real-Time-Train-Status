@@ -53,6 +53,68 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layout_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:layout_weight="1"
+                android:padding="8dp"
+                android:text="現在地/常用"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_delete_loc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="刪除"
+                android:textColor="@color/button_green"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_stations"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_loc"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="現在地"
+                android:textColor="?attr/colorOutline"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:chipBackgroundColor="@color/line_badge_bg_tint"
+                app:chipCornerRadius="20dp"
+                app:chipIcon="@drawable/outline_my_location_24"
+                app:chipIconTint="?attr/colorOutline"
+                app:chipIconVisible="true"
+                app:chipStrokeColor="?attr/colorOutline"
+                app:chipStrokeWidth="2dp" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/layout_history_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -66,7 +128,6 @@
             android:layout_weight="1"
             android:padding="8dp"
             android:text="搜尋履歷"
-            android:textColor="@color/button_green"
             android:textSize="16sp" />
 
         <TextView

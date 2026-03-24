@@ -104,7 +104,12 @@ public class SearchInputFragment extends Fragment {
 
         View.OnClickListener searchClick = v -> {
             isSelectingOrigin = (v.getId() == R.id.layout_origin);
-            searchLauncher.launch(new Intent(requireContext(), SearchActivity.class));
+
+            Intent intent = new Intent(requireContext(), SearchActivity.class);
+            intent.putExtra("search_type", SearchActivity.TYPE_STATION);
+            intent.putExtra("search_location", true);
+            intent.putExtra("search_title", "請輸入車站");
+            searchLauncher.launch(intent);
         };
         layoutOrigin.setOnClickListener(searchClick);
         layoutDest.setOnClickListener(searchClick);
