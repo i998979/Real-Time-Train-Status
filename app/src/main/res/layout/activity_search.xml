@@ -7,13 +7,14 @@
     android:background="@color/line_badge_bg_tint"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingVertical="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
 
         <EditText
             android:id="@+id/et_station_search"
@@ -46,108 +47,153 @@
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="36dp"
-            app:iconTint="#92ADBB"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
+            app:iconTint="#92ADBB" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/layout_location"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="0dp"
+            <LinearLayout
+                android:id="@+id/layout_location"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:layout_weight="1"
-                android:padding="8dp"
-                android:text="現在地/常用"
-                android:textSize="16sp" />
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_delete_loc"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="現在地/常用車站"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tv_delete_loc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="刪除"
+                        android:textColor="@color/button_green"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chip_stations"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_loc"
+                        style="@style/Widget.MaterialComponents.Chip.Action"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="現在地"
+                        android:textColor="?attr/colorOutline"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:chipBackgroundColor="@color/line_badge_bg_tint"
+                        app:chipCornerRadius="20dp"
+                        app:chipIcon="@drawable/outline_my_location_24"
+                        app:chipIconTint="?attr/colorOutline"
+                        app:chipIconVisible="true"
+                        app:chipStrokeColor="?attr/colorOutline"
+                        app:chipStrokeWidth="2dp" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <TextView
+                    android:id="@+id/tv_no_nearby"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="無法取得現在地"
+                    android:textSize="16sp" />
+
+                <ProgressBar
+                    android:id="@+id/pb_loading"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="16dp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/layout_nearby"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_nearby"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/tv_more"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp"
+                        android:text="查看更多"
+                        android:textColor="@color/button_green"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="26dp"
+                    android:background="?attr/colorSurfaceVariant" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_history"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:padding="8dp"
-                android:text="刪除"
-                android:textColor="@color/button_green"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
 
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="搜尋履歷"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="刪除"
+                    android:textColor="@color/button_green"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
         </LinearLayout>
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chip_stations"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_loc"
-                style="@style/Widget.MaterialComponents.Chip.Action"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="現在地"
-                android:textColor="?attr/colorOutline"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:chipBackgroundColor="@color/line_badge_bg_tint"
-                app:chipCornerRadius="20dp"
-                app:chipIcon="@drawable/outline_my_location_24"
-                app:chipIconTint="?attr/colorOutline"
-                app:chipIconVisible="true"
-                app:chipStrokeColor="?attr/colorOutline"
-                app:chipStrokeWidth="2dp" />
-
-        </com.google.android.material.chip.ChipGroup>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layout_history_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:layout_weight="1"
-            android:padding="8dp"
-            android:text="搜尋履歷"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/tv_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:padding="8dp"
-            android:text="刪除"
-            android:textColor="@color/button_green"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_station_results"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

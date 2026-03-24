@@ -1,11 +1,16 @@
 package to.epac.factorycraft.transitapp;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.viewpager2.widget.ViewPager2;
@@ -32,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String KEY_FIRST_FAVORITE_USED = "first_favorite_used";
     public static final String KEY_FAV_STATIONS = "fav_stations";
+    public static final String KEY_NEAREST_STATION = "nearest_station";
 
     public static final String KEY_WALK_SPEED = "walk_speed";
     public static final String KEY_TICKET_TYPE = "ticket_type";
@@ -144,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         handleWidgetIntent(getIntent());
+
+        checkLocationPermission();
     }
 
     @Override
@@ -166,6 +174,23 @@ public class MainActivity extends AppCompatActivity {
                     intent.removeExtra("target_fragment");
                 }
             }
+        }
+    }
+
+
+    private final ActivityResultLauncher<String[]> locationPermissionRequest =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+            });
+
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            locationPermissionRequest.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
         }
     }
 }

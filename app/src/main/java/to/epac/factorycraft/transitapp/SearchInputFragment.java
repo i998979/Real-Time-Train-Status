@@ -33,7 +33,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 public class SearchInputFragment extends Fragment {
+
     private SharedPreferences prefs;
+    private HRConfig hrConfig;
 
     private View layoutOrigin;
     private TextView tvOrigin;
@@ -64,6 +66,8 @@ public class SearchInputFragment extends Fragment {
         if (!prefs.contains(MainActivity.KEY_FARE_TYPE))
             prefs.edit().putString(MainActivity.KEY_FARE_TYPE, "adult").apply();
 
+        hrConfig = HRConfig.getInstance(requireContext());
+
         selectedOriginID = prefs.getString(MainActivity.KEY_ORIGIN_ID, null);
         selectedDestID = prefs.getString(MainActivity.KEY_DEST_ID, null);
 
@@ -78,8 +82,10 @@ public class SearchInputFragment extends Fragment {
             selectedOriginID = selectedDestID;
             selectedDestID = tempID;
 
-            updateStationDisplay(tvOrigin, selectedOriginID, "出發地");
-            updateStationDisplay(tvDest, selectedDestID, "目的地");
+            String tempOrigin = tvOrigin.getText().toString();
+            String tempDest = tvDest.getText().toString();
+            updateStationDisplay(tvOrigin, null, tempDest);
+            updateStationDisplay(tvDest, null, tempOrigin);
             updateButtonStates();
         });
 
@@ -88,14 +94,18 @@ public class SearchInputFragment extends Fragment {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         int id = result.getData().getIntExtra("selected_id", 1);
                         String name = result.getData().getStringExtra("selected_name");
-                        String code = result.getData().getStringExtra("selected_code");
 
-                        if (isSelectingOrigin) {
-                            selectedOriginID = String.valueOf(id);
-                            tvOrigin.setText(name);
+                        if (id == -1) {
+                            selectedOriginID = "CURRENT_LOCATION";
+                            tvOrigin.setText("現在地");
                         } else {
-                            selectedDestID = String.valueOf(id);
-                            tvDest.setText(name);
+                            if (isSelectingOrigin) {
+                                selectedOriginID = String.valueOf(id);
+                                tvOrigin.setText(name);
+                            } else {
+                                selectedDestID = String.valueOf(id);
+                                tvDest.setText(name);
+                            }
                         }
                         updateButtonStates();
                     }
@@ -116,13 +126,25 @@ public class SearchInputFragment extends Fragment {
 
         btnGo = view.findViewById(R.id.btn_go);
         btnGo.setOnClickListener(v -> {
-            HistoryManager.getInstance(requireContext()).saveRouteSearch(selectedOriginID, selectedDestID, tvOrigin.getText().toString(), tvDest.getText().toString());
+            String finalOrigin = selectedOriginID;
+            String finalDest = selectedDestID;
+
+            if ("CURRENT_LOCATION".equals(selectedOriginID)) {
+                String code = prefs.getString(MainActivity.KEY_NEAREST_STATION, "CEN");
+                finalOrigin = String.valueOf(hrConfig.getStationByAlias(code).id);
+            }
+            if ("CURRENT_LOCATION".equals(selectedDestID)) {
+                String code = prefs.getString(MainActivity.KEY_NEAREST_STATION, "CEN");
+                finalDest = String.valueOf(hrConfig.getStationByAlias(code).id);
+            }
+
+            HistoryManager.getInstance(requireContext()).saveRouteSearch(finalOrigin, finalDest, tvOrigin.getText().toString(), tvDest.getText().toString());
 
             RouteListFragment fragment = new RouteListFragment();
 
             Bundle bundle = new Bundle();
-            bundle.putString(RouteSearchFragment.ORIGIN_ID, selectedOriginID);
-            bundle.putString(RouteSearchFragment.DEST_ID, selectedDestID);
+            bundle.putString(RouteSearchFragment.ORIGIN_ID, finalOrigin);
+            bundle.putString(RouteSearchFragment.DEST_ID, finalDest);
             fragment.setArguments(bundle);
 
             requireActivity().getSupportFragmentManager().beginTransaction()
@@ -252,8 +274,18 @@ public class SearchInputFragment extends Fragment {
             tv.setText(hint);
             return;
         }
-        HRConfig.Station s = HRConfig.getInstance(requireContext()).getStationById(Integer.parseInt(id));
-        tv.setText(s != null ? s.name : hint);
+
+        if ("CURRENT_LOCATION".equals(id)) {
+            tv.setText("現在地");
+            return;
+        }
+
+        try {
+            HRConfig.Station s = hrConfig.getStationById(Integer.parseInt(id));
+            tv.setText(s != null ? s.name : hint);
+        } catch (NumberFormatException e) {
+            tv.setText(hint);
+        }
     }
 
     private void updateButtonStates() {
