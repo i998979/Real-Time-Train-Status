@@ -79,6 +79,7 @@ public class SearchActivity extends AppCompatActivity {
     private TextView tvDeleteLoc;
 
     private ChipGroup chipStations;
+    private Chip chipLoc;
 
     private TextView tvNoNearby;
     private ProgressBar pbLoading;
@@ -136,6 +137,7 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         chipStations = findViewById(R.id.chip_stations);
+        chipLoc = findViewById(R.id.chip_loc);
 
         tvNoNearby = findViewById(R.id.tv_no_nearby);
         pbLoading = findViewById(R.id.pb_loading);
@@ -316,6 +318,11 @@ public class SearchActivity extends AppCompatActivity {
                     tvNoNearby.setVisibility(View.VISIBLE);
                     return;
                 }
+
+                ColorStateList stateList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.button_green));
+                chipLoc.setChipIconTint(stateList);
+                chipLoc.setChipStrokeColor(stateList);
+                chipLoc.setTextColor(stateList);
 
                 pbLoading.setVisibility(View.VISIBLE);
                 tvNoNearby.setVisibility(View.GONE);
