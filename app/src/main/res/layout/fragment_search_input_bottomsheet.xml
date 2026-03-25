@@ -77,8 +77,8 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_swap"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:enabled="false"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"

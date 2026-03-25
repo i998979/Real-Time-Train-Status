@@ -226,8 +226,8 @@
 
             <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
                 android:background="@drawable/outline_close_24"
                 android:backgroundTint="?attr/colorOutlineVariant"
                 android:padding="22dp" />
@@ -259,7 +259,7 @@
                 android:padding="12dp"
                 android:text="返回搜尋畫面"
                 android:textAllCaps="false"
-                android:textColor="#4CA87E"
+                android:textColor="@color/button_green"
                 android:textSize="18sp"
                 android:textStyle="bold" />
         </LinearLayout>

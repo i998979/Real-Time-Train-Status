@@ -70,7 +70,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="40dp"
         android:src="@drawable/baseline_trip_origin_24"
-        app:tint="#49AD7F" />
+        app:tint="@color/button_green" />
 
     <TextView
         android:id="@+id/tv_status"

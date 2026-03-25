@@ -115,7 +115,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:src="@drawable/baseline_trip_origin_24"
-                    app:tint="#49AD7F" />
+                    app:tint="@color/button_green" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

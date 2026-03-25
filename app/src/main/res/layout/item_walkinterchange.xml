@@ -49,11 +49,19 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
-            <View
+            <FrameLayout
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_margin="2dp"
-                android:background="@drawable/background_circle_with_icon" />
+                android:background="@drawable/background_circle">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/baseline_directions_walk_24"
+                    app:tint="?android:attr/colorForegroundInverse" />
+            </FrameLayout>
 
             <View
                 android:layout_width="8dp"
