@@ -36,7 +36,7 @@ public class DeleteSavedStationsSheet extends BottomSheetDialogFragment {
     private List<String> favIds;
     private final Set<String> selectedIds = new HashSet<>();
 
-    private TextView tvSelectAll;
+    private TextView rbSelectAll;
     private MaterialButton btnDelete;
     private RecyclerView rv;
     private DeleteAdapter adapter;
@@ -75,7 +75,7 @@ public class DeleteSavedStationsSheet extends BottomSheetDialogFragment {
         String saved = prefs.getString(MainActivity.KEY_FAV_STATIONS, "");
         favIds = saved.isEmpty() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(saved.split(",")));
 
-        tvSelectAll = view.findViewById(R.id.tv_select_all);
+        rbSelectAll = view.findViewById(R.id.rb_select_all);
         btnDelete = view.findViewById(R.id.btn_delete);
         rv = view.findViewById(R.id.rv_saved_routes);
 
@@ -85,7 +85,7 @@ public class DeleteSavedStationsSheet extends BottomSheetDialogFragment {
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(adapter);
 
-        tvSelectAll.setOnClickListener(v -> {
+        rbSelectAll.setOnClickListener(v -> {
             if (selectedIds.size() == favIds.size()) {
                 selectedIds.clear();
             } else {
@@ -108,10 +108,10 @@ public class DeleteSavedStationsSheet extends BottomSheetDialogFragment {
         adapter.notifyDataSetChanged();
 
         boolean isAllSelected = !favIds.isEmpty() && selectedIds.size() == favIds.size();
-        tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
+        rbSelectAll.setText(isAllSelected ? "取消全選" : "全選");
 
         int tintColor = ContextCompat.getColor(requireContext(), isAllSelected ? R.color.button_green : R.color.selector_radio_tint);
-        TextViewCompat.setCompoundDrawableTintList(tvSelectAll, ColorStateList.valueOf(tintColor));
+        TextViewCompat.setCompoundDrawableTintList(rbSelectAll, ColorStateList.valueOf(tintColor));
 
         btnDelete.setEnabled(!selectedIds.isEmpty());
         btnDelete.setBackgroundColor(selectedIds.isEmpty() ? Color.parseColor("#2C2C2C") : ContextCompat.getColor(requireContext(), R.color.button_green));

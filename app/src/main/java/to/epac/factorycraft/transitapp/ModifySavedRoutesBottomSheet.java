@@ -33,7 +33,7 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
 
     private MaterialButton btnClose;
     private MaterialButton btnSearchAdd;
-    private TextView tvSelectAll;
+    private TextView rbSelectAll;
 
     private RecyclerView rvSavedRoutes;
     private SavedRouteAdapter adapter;
@@ -93,8 +93,8 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
         btnSearchAdd.setOnClickListener(v -> {
             showSearchInputBottomSheet();
         });
-        tvSelectAll = view.findViewById(R.id.tv_select_all);
-        tvSelectAll.setOnClickListener(v -> {
+        rbSelectAll = view.findViewById(R.id.rb_select_all);
+        rbSelectAll.setOnClickListener(v -> {
             if (savedRoutes.isEmpty()) return;
             if (selectedPositions.size() == savedRoutes.size()) {
                 selectedPositions.clear();
@@ -165,12 +165,10 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
 
         isAllSelected = !savedRoutes.isEmpty() && selectedPositions.size() == savedRoutes.size();
 
-        tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
-        int iconRes = isAllSelected ? R.drawable.baseline_check_circle_24 : R.drawable.baseline_check_circle_outline_24;
-        tvSelectAll.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0);
+        rbSelectAll.setText(isAllSelected ? "取消全選" : "全選");
 
         int tintColor = ContextCompat.getColor(requireContext(), isAllSelected ? R.color.button_green : R.color.white);
-        TextViewCompat.setCompoundDrawableTintList(tvSelectAll, ColorStateList.valueOf(tintColor));
+        TextViewCompat.setCompoundDrawableTintList(rbSelectAll, ColorStateList.valueOf(tintColor));
 
         boolean hasSelection = !selectedPositions.isEmpty();
         btnDelete.setEnabled(hasSelection);
@@ -237,9 +235,9 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
             holder.tvDest.setText(route.getDestName());
 
             boolean isSelected = selectedPositions.contains(position);
-            int colorOnSurface = Utils.getThemeColor(holder.itemView.getContext(), com.google.android.material.R.attr.colorOnSurface);
+            int colorOnSurface = Utils.getThemeColor(holder.itemView.getContext(), com.google.android.material.R.attr.colorOutline);
 
-            holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
+            holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_24 : R.drawable.baseline_check_circle_outline_24);
             holder.cbSelect.setImageTintList(ColorStateList.valueOf(isSelected ?
                     ContextCompat.getColor(holder.itemView.getContext(), R.color.button_green) : colorOnSurface));
 

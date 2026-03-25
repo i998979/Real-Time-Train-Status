@@ -31,7 +31,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="金鐘"
-                    android:textColor="?android:attr/colorForeground"
+                    android:textColor="?attr/colorSurfaceInverse"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -48,7 +48,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="機場"
-                    android:textColor="?android:attr/colorForeground"
+                    android:textColor="?attr/colorSurfaceInverse"
                     android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>

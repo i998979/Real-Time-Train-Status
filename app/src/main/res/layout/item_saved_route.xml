@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="金鐘"
-        android:textColor="?android:attr/colorForeground"
+        android:textColor="?attr/colorSurfaceInverse"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="中環"
-        android:textColor="?android:attr/colorForeground"
+        android:textColor="?attr/colorSurfaceInverse"
         android:textSize="18sp"
         android:textStyle="bold" />
 

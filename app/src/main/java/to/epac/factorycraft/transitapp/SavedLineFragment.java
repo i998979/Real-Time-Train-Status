@@ -160,7 +160,7 @@ public class SavedLineFragment extends Fragment {
         btnAddLine.setOnClickListener(v -> {
             showSearchBottomSheet(currentSaved, updateSelectAll);
         });
-        TextView tvSelectAll = sheetView.findViewById(R.id.tv_select_all);
+        TextView rbSelectAll = sheetView.findViewById(R.id.rb_select_all);
         View.OnClickListener selectAllListener = v -> {
             boolean isCurrentlyAllSelected = (selectedForDelete.size() == currentSaved.size() && !currentSaved.isEmpty());
             selectedForDelete.clear();
@@ -169,7 +169,7 @@ public class SavedLineFragment extends Fragment {
             }
             updateSelectAll.run();
         };
-        tvSelectAll.setOnClickListener(selectAllListener);
+        rbSelectAll.setOnClickListener(selectAllListener);
 
         MaterialButton btnDelete = sheetView.findViewById(R.id.btn_delete);
         btnDelete.setOnClickListener(v -> {
@@ -193,17 +193,13 @@ public class SavedLineFragment extends Fragment {
             if (editAdapter != null) editAdapter.notifyDataSetChanged();
 
             boolean isAllSelected = !currentSaved.isEmpty() && selectedForDelete.size() == currentSaved.size();
-            tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
+            rbSelectAll.setText(isAllSelected ? "取消全選" : "全選");
 
-            int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
-            int green = ContextCompat.getColor(requireContext(), R.color.button_green);
-
-            int drawableRes = isAllSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24;
-            tvSelectAll.setCompoundDrawablesWithIntrinsicBounds(drawableRes, 0, 0, 0);
-            TextViewCompat.setCompoundDrawableTintList(tvSelectAll, ColorStateList.valueOf(isAllSelected ? green : colorOnSurface));
+            int tintColor = ContextCompat.getColor(requireContext(), isAllSelected ? R.color.button_green : R.color.selector_radio_tint);
+            TextViewCompat.setCompoundDrawableTintList(rbSelectAll, ColorStateList.valueOf(tintColor));
 
             btnDelete.setEnabled(!selectedForDelete.isEmpty());
-            btnDelete.setBackgroundColor(selectedForDelete.isEmpty() ? Color.parseColor("#2C2C2C") : green);
+            btnDelete.setBackgroundColor(selectedForDelete.isEmpty() ? Color.parseColor("#2C2C2C") : ContextCompat.getColor(requireContext(), R.color.button_green));
         };
 
         editAdapter = new EditAdapter(currentSaved, selectedForDelete, hrConf, updateSelectAll);
