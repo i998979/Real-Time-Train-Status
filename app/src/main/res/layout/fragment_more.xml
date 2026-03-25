@@ -68,7 +68,7 @@
                 android:background="#4BAC7F"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="32dp">
+                android:paddingVertical="16dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btn_mtrmobile"

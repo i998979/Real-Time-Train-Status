@@ -68,6 +68,7 @@ public class StationInfoFragment extends Fragment {
         });
         tabLayout = view.findViewById(R.id.tab_layout);
         pagerContent = view.findViewById(R.id.pager_content);
+        pagerContent.setOffscreenPageLimit(ViewPager2.OFFSCREEN_PAGE_LIMIT_DEFAULT);
         pagerContent.setUserInputEnabled(false);
 
         pagerContent.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
