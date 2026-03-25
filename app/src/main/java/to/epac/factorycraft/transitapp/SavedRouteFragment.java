@@ -23,6 +23,9 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayout;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -264,8 +267,9 @@ public class SavedRouteFragment extends Fragment {
             return segments;
         }
 
-        private void drawHorizontalRoute(LinearLayout container, String originName, List<VisualSegment> segments) {
-            container.setGravity(Gravity.CENTER_VERTICAL);
+        private void drawHorizontalRoute(FlexboxLayout container, String originName, List<VisualSegment> segments) {
+            container.removeAllViews();
+            container.setFlexWrap(FlexWrap.WRAP);
 
             addStationViewToCard(container, originName, false);
 
@@ -277,16 +281,30 @@ public class SavedRouteFragment extends Fragment {
                     addStationViewToCard(container, seg.stationName, false);
                 }
             }
+
+            container.post(() -> {
+                if (container.getFlexLines().size() > 2) {
+                    while (container.getFlexLines().size() > 2 && container.getChildCount() > 0) {
+                        container.removeViewAt(container.getChildCount() - 1);
+                    }
+                    TextView tvMore = new TextView(container.getContext());
+                    tvMore.setText("...");
+                    container.addView(tvMore);
+                }
+            });
         }
 
-        private void addStationViewToCard(LinearLayout container, String stationName, boolean walk) {
+        private void addStationViewToCard(FlexboxLayout container, String stationName, boolean walk) {
             Context context = container.getContext();
             int textColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnSurface);
 
             if (walk) {
                 TextView tvWalk = new TextView(context);
-                LinearLayout.LayoutParams walkParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                walkParams.gravity = Gravity.CENTER_VERTICAL;
+                FlexboxLayout.LayoutParams walkParams = new FlexboxLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                walkParams.setMargins(0, Utils.dpToPx(context, 2), 0, Utils.dpToPx(context, 2));
                 tvWalk.setLayoutParams(walkParams);
 
                 tvWalk.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
@@ -298,7 +316,7 @@ public class SavedRouteFragment extends Fragment {
             }
 
             TextView tv = new TextView(context);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Utils.dpToPx(context, 32));
             params.gravity = Gravity.CENTER_VERTICAL;
             tv.setPadding(Utils.dpToPx(context, 6), 0, Utils.dpToPx(context, 6), 0);
             tv.setLayoutParams(params);
@@ -310,25 +328,54 @@ public class SavedRouteFragment extends Fragment {
             container.addView(tv);
         }
 
-        private void addTrainSegmentViewToCard(LinearLayout container, String lineAlias, String lineColor) {
+        private void addTrainSegmentViewToCard(FlexboxLayout container, String lineAlias, String lineColor) {
             Context context = container.getContext();
 
             FrameLayout segmentContainer = new FrameLayout(context);
-            segmentContainer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            FlexboxLayout.LayoutParams segmentParams = new FlexboxLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+
+            segmentParams.setMargins(Utils.dpToPx(context, 2), 0, Utils.dpToPx(context, 2), 0);
+            segmentContainer.setLayoutParams(segmentParams);
+
+            View line = new View(context);
+            FrameLayout.LayoutParams lineParams = new FrameLayout.LayoutParams(
+                    Utils.dpToPx(context, 40),
+                    Utils.dpToPx(context, 6)
+            );
+            lineParams.gravity = Gravity.CENTER;
+            line.setLayoutParams(lineParams);
+            line.setBackgroundColor(Color.parseColor("#" + lineColor));
+
+            GradientDrawable lineBg = new GradientDrawable();
+            lineBg.setShape(GradientDrawable.RECTANGLE);
+            lineBg.setCornerRadius(Utils.dpToPx(context, 3));
+            lineBg.setColor(Color.parseColor("#" + lineColor));
+            line.setBackground(lineBg);
+
+            segmentContainer.addView(line);
 
             FrameLayout badgeContainer = new FrameLayout(context);
-            FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(Utils.dpToPx(context, 32), Utils.dpToPx(context, 32));
+            FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(
+                    Utils.dpToPx(context, 32),
+                    Utils.dpToPx(context, 32)
+            );
             badgeParams.gravity = Gravity.CENTER;
             badgeContainer.setLayoutParams(badgeParams);
 
             GradientDrawable badgeBg = new GradientDrawable();
             badgeBg.setShape(GradientDrawable.RECTANGLE);
             badgeBg.setCornerRadius(Utils.dpToPx(context, 4));
-            badgeBg.setColor(Color.parseColor("#" + (lineColor != null ? lineColor : "808080")));
+            badgeBg.setColor(Color.parseColor("#" + lineColor));
             badgeContainer.setBackground(badgeBg);
 
             TextView tvLineCode = new TextView(context);
-            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(Utils.dpToPx(context, 26), Utils.dpToPx(context, 26));
+            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
+                    Utils.dpToPx(context, 26),
+                    Utils.dpToPx(context, 26)
+            );
             textParams.gravity = Gravity.CENTER;
             tvLineCode.setBackgroundColor(Color.WHITE);
             tvLineCode.setLayoutParams(textParams);
@@ -346,7 +393,7 @@ public class SavedRouteFragment extends Fragment {
 
         private static class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvOrigin, tvDest;
-            LinearLayout segmentCardLayout;
+            FlexboxLayout segmentCardLayout;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
