@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="widget_background">#000000</color>
-    <color name="widget_foreground">#FFFFFF</color>
+    <color name="widget_background">@color/black</color>
+    <color name="widget_foreground">@color/white</color>
 
     <color name="label_bg_tint">#80909090</color>
     <color name="train_bg_tint">#020202</color>
     <color name="line_badge_bg_tint">#2C3032</color>
     <color name="button_tint">#36353A</color>
-    <color name="bg_tint">#000000</color>
+    <color name="bg_tint">@color/black</color>
     <color name="bg2_tint">#242328</color>
 </resources>

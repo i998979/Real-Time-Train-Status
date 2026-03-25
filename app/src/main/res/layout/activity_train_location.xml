@@ -84,10 +84,10 @@
                         android:layout_width="26dp"
                         android:layout_height="26dp"
                         android:layout_gravity="center"
-                        android:background="#FFFFFF"
+                        android:background="@color/white"
                         android:gravity="center"
                         android:text="EAL"
-                        android:textColor="#000000"
+                        android:textColor="@color/black"
                         android:textSize="12sp"
                         android:textStyle="bold" />
                 </FrameLayout>
@@ -189,14 +189,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="現在是非行車時間"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/white"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="凌晨1時30分~5時正"
-            android:textColor="#FFFFFF" />
+            android:textColor="@color/white" />
     </LinearLayout>
 
 </FrameLayout>

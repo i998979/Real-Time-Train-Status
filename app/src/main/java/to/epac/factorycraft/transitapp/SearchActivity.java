@@ -299,6 +299,8 @@ public class SearchActivity extends AppCompatActivity {
                     }
                 }
             });
+
+            updateAllAdaptersFavorites();
         }
 
         rvHistory.setAdapter(historyAdapter);

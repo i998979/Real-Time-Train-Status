@@ -21,7 +21,7 @@
             android:layout_height="12dp"
             android:layout_gravity="center"
             android:background="@android:drawable/presence_online"
-            android:backgroundTint="#FFFFFF" />
+            android:backgroundTint="@color/white" />
 
         <View
             android:layout_width="14dp"

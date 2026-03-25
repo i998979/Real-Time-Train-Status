@@ -30,7 +30,7 @@
                 android:layout_height="20dp"
                 android:layout_gravity="start|center_vertical"
                 android:src="@drawable/baseline_search_24"
-                app:tint="#FFFFFF" />
+                app:tint="@color/white" />
 
             <TextView
                 android:id="@+id/tv_search_station"
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="中環"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 

@@ -13,7 +13,7 @@
         android:background="@drawable/circle_background"
         android:padding="8dp"
         android:src="@drawable/baseline_train_24"
-        app:tint="#FFFFFF" />
+        app:tint="@color/white" />
 
     <TextView
         android:id="@+id/tv_station"

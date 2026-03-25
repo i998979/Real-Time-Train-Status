@@ -27,12 +27,12 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_confirm"
-        android:layout_width="300dp"
+        android:layout_width="220dp"
         android:layout_height="50dp"
         android:text="OK"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
         app:backgroundTint="@color/button_green"
-        app:cornerRadius="30dp" />
+        app:cornerRadius="50dp" />
 </LinearLayout>

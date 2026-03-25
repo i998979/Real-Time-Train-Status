@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:backgroundTint="@color/button_green"
             android:text="刪除"
-            android:textColor="#FFFFFF" />
+            android:textColor="@color/white" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

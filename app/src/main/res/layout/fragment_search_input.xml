@@ -103,7 +103,7 @@
             android:insetBottom="0dp"
             android:padding="0dp"
             android:text="GO!"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/white"
             android:textSize="40sp"
             android:textStyle="bold"
             app:cornerRadius="40dp" />

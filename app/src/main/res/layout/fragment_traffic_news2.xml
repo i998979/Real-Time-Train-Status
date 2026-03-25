@@ -167,14 +167,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="現在是非行車時間"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/white"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="凌晨1時30分~5時正"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/white" />
         </LinearLayout>
 
     </FrameLayout>

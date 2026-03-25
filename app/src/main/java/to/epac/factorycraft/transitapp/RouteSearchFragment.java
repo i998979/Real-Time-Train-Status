@@ -119,7 +119,7 @@ public class RouteSearchFragment extends Fragment {
     private void updateTabColor(View view, boolean isSelected) {
         ImageView icon = view.findViewById(R.id.tab_icon);
         TextView text = view.findViewById(R.id.tab_text);
-        int color = isSelected ? Color.parseColor("#FFFFFF") : Color.parseColor("#96ADBB");
+        int color = isSelected ? Color.WHITE : Color.parseColor("#96ADBB");
         icon.setColorFilter(color);
         text.setTextColor(color);
     }

@@ -22,12 +22,12 @@
     <color name="bar_bright">#355260</color>
     <color name="bar_dark">#0E1B24</color>
 
-    <color name="widget_background">#FFFFFF</color>
-    <color name="widget_foreground">#000000</color>
+    <color name="widget_background">@color/white</color>
+    <color name="widget_foreground">@color/black</color>
 
     <color name="label_bg_tint">#80909090</color>
     <color name="train_bg_tint">#F0EFF3</color>
-    <color name="line_badge_bg_tint">#FFFFFF</color>
+    <color name="line_badge_bg_tint">@color/white</color>
     <color name="button_tint">#F0EFF4</color>
     <color name="bg_tint">#F0EFF3</color>
     <color name="bg2_tint">#FCFCFC</color>
