@@ -23,7 +23,7 @@
             app:icon="@drawable/baseline_search_24"
             app:iconPadding="0dp"
             app:iconSize="32dp"
-            app:iconTint="?attr/colorOutlineVariant" />
+            app:iconTint="@color/white" />
 
         <TextView
             android:id="@+id/tv_title"
