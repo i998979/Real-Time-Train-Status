@@ -43,11 +43,11 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_alignParentEnd="true"
-                app:icon="@android:drawable/ic_menu_close_clear_cancel"
+                app:icon="@drawable/outline_close_24"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
                 app:iconSize="36dp"
-                app:iconTint="#92ADBB"
+                app:iconTint="?attr/colorOutline"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

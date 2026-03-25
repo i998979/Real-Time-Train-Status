@@ -161,7 +161,7 @@ public class SearchActivity extends AppCompatActivity {
                 if (!isRemoving) {
                     if (favorites.size() >= 5) {
                         View view = getLayoutInflater().inflate(R.layout.dialog_fav_limit, null);
-                        AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this)
+                        AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this, R.style.GreenAlertDialogTheme)
                                 .setView(view)
                                 .create();
                         view.findViewById(R.id.btn_confirm).setOnClickListener(v -> dialog.dismiss());
@@ -182,7 +182,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 if (!isRemoving && !prefs.getBoolean(MainActivity.KEY_FIRST_FAVORITE_USED, false)) {
                     View view = getLayoutInflater().inflate(R.layout.dialog_fav_first_time, null);
-                    AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this)
+                    AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this, R.style.GreenAlertDialogTheme)
                             .setView(view)
                             .create();
 
@@ -265,7 +265,7 @@ public class SearchActivity extends AppCompatActivity {
                         // Maximum 5 favorites
                         if (favorites.size() >= 5) {
                             View view = getLayoutInflater().inflate(R.layout.dialog_fav_limit, null);
-                            AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this)
+                            AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this, R.style.GreenAlertDialogTheme)
                                     .setView(view)
                                     .create();
 
@@ -290,7 +290,7 @@ public class SearchActivity extends AppCompatActivity {
                     // If this is first time using favorite
                     if (!isRemoving && !prefs.getBoolean(MainActivity.KEY_FIRST_FAVORITE_USED, false)) {
                         View view = getLayoutInflater().inflate(R.layout.dialog_fav_first_time, null);
-                        AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this)
+                        AlertDialog dialog = new MaterialAlertDialogBuilder(SearchActivity.this, R.style.GreenAlertDialogTheme)
                                 .setView(view)
                                 .create();
 
@@ -549,22 +549,11 @@ public class SearchActivity extends AppCompatActivity {
     private void showGpsDialog() {
         View gpsView = getLayoutInflater().inflate(R.layout.dialog_gps_prompt, null);
 
-        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this, R.style.GreenAlertDialogTheme)
                 .setView(gpsView)
                 .create();
 
         dialog.show();
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-
-            WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
-            Rect bounds = windowMetrics.getBounds();
-            int screenWidth = bounds.width();
-
-            int dialogWidth = (int) (screenWidth * 0.8);
-            dialog.getWindow().setLayout(dialogWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
 
         MaterialButton btnPositive = gpsView.findViewById(R.id.btn_positive);
         MaterialButton btnNegative = gpsView.findViewById(R.id.btn_negative);

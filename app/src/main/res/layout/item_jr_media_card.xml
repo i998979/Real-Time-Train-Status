@@ -57,7 +57,7 @@
                     android:shadowDx="1"
                     android:shadowDy="1"
                     android:shadowRadius="2"
-                    android:text="山手線 E235系\n車內顯示屏"
+                    android:text="市區綫現代化列車退役"
                     android:textColor="@android:color/white"
                     android:textSize="14sp"
                     android:textStyle="bold" />

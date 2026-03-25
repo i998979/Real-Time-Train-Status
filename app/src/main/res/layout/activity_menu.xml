@@ -29,9 +29,9 @@
             android:layout_height="48dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            app:icon="@android:drawable/ic_menu_close_clear_cancel"
+            app:icon="@drawable/outline_close_24"
             app:iconSize="36dp"
-            app:iconTint="#92ADBB" />
+            app:iconTint="?attr/colorOutline" />
     </RelativeLayout>
 
     <com.google.android.material.card.MaterialCardView
@@ -65,7 +65,7 @@
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:src="@drawable/outline_feedback_24"
+                    android:src="@drawable/outline_delete_24"
                     app:tint="@color/button_green" />
 
                 <TextView

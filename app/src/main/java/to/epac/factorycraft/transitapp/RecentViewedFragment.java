@@ -125,14 +125,15 @@ public class RecentViewedFragment extends Fragment {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             SearchHistory item = list.get(position);
 
-            holder.tvRouteName.setText(item.originName + " → " + item.destinationName);
+            holder.tvFrom.setText(item.originName);
+            holder.tvTo.setText(item.destinationName);
 
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeZone(TimeZone.getTimeZone("GMT+8"));
             calendar.setTimeInMillis(item.timestamp);
             SimpleDateFormat sdf = new SimpleDateFormat("M月d日(E) HH:mm 出發", Locale.TRADITIONAL_CHINESE);
             sdf.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-            holder.tvDepartureTime.setText(sdf.format(calendar.getTime()));
+            holder.tvTime.setText(sdf.format(calendar.getTime()));
 
 
             holder.goLayout.setOnClickListener(v -> {
@@ -154,13 +155,14 @@ public class RecentViewedFragment extends Fragment {
 
         private static class ViewHolder extends RecyclerView.ViewHolder {
             LinearLayout goLayout;
-            TextView tvRouteName, tvDepartureTime, btnGo;
+            TextView tvFrom, tvTo, tvTime, btnGo;
 
             private ViewHolder(View itemView) {
                 super(itemView);
                 goLayout = itemView.findViewById(R.id.layout_go);
-                tvRouteName = itemView.findViewById(R.id.tv_name);
-                tvDepartureTime = itemView.findViewById(R.id.tv_time);
+                tvFrom = itemView.findViewById(R.id.tv_from);
+                tvTo = itemView.findViewById(R.id.tv_to);
+                tvTime = itemView.findViewById(R.id.tv_time);
                 btnGo = itemView.findViewById(R.id.btn_go);
             }
         }

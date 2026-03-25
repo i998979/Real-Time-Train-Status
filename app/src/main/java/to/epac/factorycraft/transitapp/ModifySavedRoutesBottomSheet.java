@@ -166,7 +166,7 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
         isAllSelected = !savedRoutes.isEmpty() && selectedPositions.size() == savedRoutes.size();
 
         tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
-        int iconRes = isAllSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24;
+        int iconRes = isAllSelected ? R.drawable.baseline_check_circle_24 : R.drawable.baseline_check_circle_outline_24;
         tvSelectAll.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0);
 
         int tintColor = ContextCompat.getColor(requireContext(), isAllSelected ? R.color.button_green : R.color.white);

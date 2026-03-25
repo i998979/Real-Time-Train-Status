@@ -52,7 +52,7 @@
             app:icon="@drawable/baseline_refresh_24"
             app:iconPadding="0dp"
             app:iconSize="32dp"
-            app:iconTint="#92ADBB"
+            app:iconTint="?attr/colorOutline"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

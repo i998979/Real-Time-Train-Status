@@ -32,7 +32,7 @@
             android:inputType="text"
             android:paddingHorizontal="16dp"
             android:textColor="@color/white"
-            android:textColorHint="#92ADBB"
+            android:textColorHint="?attr/colorOutline"
             android:textSize="20sp"
             android:textStyle="bold"
             app:drawableStartCompat="@drawable/baseline_search_24"
@@ -46,11 +46,11 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_gravity="end|center_vertical"
-            app:icon="@android:drawable/ic_menu_close_clear_cancel"
+            app:icon="@drawable/outline_close_24"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="36dp"
-            app:iconTint="#92ADBB" />
+            app:iconTint="?attr/colorOutline" />
     </RelativeLayout>
 
     <TextView

@@ -29,7 +29,7 @@
             android:maxLines="1"
             android:paddingHorizontal="16dp"
             android:textColor="@color/white"
-            android:textColorHint="#92ADBB"
+            android:textColorHint="?attr/colorOutline"
             android:textSize="20sp"
             android:textStyle="bold"
             app:drawableStartCompat="@drawable/baseline_search_24"
@@ -43,11 +43,11 @@
             style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:icon="@android:drawable/ic_menu_close_clear_cancel"
+            app:icon="@drawable/outline_close_24"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="36dp"
-            app:iconTint="#92ADBB" />
+            app:iconTint="?attr/colorOutline" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView

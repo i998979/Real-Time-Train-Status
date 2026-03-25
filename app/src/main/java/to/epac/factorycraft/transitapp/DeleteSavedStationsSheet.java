@@ -158,7 +158,7 @@ public class DeleteSavedStationsSheet extends BottomSheetDialogFragment {
 
             private ViewHolder(View v) {
                 super(v);
-                tvName = v.findViewById(R.id.tv_name);
+                tvName = v.findViewById(R.id.tv_from);
                 tvTime = v.findViewById(R.id.tv_time);
                 rbItem = v.findViewById(R.id.rb_item);
             }

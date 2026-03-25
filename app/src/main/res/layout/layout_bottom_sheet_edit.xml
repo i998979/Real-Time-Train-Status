@@ -36,11 +36,11 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_gravity="end|center_vertical"
-            app:icon="@android:drawable/ic_menu_close_clear_cancel"
+            app:icon="@drawable/outline_close_24"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="36dp"
-            app:iconTint="#92ADBB" />
+            app:iconTint="?attr/colorOutline" />
     </RelativeLayout>
 
     <TextView
@@ -74,8 +74,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:paddingHorizontal="16dp">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
@@ -83,19 +82,12 @@
             android:text="刪除/排序路綫"
             android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/tv_select_all"
-            android:layout_width="match_parent"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_select_all"
+            style="@style/RadioButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical"
-            android:paddingVertical="16dp"
-            android:text="全選"
-            android:textColor="@color/button_green"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/outline_circle_24"
-            app:drawableTint="?attr/colorOnSurfaceVariant" />
+            android:text="全選" />
 
     </LinearLayout>
 

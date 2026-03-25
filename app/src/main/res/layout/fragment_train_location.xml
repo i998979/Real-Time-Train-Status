@@ -61,7 +61,8 @@
             android:paddingVertical="4dp"
             android:text="羅湖/落馬洲方面"
             android:textColor="?attr/colorOnSurface"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_dn_dir"
@@ -75,7 +76,8 @@
             android:paddingVertical="4dp"
             android:text="金鐘方面"
             android:textColor="?attr/colorOnSurface"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_refresh"

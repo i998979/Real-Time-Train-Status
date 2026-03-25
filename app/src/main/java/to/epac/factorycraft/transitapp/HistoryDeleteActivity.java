@@ -40,7 +40,6 @@ public class HistoryDeleteActivity extends AppCompatActivity {
 
     private MaterialButton btnClose;
     private MaterialRadioButton rbSelectAll;
-    private TextView tvSelectAll;
     private RecyclerView rvDeleteHistory;
     private DeleteAdapter rvAdapter;
     private MaterialButton btnDelete;
@@ -59,7 +58,6 @@ public class HistoryDeleteActivity extends AppCompatActivity {
         });
 
         rbSelectAll = findViewById(R.id.rb_select_all);
-        tvSelectAll = findViewById(R.id.tv_select_all);
         btnDelete = findViewById(R.id.btn_delete);
 
         rvDeleteHistory = findViewById(R.id.rv_delete_history);
@@ -81,7 +79,6 @@ public class HistoryDeleteActivity extends AppCompatActivity {
 
             updateUI();
         };
-        tvSelectAll.setOnClickListener(selectAllListener);
         rbSelectAll.setOnClickListener(selectAllListener);
 
         btnDelete.setOnClickListener(v -> {
@@ -143,7 +140,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
         rvAdapter.notifyDataSetChanged();
         boolean isAllSelected = !historyList.isEmpty() && selectedIds.size() == historyList.size();
         rbSelectAll.setChecked(isAllSelected);
-        tvSelectAll.setText(isAllSelected ? "取消全選" : "全選");
+        rbSelectAll.setText(isAllSelected ? "取消全選" : "全選");
 
         btnDelete.setEnabled(!selectedIds.isEmpty());
         btnDelete.setBackgroundColor(selectedIds.isEmpty() ? Color.parseColor("#2C2C2C") : ContextCompat.getColor(this, R.color.button_green));
@@ -211,7 +208,7 @@ public class HistoryDeleteActivity extends AppCompatActivity {
 
             private ViewHolder(View v) {
                 super(v);
-                tvName = v.findViewById(R.id.tv_name);
+                tvName = v.findViewById(R.id.tv_from);
                 tvTime = v.findViewById(R.id.tv_time);
                 rbItem = v.findViewById(R.id.rb_item);
             }

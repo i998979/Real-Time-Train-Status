@@ -37,7 +37,6 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:gravity">center</item>
         <item name="android:backgroundTint">?attr/colorOnSurfaceInverse</item>
-
         <item name="cornerRadius">8dp</item>
         <item name="rippleColor">?attr/colorControlHighlight</item>
     </style>
@@ -46,16 +45,13 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginVertical">6dp</item>
-        <item name="android:layout_marginHorizontal">10dp</item>
-        <item name="android:layoutDirection">rtl</item>
-        <item name="android:textDirection">ltr</item>
+        <item name="android:textColor">@color/button_green</item>
         <item name="android:paddingVertical">16dp</item>
-        <item name="android:paddingEnd">10dp</item>
-        <item name="android:button">@drawable/baseline_check_circle_outline_24</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:button">@drawable/selector_radio_button</item>
         <item name="buttonTint">@color/selector_radio_tint</item>
         <item name="useMaterialThemeColors">false</item>
         <item name="android:drawablePadding">12dp</item>
-        <item name="android:drawableTint">?android:attr/colorForeground</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
     </style>
@@ -63,6 +59,7 @@
     <style name="GreenAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="colorPrimary">?attr/colorOnSurfaceVariant</item>
         <item name="buttonBarPositiveButtonStyle">@style/GreenAlertButtonStyle</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
     <style name="GreenAlertButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">

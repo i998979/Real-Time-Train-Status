@@ -63,7 +63,7 @@
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
                 app:iconSize="36dp"
-                app:iconTint="#92ADBB" />
+                app:iconTint="?attr/colorOutline" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -113,11 +113,11 @@
         android:layout_gravity="end|top"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
-        app:icon="@android:drawable/ic_menu_close_clear_cancel"
+        app:icon="@drawable/outline_close_24"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:iconSize="36dp"
-        app:iconTint="#92ADBB" />
+        app:iconTint="?attr/colorOutline" />
 
     <TextView
         android:id="@+id/tv_refresh_time"
@@ -140,7 +140,8 @@
         android:paddingVertical="4dp"
         android:text="羅湖/落馬洲方面"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_dn_dir"
@@ -154,7 +155,8 @@
         android:paddingVertical="4dp"
         android:text="金鐘方面"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_refresh"

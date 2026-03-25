@@ -52,7 +52,7 @@
             android:layout_height="80dp"
             android:layout_gravity="center"
             android:src="@android:drawable/ic_menu_search"
-            app:tint="#96ADBB" />
+            app:tint="?attr/colorOutlineVariant" />
 
         <TextView
             android:layout_width="wrap_content"
