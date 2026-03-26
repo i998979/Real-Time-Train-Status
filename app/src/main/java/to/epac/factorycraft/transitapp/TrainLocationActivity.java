@@ -342,6 +342,16 @@ public class TrainLocationActivity extends AppCompatActivity {
                 .thenComparing((Trip t) -> t.seq)
         );
 
+        // SHS to ADM, early to late
+        // --- UP SHS to SHS towards LOW 1
+        // --- UP SHS to SHS towards LOW 4
+        // --- UP SHS to SHS towards LMC 7
+        // --- UP SHS to SHS towards LOW 10
+        // ...
+        // --- UP ADM to ADM towards LOW 0
+        // --- UP ADM to ADM towards LOW 2
+        // --- UP ADM to ADM towards LMC 4
+        // --- UP ADM to ADM towards LOW 7
         for (Trip trip : upList) {
             Log.d("upList", (trip.isUp ? "UP" : "DN") + " "
                     + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
@@ -349,6 +359,16 @@ public class TrainLocationActivity extends AppCompatActivity {
                     + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
+        // EXC to LOW/LMC, early to late //
+        // --- DN EXC to EXC towards ADM 0
+        // --- DN EXC to EXC towards ADM 2
+        // --- DN EXC to EXC towards ADM 4
+        // --- DN EXC to EXC towards ADM 7
+        // ...
+        // --- DN LMC to LMC towards ADM 0
+        // --- DN LMC to LMC towards ADM 10
+        // --- DN LMC to LMC towards ADM 15
+        // --- DN LMC to LMC towards ADM 24
         for (Trip trip : dnList) {
             Log.d("dnList", (trip.isUp ? "UP" : "DN") + " "
                     + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
@@ -359,22 +379,29 @@ public class TrainLocationActivity extends AppCompatActivity {
 
 
         for (int i = 0; i < upList.size(); i++) {
+            // Take i'th train from dnList
             Trip current = upList.get(i);
             int currentIdx = stationIdToIndexMap.get(current.currentStationCode);
 
             Trip pending = current;
             int pendingIdx = currentIdx;
+            // Iterate i+1'th train from dnList
             for (int k = i + 1; k < upList.size(); k++) {
                 Trip below = upList.get(k);
                 int belowIdx = stationIdToIndexMap.get(below.currentStationCode);
 
-
                 // -- If all conditions met, we use Pending to trace the next below -- //
+                // If conditions met, they are possibly the same train
+
+                // Possibly same if different Current Station
                 if (pending.currentStationCode != below.currentStationCode) {
+                    // Possibly same if same Destination Station
                     if (pending.destinationStationCode == below.destinationStationCode) {
+                        // Possibly same if same Route
                         if (pending.route.equals(below.route)) {
+                            // Possibly same if continuous station (or 1 gap if SHT-RAC / SHS-LMC)
                             if (Math.abs(pendingIdx - belowIdx) <= 1) {
-                                // TODO: Consider travelling time
+                                // Possibly same if arrival of Below is earlier than Pending
                                 if (pending.ttnt > below.ttnt) {
                                     pending = below;
                                     pendingIdx = stationIdToIndexMap.get(pending.currentStationCode);
@@ -390,23 +417,31 @@ public class TrainLocationActivity extends AppCompatActivity {
         }
 
         for (int i = 0; i < dnList.size(); i++) {
+            // Take i'th train from dnList
             Trip current = dnList.get(i);
             Integer currentIdx = stationIdToIndexMap.get(current.currentStationCode);
-            if (currentIdx == null) continue;
 
             Trip pending = current;
             int pendingIdx = currentIdx;
+            // Iterate i+1'th train from dnList
             for (int k = i + 1; k < dnList.size(); k++) {
                 Trip below = dnList.get(k);
                 Integer belowIdx = stationIdToIndexMap.get(below.currentStationCode);
                 if (belowIdx == null) continue;
 
                 // -- If all conditions met, we use Pending to trace the next below -- //
+                // If conditions met, they are possibly the same train
+
+                // Possibly same if different Current Station
                 if (pending.currentStationCode != below.currentStationCode) {
+                    // Possibly same if same Destination Station
                     if (pending.destinationStationCode == below.destinationStationCode) {
+                        // Possibly same if same Route
                         if (pending.route.equals(below.route)) {
-                            if (Math.abs(pendingIdx - belowIdx) <= 1) {
-                                // TODO: Consider travelling time
+                            // Possibly same if continuous station (or 1 gap if SHT-RAC / SHS-LMC)
+                            if (Math.abs(pendingIdx - belowIdx) <= 1
+                                    || (Utils.idToCode(lineCode, pending.currentStationCode).equalsIgnoreCase("SHS") && Utils.idToCode(lineCode, below.currentStationCode).equalsIgnoreCase("LMC"))) {
+                                // Possibly same if arrival of Below is earlier than Pending
                                 if (pending.ttnt > below.ttnt) {
                                     pending = below;
                                     pendingIdx = stationIdToIndexMap.get(pending.currentStationCode);
@@ -470,7 +505,8 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         // Add LMC before LOW, RAC before FOT
         if (lineCode.equalsIgnoreCase("eal")) {
-            codes.add(codes.indexOf("FOT"), "RAC");
+            // TODO: RAC departure is not loaded
+            // codes.add(codes.indexOf("FOT"), "RAC");
             codes.add(codes.indexOf("LOW"), "LMC");
         }
         // Add LHP
