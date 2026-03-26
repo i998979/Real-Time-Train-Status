@@ -1,6 +1,5 @@
 package to.epac.factorycraft.transitapp;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -45,7 +44,6 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 public class TrainLocationActivity extends AppCompatActivity {
-    public static Context context;
 
     private RecyclerView rvTrainLoc;
     private TrainLocationAdapter adapter;
@@ -80,8 +78,6 @@ public class TrainLocationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_train_location);
-
-        TrainLocationActivity.context = this;
 
         MaterialButton btnClose = findViewById(R.id.btn_close);
         btnClose.setOnClickListener(v -> {
@@ -145,7 +141,7 @@ public class TrainLocationActivity extends AppCompatActivity {
         TextView tvCode = lineBanner.findViewById(R.id.tv_line_code_badge);
 
         bannerName.setText(Utils.getLineName(lineCode, true));
-        int colorResId = getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
+        int colorResId = getResources().getIdentifier(this.lineCode.toLowerCase(), "color", getPackageName());
         int color = getResources().getColor(colorResId, null);
         codeBadge.setBackgroundColor(color);
         tvCode.setText(lineCode.toUpperCase());
@@ -470,9 +466,19 @@ public class TrainLocationActivity extends AppCompatActivity {
     }
 
     private String[] getStationArray() {
-        if (lineConfig == null || lineConfig.stationCodes == null) return new String[0];
+        List<String> codes = new ArrayList<>(Arrays.asList(lineConfig.stationCodes));
 
-        return lineConfig.stationCodes;
+        // Add LMC before LOW, RAC before FOT
+        if (lineCode.equalsIgnoreCase("eal")) {
+            codes.add(codes.indexOf("FOT"), "RAC");
+            codes.add(codes.indexOf("LOW"), "LMC");
+        }
+        // Add LHP
+        if (lineCode.equalsIgnoreCase("tkl")) {
+            codes.add(codes.indexOf("POA"), "LHP");
+        }
+
+        return codes.toArray(new String[0]);
     }
 
     private String[] getStationIdArray() {
