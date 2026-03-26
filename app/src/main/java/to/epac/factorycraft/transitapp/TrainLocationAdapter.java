@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
     private static final int TYPE_STATION = 0;
     private static final int TYPE_PARALLEL = 1;
     private static final int TYPE_PARALLEL_LEFT_STATION = 2;
@@ -264,100 +265,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
-    // TODO: If DN does not terminate at ADM, it still show time to ADM
-    private int updateTimeline(LinearLayout container, Trip trip) {
-        container.removeAllViews();
-
-        boolean isViaRacecourse = lineCode.equalsIgnoreCase("eal") &&
-                (trip.td.matches(".*[BGKN].*") || trip.destinationStationCode == 7);
-
-        List<Integer> route = new ArrayList<>();
-        boolean shouldAdd = false;
-
-        if (isUp(trip)) {
-            for (int i = stationCodes.length - 1; i >= 0; i--) {
-                int code = stationCodes[i];
-
-                int displayCode = code;
-                if (isViaRacecourse && code == 6) displayCode = 7;
-                if (trip.destinationStationCode == 14 && code == 13) displayCode = 14;
-
-                if (displayCode == trip.nextStationCode) shouldAdd = true;
-                if (shouldAdd) {
-                    route.add(displayCode);
-                    if (displayCode == trip.destinationStationCode) break;
-                }
-            }
-        } else {
-            for (int code : stationCodes) {
-                int displayCode = code;
-                if (isViaRacecourse && code == 6) displayCode = 7;
-
-                if (displayCode == trip.nextStationCode) shouldAdd = true;
-                if (shouldAdd) {
-                    route.add(displayCode);
-                    if (displayCode == trip.destinationStationCode) break;
-                }
-            }
-        }
-
-        if (route.isEmpty()) return 0;
-
-
-        long nowMillis = !trip.isOpenData ? System.currentTimeMillis() : trip.time;
-        long totalSec;
-
-        if (trip.trainSpeed <= 3.0) {
-            totalSec = isUp(trip) ? runTimeUpMap.getOrDefault(trip.nextStationCode, 120L)
-                    : runTimeDnMap.getOrDefault(trip.currentStationCode, 120L);
-        } else {
-            totalSec = (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
-        }
-
-        for (int k = 0; k < route.size(); k++) {
-            int currentCode = route.get(k);
-            addTimelineStation(container, currentCode, nowMillis, (int) (totalSec / 60), k == route.size() - 1);
-
-            if (k < route.size() - 1) {
-                int nextCode = route.get(k + 1);
-
-                totalSec += isUp(trip) ? dwellTimeUpMap.getOrDefault(currentCode, 35L)
-                        : dwellTimeDnMap.getOrDefault(currentCode, 35L);
-
-                totalSec += isUp(trip) ? runTimeUpMap.getOrDefault(nextCode, 120L)
-                        : runTimeDnMap.getOrDefault(currentCode, 120L);
-            }
-        }
-
-        return route.size();
-    }
-
-    private void addTimelineStation(LinearLayout container, int stationCode, long currentTime, int minutes, boolean isLast) {
-        View row = LayoutInflater.from(context).inflate(R.layout.item_station_row, container, false);
-
-        TextView tvArrvTime = row.findViewById(R.id.tv_arrival_time);
-        TextView tvStaName = row.findViewById(R.id.tv_row_station_name);
-        View topHalf = row.findViewById(R.id.line_half_top);
-        View bottomHalf = row.findViewById(R.id.line_half_bottom);
-
-        topHalf.setBackgroundColor(lineColor);
-        bottomHalf.setBackgroundColor(lineColor);
-
-        tvArrvTime.setText(Instant.ofEpochMilli(currentTime + minutes * 60000L)
-                .atZone(ZoneId.of("GMT+8"))
-                .format(DateTimeFormatter.ofPattern("HH:mm")));
-        tvArrvTime.setTextColor(ContextCompat.getColor(context, R.color.button_green));
-
-        tvStaName.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, stationCode), true));
-
-        if (isLast) {
-            bottomHalf.setVisibility(View.INVISIBLE);
-        } else {
-            bottomHalf.setVisibility(View.VISIBLE);
-        }
-        container.addView(row);
-    }
-
     private void updateTrainCrowd(ViewGroup layout, Trip trip, View itemView) {
         LinearLayout crowdContainer = layout.findViewById(R.id.crowd_container);
         crowdContainer.removeAllViews();
@@ -567,12 +474,143 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
+    private int updateTimeline(LinearLayout container, Trip trip) {
+        container.removeAllViews();
+
+        boolean isRAC = lineCode.equalsIgnoreCase("eal") && (trip.td.matches(".*[BGKN].*") || trip.destinationStationCode == 7 || trip.currentStationCode == 7);
+        boolean isLMC = lineCode.equalsIgnoreCase("eal") && trip.destinationStationCode == 14 || trip.currentStationCode == 14;
+        boolean isLHP = lineCode.equalsIgnoreCase("tkl") && trip.destinationStationCode == 131 || trip.currentStationCode == 131;
+
+        List<Integer> route = new ArrayList<>();
+        boolean shouldAdd = false;
+
+        if (isUp(trip)) {
+            for (int i = stationCodes.length - 1; i >= 0; i--) {
+                int code = stationCodes[i];
+                int displayCode = code;
+
+                // Lok Ma Chau terminus
+                if (isLMC && code == 13) displayCode = 14;
+                // Racecourse
+                if (isRAC && code == 6) displayCode = 7;
+                // LHP terminus
+                if (isLHP && code == 132) displayCode = 131;
+                // LHP terminus, skip HAH
+                if (isLHP && code == 133) continue;
+
+                if (displayCode == trip.nextStationCode)
+                    shouldAdd = true;
+
+                if (shouldAdd) {
+                    route.add(displayCode);
+
+                    if (displayCode == trip.destinationStationCode) break;
+                }
+            }
+        } else {
+            for (int i = 0; i < stationCodes.length; i++) {
+                int code = stationCodes[i];
+                int displayCode = code;
+
+                // Lok Ma Chau departure
+                if (isLMC && code == 13) displayCode = 14;
+                // Racecourse
+                if (isRAC && code == 6) displayCode = 7;
+                // LHP departure
+                if (isLHP && code == 132) displayCode = 131;
+                // LHP departure, skip HAH
+                if (isLHP && code == 133) continue;
+
+                if (displayCode == trip.nextStationCode)
+                    shouldAdd = true;
+
+                if (shouldAdd) {
+                    route.add(displayCode);
+
+                    if (displayCode == trip.destinationStationCode) break;
+                }
+            }
+        }
+        Log.d("tagg4", "ETA Route: " + route);
+
+        if (route.isEmpty()) return 0;
+
+
+        long nowMillis = !trip.isOpenData ? System.currentTimeMillis() : trip.time;
+        long totalSec;
+
+        if (trip.trainSpeed <= 3.0) {
+            totalSec = isUp(trip) ? runTimeUpMap.get(trip.nextStationCode)
+                    : runTimeDnMap.get(trip.currentStationCode);
+        } else {
+            totalSec = (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
+        }
+
+        for (int k = 0; k < route.size(); k++) {
+            int currentCode = route.get(k);
+            addTimelineStation(container, currentCode, nowMillis, (int) totalSec, k == route.size() - 1);
+
+            if (k < route.size() - 1) {
+                int nextCode = route.get(k + 1);
+
+                // RunTimeUp-       Key: Next Station       Value: Time taken to Key
+                // DwellTimeUp-     Key: Next Station       Value: Time to dwell in Key
+
+                // RunTimeDn-       Key: Current Station    Value: Time taken from Key to Next
+                // DwellTimeDn-     Key: Current Station    Value: Time to dwell in Next
+                try {
+                    if (isUp(trip))
+                        totalSec += dwellTimeUpMap.get(nextCode);
+                    else
+                        totalSec += dwellTimeDnMap.get(currentCode);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    if (isUp(trip))
+                        totalSec += runTimeUpMap.get(nextCode);
+                    else
+                        totalSec += runTimeDnMap.get(currentCode);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return route.size();
+    }
+
+    private void addTimelineStation(LinearLayout container, int stationCode, long currentTime, int totalSeconds, boolean terminus) {
+        View row = LayoutInflater.from(context).inflate(R.layout.item_station_row, container, false);
+
+        TextView tvArrvTime = row.findViewById(R.id.tv_arrival_time);
+        TextView tvStaName = row.findViewById(R.id.tv_row_station_name);
+        View lineTop = row.findViewById(R.id.line_half_top);
+        View lineBottom = row.findViewById(R.id.line_half_bottom);
+
+        tvArrvTime.setText(Instant.ofEpochMilli(currentTime + totalSeconds * 1000L)
+                .atZone(ZoneId.of("GMT+8"))
+                .format(DateTimeFormatter.ofPattern("HH:mm")));
+        tvArrvTime.setTextColor(ContextCompat.getColor(context, R.color.button_green));
+
+        lineTop.setBackgroundColor(lineColor);
+        lineBottom.setBackgroundColor(lineColor);
+        lineBottom.setVisibility(terminus ? View.INVISIBLE : View.VISIBLE);
+
+        tvStaName.setText(Utils.getStationName(Utils.idToCode(lineCode, stationCode), true));
+
+
+        container.addView(row);
+    }
+
 
     private boolean isUp(Trip trip) {
         if (trip.isOpenData) return trip.isUp;
 
         return false;
     }
+
 
     private void bindStation(StationViewHolder h, int stationIdx) {
         int code = stationCodes[stationIdx];
