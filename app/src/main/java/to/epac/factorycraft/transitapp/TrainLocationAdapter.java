@@ -193,14 +193,40 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             headerLayer.setTint(lineColor);
             trainIconView.setBackground(layers);
 
-            if (lineCode.equalsIgnoreCase("tml")) {
-                ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.sp1900);
-                try {
-                    if (Integer.parseInt(trip.trainId) >= 397)
-                        ((ImageView) badge.findViewById(R.id.img_train_icon)).setImageResource(R.drawable.t1141a);
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
+            ImageView trainIcon = badge.findViewById(R.id.img_train_icon);
+            switch (lineCode.toLowerCase()) {
+                case "eal":
+                    trainIcon.setImageResource(R.drawable.r_train);
+                    break;
+                case "tml":
+                    trainIcon.setImageResource(R.drawable.sp1900);
+                    try {
+                        if (trip.trainId != null && Integer.parseInt(trip.trainId) >= 397) {
+                            trainIcon.setImageResource(R.drawable.t1141a);
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "ael":
+                    trainIcon.setImageResource(R.drawable.ael_train);
+                    break;
+                case "drl":
+                    trainIcon.setImageResource(R.drawable.drl_train);
+                    break;
+                case "tcl":
+                    trainIcon.setImageResource(R.drawable.caf_train);
+                    break;
+                case "sil":
+                    trainIcon.setImageResource(R.drawable.s_train);
+                    break;
+                case "ktl":
+                case "isl":
+                case "tkl":
+                case "twl":
+                default:
+                    trainIcon.setImageResource(R.drawable.m_train);
+                    break;
             }
 
 
@@ -406,16 +432,39 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 tvLine.setText(Utils.getLineName(lineCode, true));
 
                 ImageView trainIcon = v.findViewById(R.id.img_train_icon);
-                if (lineCode.equalsIgnoreCase("eal")) {
-                    trainIcon.setImageResource(R.drawable.r_train);
-                } else if (lineCode.equalsIgnoreCase("tml")) {
-                    trainIcon.setImageResource(R.drawable.sp1900);
-                    try {
-                        if (Integer.parseInt(trip.trainId) >= 397)
-                            trainIcon.setImageResource(R.drawable.t1141a);
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
+                switch (lineCode.toLowerCase()) {
+                    case "eal":
+                        trainIcon.setImageResource(R.drawable.r_train);
+                        break;
+                    case "tml":
+                        trainIcon.setImageResource(R.drawable.sp1900);
+                        try {
+                            if (trip.trainId != null && Integer.parseInt(trip.trainId) >= 397) {
+                                trainIcon.setImageResource(R.drawable.t1141a);
+                            }
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case "ael":
+                        trainIcon.setImageResource(R.drawable.ael_train);
+                        break;
+                    case "drl":
+                        trainIcon.setImageResource(R.drawable.drl_train);
+                        break;
+                    case "tcl":
+                        trainIcon.setImageResource(R.drawable.caf_train);
+                        break;
+                    case "sil":
+                        trainIcon.setImageResource(R.drawable.s_train);
+                        break;
+                    case "ktl":
+                    case "isl":
+                    case "tkl":
+                    case "twl":
+                    default:
+                        trainIcon.setImageResource(R.drawable.m_train);
+                        break;
                 }
 
                 TextView tvDest = v.findViewById(R.id.tv_destination);
