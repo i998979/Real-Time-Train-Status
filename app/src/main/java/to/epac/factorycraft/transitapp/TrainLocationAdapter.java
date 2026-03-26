@@ -186,12 +186,12 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
 
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
-            View trainIconView = badge.findViewById(isUp ? R.id.train_up : R.id.train_dn);
+            View badgeView = badge.findViewById(isUp ? R.id.train_up : R.id.train_dn);
 
-            LayerDrawable layers = (LayerDrawable) trainIconView.getBackground().mutate();
+            LayerDrawable layers = (LayerDrawable) badgeView.getBackground().mutate();
             Drawable headerLayer = layers.findDrawableByLayerId(R.id.line_color_layer);
             headerLayer.setTint(lineColor);
-            trainIconView.setBackground(layers);
+            badgeView.setBackground(layers);
 
             ImageView trainIcon = badge.findViewById(R.id.img_train_icon);
             switch (lineCode.toLowerCase()) {
@@ -229,30 +229,30 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                     break;
             }
 
-
-            TextView tvId = badge.findViewById(isUp ? R.id.tv_train_id_up : R.id.tv_train_id_dn);
+            TextView tvId = badge.findViewById(R.id.tv_train_id);
             if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                 tvId.setText("不載客");
             } else {
                 String destName = Utils.getStationName(Utils.idToCode(lineCode, trip.destinationStationCode), true);
                 boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
-                tvId.setText((viaRacecourse ? "經馬場" : "普通") + " " + destName);
+                tvId.setText((viaRacecourse ? "經馬場" : "普通") + "・" + destName);
             }
 
-            TextView tvCar = badge.findViewById(isUp ? R.id.tv_car_up : R.id.tv_car_dn);
+            TextView tvCar = badge.findViewById(R.id.tv_car);
             tvCar.setText(lineCode.equalsIgnoreCase("eal") ? "9両"
                     : lineCode.equalsIgnoreCase("drl") ? "4両"
                     : lineCode.equalsIgnoreCase("sil") ? "3両" : "8両");
+
+
+            float offset = i * 15f;
+            badge.setTranslationX(isUp ? -offset : offset);
+            badge.setTranslationY(isUp ? -offset : offset);
 
             if (container instanceof FrameLayout) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) badge.getLayoutParams();
                 params.gravity = isUp ? (Gravity.CENTER_VERTICAL | Gravity.END) : (Gravity.CENTER_VERTICAL | Gravity.START);
                 badge.setLayoutParams(params);
             }
-
-            float offset = i * 15f;
-            badge.setTranslationX(isUp ? -offset : offset);
-            badge.setTranslationY(isUp ? -offset : offset);
 
             badge.setElevation((tripsAtLocation.size() - i) * 5f);
 
