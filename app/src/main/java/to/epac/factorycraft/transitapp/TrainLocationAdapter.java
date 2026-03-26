@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,13 +34,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int TYPE_STATION = 0;
-    private static final int TYPE_BETWEEN = 1;
-    private static final int TYPE_PARALLEL = 2;
-    private static final int TYPE_BRANCH = 3;
+    private static final int TYPE_PARALLEL = 1;
+    private static final int TYPE_PARALLEL_LEFT_STATION = 2;
+    private static final int TYPE_BETWEEN = 3;
+    private static final int TYPE_BRANCH = 4;
+    private static final int TYPE_PARALLEL_BETWEEN = 5;
 
     private final Context context;
 
@@ -74,12 +76,17 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
     public int getItemViewType(int position) {
         int idx = position / 2;
         if (position % 2 == 0) {
+            int code = stationCodes[idx];
+
             if (lineCode.equalsIgnoreCase("eal")) {
-                int code = stationCodes[idx];
+                // LOW/LMC FOT/RAC
                 if (code == 6 || code == 7 || code == 13 || code == 14) return TYPE_PARALLEL;
-            } else if (lineCode.equalsIgnoreCase("tkl")) {
-                int code = stationCodes[idx];
+            }
+            if (lineCode.equalsIgnoreCase("tkl")) {
+                // POA/LHP
                 if (code == 131 || code == 132) return TYPE_PARALLEL;
+                //  HAH
+                if (code == 133) return TYPE_PARALLEL_LEFT_STATION;
             }
             return TYPE_STATION;
         } else {
@@ -87,12 +94,9 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 int curr = stationCodes[idx];
                 int next = stationCodes[idx + 1];
 
-                // 羅湖/落馬洲分叉 (12 與 13/14 之間)
                 boolean isBorder = (curr == 12 && (next == 13 || next == 14)) ||
                         (next == 12 && (curr == 13 || curr == 14));
 
-                // 火炭/馬場分叉與匯合 (5 與 6/7 之間，以及 6/7 與 8 之間)
-                // 修正：增加 (curr == 6 || curr == 7) && next == 8 的判斷
                 boolean isFotRac = (curr == 5 && (next == 6 || next == 7)) ||
                         (next == 5 && (curr == 6 || curr == 7)) ||
                         ((curr == 6 || curr == 7) && next == 8) ||
@@ -103,8 +107,11 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 int curr = stationCodes[idx];
                 int next = stationCodes[idx + 1];
 
-                if ((curr == 133 && (next == 132 || next == 131)) ||
-                        (next == 133 && (curr == 132 || curr == 131))) return TYPE_BRANCH;
+                if ((curr == 132 && next == 133) || curr == 133 && next == 132)
+                    return TYPE_PARALLEL_BETWEEN;
+
+                if (((curr == 131 || curr == 133) && next == 134) || curr == 134 && (next == 131 || next == 133))
+                    return TYPE_BRANCH;
             }
             return TYPE_BETWEEN;
         }
@@ -122,10 +129,16 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         switch (viewType) {
             case TYPE_STATION:
                 return new StationViewHolder(inflater.inflate(R.layout.item_jr_station, parent, false));
-            case TYPE_BRANCH:
-                return new BranchViewHolder(inflater.inflate(R.layout.item_jr_branch, parent, false));
             case TYPE_PARALLEL:
                 return new ParallelViewHolder(inflater.inflate(R.layout.item_jr_parallel, parent, false));
+            case TYPE_PARALLEL_LEFT_STATION:
+                return new ParallelLeftStationViewHolder(inflater.inflate(R.layout.item_jr_parallel_left_station, parent, false));
+            case TYPE_BETWEEN:
+                return new BetweenViewHolder(inflater.inflate(R.layout.item_jr_between, parent, false));
+            case TYPE_BRANCH:
+                return new BranchViewHolder(inflater.inflate(R.layout.item_jr_branch, parent, false));
+            case TYPE_PARALLEL_BETWEEN:
+                return new ParallelBetweenViewHolder(inflater.inflate(R.layout.item_jr_parallel_between, parent, false));
             default:
                 return new BetweenViewHolder(inflater.inflate(R.layout.item_jr_between, parent, false));
         }
@@ -137,12 +150,21 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         if (holder instanceof StationViewHolder) {
             bindStation((StationViewHolder) holder, stationIdx);
-        } else if (holder instanceof ParallelViewHolder) {
+        }
+        if (holder instanceof ParallelViewHolder) {
             bindParallel((ParallelViewHolder) holder, stationIdx);
-        } else if (holder instanceof BranchViewHolder) {
-            bindBranch((BranchViewHolder) holder, stationIdx);
-        } else {
+        }
+        if (holder instanceof ParallelLeftStationViewHolder) {
+            bindParallelLeftStation((ParallelLeftStationViewHolder) holder, stationIdx);
+        }
+        if (holder instanceof BetweenViewHolder) {
             bindBetween((BetweenViewHolder) holder, stationIdx);
+        }
+        if (holder instanceof BranchViewHolder) {
+            bindBranch((BranchViewHolder) holder, stationIdx);
+        }
+        if (holder instanceof ParallelBetweenViewHolder) {
+            bindParallelBetween((ParallelBetweenViewHolder) holder, stationIdx);
         }
     }
 
@@ -164,7 +186,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (System.currentTimeMillis() / 1000 - trip.receivedTime / 1000 > 60) continue;
 
             View badge = inflater.inflate(isUp ? R.layout.train_badge_up : R.layout.train_badge_dn, container, false);
-            View trainIconView = badge.findViewById(isUp ? R.id.layout_train_up : R.id.layout_train_dn);
+            View trainIconView = badge.findViewById(isUp ? R.id.train_up : R.id.train_dn);
 
             LayerDrawable layers = (LayerDrawable) trainIconView.getBackground().mutate();
             Drawable headerLayer = layers.findDrawableByLayerId(R.id.line_color_layer);
@@ -186,7 +208,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                 tvId.setText("不載客");
             } else {
-                String destName = Utils.getStationName(context, Utils.idToCode(context, lineCode, trip.destinationStationCode), true);
+                String destName = Utils.getStationName(Utils.idToCode(lineCode, trip.destinationStationCode), true);
                 boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
                 tvId.setText((viaRacecourse ? "經馬場" : "普通") + " " + destName);
             }
@@ -400,7 +422,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                 if (trip.destinationStationCode == -1 || trip.destinationStationCode == 91 || trip.destinationStationCode == 92) {
                     tvDest.setText("不載客列車");
                 } else {
-                    String destName = Utils.getStationName(context, Utils.idToCode(context, lineCode, trip.destinationStationCode), true);
+                    String destName = Utils.getStationName(Utils.idToCode(lineCode, trip.destinationStationCode), true);
                     tvDest.setText(destName + " 行");
                 }
 
@@ -430,10 +452,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
 
                 LinearLayout stationRows = v.findViewById(R.id.station_rows);
                 View timeLine = v.findViewById(R.id.station_timeline);
-
-                // 將預測時間按時間排序 (由近到遠)
-                List<Map.Entry<Integer, Integer>> sortedPredictions = new ArrayList<>(trip.stationPredictions.entrySet());
-                sortedPredictions.sort(Map.Entry.comparingByValue());
 
                 int stationCount = updateTimeline(stationRows, trip);
                 if (stationCount == 0) {
@@ -510,19 +528,18 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
     private void bindStation(StationViewHolder h, int stationIdx) {
         int code = stationCodes[stationIdx];
 
-        h.tvStation.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, code), true));
-        h.tvStation.setTag(Utils.idToCode(context, lineCode, code));
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
-        View.OnClickListener listener = v -> {
+        h.tvStation.setText(Utils.getStationName(Utils.idToCode(lineCode, code), true));
+        h.tvStation.setTag(Utils.idToCode(lineCode, code));
+        h.tvStation.setOnClickListener(v -> {
             String stationCode = (String) v.getTag();
 
             Intent intent = new Intent(v.getContext(), StationActivity.class);
             intent.putExtra("station_code", stationCode);
             v.getContext().startActivity(intent);
-        };
-        h.tvStation.setOnClickListener(listener);
+        });
 
-        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
         List<Trip> upTrips = new ArrayList<>();
         List<Trip> dnTrips = new ArrayList<>();
@@ -546,106 +563,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         showTrainBadge(dnTrips, h.layoutDn, false);
     }
 
-    private void bindBetween(BetweenViewHolder h, int stationIdx) {
-        int currentCode = stationCodes[stationIdx];
-        int nextNodeCode = stationCodes[stationIdx + 1];
-
-        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-
-        List<Trip> upTrips = new ArrayList<>();
-        List<Trip> dnTrips = new ArrayList<>();
-
-        for (Trip trip : trips) {
-            if (trip.isOpenData) {
-                if (trip.ttnt <= 0) continue;
-
-                boolean isMatch = false;
-                if (isUp(trip)) {
-                    if (trip.nextStationCode == currentCode) isMatch = true;
-                } else {
-                    if (trip.nextStationCode == nextNodeCode) isMatch = true;
-                }
-
-                if (isMatch) {
-                    if (isUp(trip))
-                        upTrips.add(trip);
-                    else
-                        dnTrips.add(trip);
-                }
-            }
-        }
-
-        upTrips.sort((t1, t2) -> t1.isOpenData ? Integer.compare(t1.ttnt, t2.ttnt) : Double.compare(t1.targetDistance, t2.targetDistance));
-        dnTrips.sort((t1, t2) -> t1.isOpenData ? Integer.compare(t1.ttnt, t2.ttnt) : Double.compare(t1.targetDistance, t2.targetDistance));
-
-        showTrainBadge(upTrips, h.layoutUp, true);
-        showTrainBadge(dnTrips, h.layoutDn, false);
-    }
-
-    private void bindBranch(BranchViewHolder h, int stationIdx) {
-        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-
-        int currentSector = stationCodes[stationIdx];
-        int nextSector = stationCodes[stationIdx + 1];
-
-        if (currentSector == 12 && (nextSector == 13 || nextSector == 14)) {
-            h.railLine.setBackgroundResource(R.drawable.rail_branch_split);
-            // h.imgRail.setImageResource(R.drawable.rail_branch_split);
-        } else if ((nextSector == 6 || nextSector == 7)) {
-            h.railLine.setBackgroundResource(R.drawable.rail_branch_split);
-            // h.imgRail.setImageResource(R.drawable.rail_branch_split);
-        } else {
-            h.railLine.setBackgroundResource(R.drawable.rail_branch_merge);
-            // h.imgRail.setImageResource(R.drawable.rail_branch_merge);
-        }
-
-
-        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
-        List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
-
-        for (Trip trip : trips) {
-            boolean isAtThisSegment = false;
-
-            if (trip.isOpenData) {
-                if (trip.ttnt <= 0) continue;
-
-                if (isUp(trip)) {
-                    if (trip.nextStationCode == currentSector)
-                        isAtThisSegment = true;
-                } else {
-                    if (trip.nextStationCode == nextSector)
-                        isAtThisSegment = true;
-                }
-            }
-
-
-            if (isAtThisSegment) {
-                boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
-                if (!viaRacecourse) {
-                    if (isUp(trip))
-                        upMain.add(trip);
-                    else
-                        dnMain.add(trip);
-                } else {
-                    if (isUp(trip))
-                        upSpur.add(trip);
-                    else
-                        dnSpur.add(trip);
-                }
-            }
-        }
-
-        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
-        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
-        upSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
-        dnSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
-
-        showTrainBadge(upMain, h.upMain, true);
-        showTrainBadge(dnMain, h.dnMain, false);
-        showTrainBadge(upSpur, h.upSpur, true);
-        showTrainBadge(dnSpur, h.dnSpur, false);
-    }
-
     private void bindParallel(ParallelViewHolder h, int stationIdx) {
         int code = stationCodes[stationIdx];
         int mainCode = code;
@@ -655,12 +572,11 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (lineCode.equalsIgnoreCase("tkl")) spurCode = 131;
 
         h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
-        // h.railLine2.setBackgroundTintList(ColorStateList.valueOf(lineColor));
 
-        h.tvMain.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, mainCode), true));
-        h.tvMain.setTag(Utils.idToCode(context, lineCode, mainCode));
-        h.tvSpur.setText(Utils.getStationName(context, Utils.idToCode(context, lineCode, spurCode), true));
-        h.tvSpur.setTag(Utils.idToCode(context, lineCode, spurCode));
+        h.tvMain.setText(Utils.getStationName(Utils.idToCode(lineCode, mainCode), true));
+        h.tvMain.setTag(Utils.idToCode(lineCode, mainCode));
+        h.tvSpur.setText(Utils.getStationName(Utils.idToCode(lineCode, spurCode), true));
+        h.tvSpur.setTag(Utils.idToCode(lineCode, spurCode));
 
         View.OnClickListener listener = v -> {
             String stationCode = (String) v.getTag();
@@ -702,7 +618,6 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             }
         }
 
-        // TODO: Sort by ttnt for isOpenData, by targetDistance for not isOpenData
         upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
         upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
         upSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
@@ -712,6 +627,175 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         showTrainBadge(dnMain, h.dnMain, false);
         showTrainBadge(upSpur, h.upSpur, true);
         showTrainBadge(dnSpur, h.dnSpur, false);
+    }
+
+    private void bindParallelLeftStation(ParallelLeftStationViewHolder h, int stationIdx) {
+        int code = stationCodes[stationIdx];
+
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
+        h.tvMain.setText(Utils.getStationName(Utils.idToCode(lineCode, code), true));
+        h.tvMain.setTag(Utils.idToCode(lineCode, code));
+        h.tvMain.setOnClickListener(v -> {
+            String stationCode = (String) v.getTag();
+            Intent intent = new Intent(v.getContext(), StationActivity.class);
+            intent.putExtra("station_code", stationCode);
+            v.getContext().startActivity(intent);
+        });
+
+
+        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
+        for (Trip trip : trips) {
+            // Next Train
+            if (trip.isOpenData) {
+                if (trip.ttnt > 0) continue;
+            }
+
+            if (trip.nextStationCode == code) {
+                if (isUp(trip))
+                    upMain.add(trip);
+                else
+                    dnMain.add(trip);
+            }
+        }
+
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
+        showTrainBadge(upMain, h.upMain, true);
+        showTrainBadge(dnMain, h.dnMain, false);
+    }
+
+    private void bindBetween(BetweenViewHolder h, int stationIdx) {
+        int currCode = stationCodes[stationIdx];
+        int nextCode = stationCodes[stationIdx + 1];
+
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
+        List<Trip> upTrips = new ArrayList<>();
+        List<Trip> dnTrips = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            if (trip.isOpenData) {
+                if (trip.ttnt <= 0) continue;
+
+                boolean isMatch = false;
+                if (isUp(trip)) {
+                    if (trip.nextStationCode == currCode) isMatch = true;
+                } else {
+                    if (trip.nextStationCode == nextCode) isMatch = true;
+                }
+
+                if (isMatch) {
+                    if (isUp(trip))
+                        upTrips.add(trip);
+                    else
+                        dnTrips.add(trip);
+                }
+            }
+        }
+
+        upTrips.sort((t1, t2) -> t1.isOpenData ? Integer.compare(t1.ttnt, t2.ttnt) : Double.compare(t1.targetDistance, t2.targetDistance));
+        dnTrips.sort((t1, t2) -> t1.isOpenData ? Integer.compare(t1.ttnt, t2.ttnt) : Double.compare(t1.targetDistance, t2.targetDistance));
+
+        showTrainBadge(upTrips, h.layoutUp, true);
+        showTrainBadge(dnTrips, h.layoutDn, false);
+    }
+
+    private void bindBranch(BranchViewHolder h, int stationIdx) {
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
+        int currCode = stationCodes[stationIdx];
+        int nextCode = stationCodes[stationIdx + 1];
+
+        if (currCode == 12 && (nextCode == 13 || nextCode == 14)) {
+            h.railLine.setBackgroundResource(R.drawable.rail_branch_split);
+        } else if ((nextCode == 6 || nextCode == 7)) {
+            h.railLine.setBackgroundResource(R.drawable.rail_branch_split);
+        } else {
+            h.railLine.setBackgroundResource(R.drawable.rail_branch_merge);
+        }
+
+
+        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
+        List<Trip> upSpur = new ArrayList<>(), dnSpur = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            boolean isAtThisSegment = false;
+
+            if (trip.isOpenData) {
+                if (trip.ttnt <= 0) continue;
+
+                if (isUp(trip)) {
+                    if (trip.nextStationCode == currCode)
+                        isAtThisSegment = true;
+                } else {
+                    if (trip.nextStationCode == nextCode)
+                        isAtThisSegment = true;
+                }
+            }
+
+
+            if (isAtThisSegment) {
+                boolean viaRacecourse = lineCode.equalsIgnoreCase("eal") && trip.td.matches(".*[BGKN].*");
+                if (!viaRacecourse) {
+                    if (isUp(trip))
+                        upMain.add(trip);
+                    else
+                        dnMain.add(trip);
+                } else {
+                    if (isUp(trip))
+                        upSpur.add(trip);
+                    else
+                        dnSpur.add(trip);
+                }
+            }
+        }
+
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        upSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnSpur.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
+        showTrainBadge(upMain, h.upMain, true);
+        showTrainBadge(dnMain, h.dnMain, false);
+        showTrainBadge(upSpur, h.upSpur, true);
+        showTrainBadge(dnSpur, h.dnSpur, false);
+    }
+
+    private void bindParallelBetween(ParallelBetweenViewHolder h, int stationIdx) {
+        int currCode = stationCodes[stationIdx];
+        int nextCode = stationCodes[stationIdx + 1];
+
+        h.railLine.setBackgroundTintList(ColorStateList.valueOf(lineColor));
+
+        List<Trip> upMain = new ArrayList<>(), dnMain = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            if (trip.isOpenData) {
+                if (trip.ttnt <= 0) continue;
+
+                boolean isMatch = false;
+                if (isUp(trip)) {
+                    if (trip.nextStationCode == currCode) isMatch = true;
+                } else {
+                    if (trip.nextStationCode == nextCode) isMatch = true;
+                }
+
+                if (isMatch) {
+                    if (isUp(trip))
+                        upMain.add(trip);
+                    else
+                        dnMain.add(trip);
+                }
+            }
+        }
+
+        upMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+        dnMain.sort(Comparator.comparingDouble(t -> t.targetDistance));
+
+        showTrainBadge(upMain, h.upMain, true);
+        showTrainBadge(dnMain, h.dnMain, false);
     }
 
 
@@ -724,8 +808,41 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             super(v);
             railLine = v.findViewById(R.id.rail_line);
             tvStation = v.findViewById(R.id.tv_station);
-            layoutUp = v.findViewById(R.id.layout_train_up);
-            layoutDn = v.findViewById(R.id.layout_train_dn);
+            layoutUp = v.findViewById(R.id.train_up);
+            layoutDn = v.findViewById(R.id.train_dn);
+        }
+    }
+
+    private static class ParallelViewHolder extends RecyclerView.ViewHolder {
+        View railLine;
+        ViewGroup upMain, dnMain, upSpur, dnSpur;
+        MaterialTextView tvMain, tvSpur;
+
+        ParallelViewHolder(View v) {
+            super(v);
+            railLine = v.findViewById(R.id.rail_line);
+            tvMain = v.findViewById(R.id.tv_station_main);
+            tvSpur = v.findViewById(R.id.tv_station_spur);
+            upMain = v.findViewById(R.id.train_up_main);
+            dnMain = v.findViewById(R.id.train_dn_main);
+            upSpur = v.findViewById(R.id.train_up_spur);
+            dnSpur = v.findViewById(R.id.train_dn_spur);
+        }
+    }
+
+    private static class ParallelLeftStationViewHolder extends RecyclerView.ViewHolder {
+        View railLine;
+        ViewGroup upMain, dnMain, upSpur, dnSpur;
+        MaterialTextView tvMain;
+
+        ParallelLeftStationViewHolder(View v) {
+            super(v);
+            railLine = v.findViewById(R.id.rail_line);
+            tvMain = v.findViewById(R.id.tv_station_main);
+            upMain = v.findViewById(R.id.train_up_main);
+            dnMain = v.findViewById(R.id.train_dn_main);
+            upSpur = v.findViewById(R.id.train_up_spur);
+            dnSpur = v.findViewById(R.id.train_dn_spur);
         }
     }
 
@@ -736,20 +853,18 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         BetweenViewHolder(View v) {
             super(v);
             railLine = v.findViewById(R.id.rail_line);
-            layoutUp = v.findViewById(R.id.layout_train_up);
-            layoutDn = v.findViewById(R.id.layout_train_dn);
+            layoutUp = v.findViewById(R.id.train_up);
+            layoutDn = v.findViewById(R.id.train_dn);
         }
     }
 
     private static class BranchViewHolder extends RecyclerView.ViewHolder {
         View railLine;
-        ImageView imgRail;
         ViewGroup upMain, dnMain, upSpur, dnSpur;
 
         BranchViewHolder(View v) {
             super(v);
             railLine = v.findViewById(R.id.rail_line);
-            // imgRail = v.findViewById(R.id.img_branch_rail);
             upMain = v.findViewById(R.id.train_up_main);
             dnMain = v.findViewById(R.id.train_dn_main);
             upSpur = v.findViewById(R.id.train_up_spur);
@@ -757,17 +872,13 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
-    private static class ParallelViewHolder extends RecyclerView.ViewHolder {
-        View railLine, railLine2;
+    private static class ParallelBetweenViewHolder extends RecyclerView.ViewHolder {
+        View railLine;
         ViewGroup upMain, dnMain, upSpur, dnSpur;
-        MaterialTextView tvMain, tvSpur;
 
-        ParallelViewHolder(View v) {
+        ParallelBetweenViewHolder(View v) {
             super(v);
             railLine = v.findViewById(R.id.rail_line);
-            // railLine2 = v.findViewById(R.id.rail_line2);
-            tvMain = v.findViewById(R.id.tv_station_main);
-            tvSpur = v.findViewById(R.id.tv_station_spur);
             upMain = v.findViewById(R.id.train_up_main);
             dnMain = v.findViewById(R.id.train_dn_main);
             upSpur = v.findViewById(R.id.train_up_spur);

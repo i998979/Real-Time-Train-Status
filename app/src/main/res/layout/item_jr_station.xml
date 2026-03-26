@@ -46,18 +46,22 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipChildren="false"
-        android:orientation="horizontal"
-        android:weightSum="2">
+        android:orientation="horizontal">
 
         <FrameLayout
-            android:id="@+id/layout_train_up"
+            android:id="@+id/train_up"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:clipChildren="false" />
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1" />
+
         <FrameLayout
-            android:id="@+id/layout_train_dn"
+            android:id="@+id/train_dn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

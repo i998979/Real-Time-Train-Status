@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="100dp"
-    android:background="?attr/colorOnSurfaceInverse"
+    android:background="?attr/colorSurfaceContainerLowest"
     android:gravity="center_horizontal">
 
     <FrameLayout
@@ -17,11 +17,6 @@
             android:layout_gravity="center"
             android:background="@drawable/rail_parallel" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:background="@drawable/rail_parallel_dots" />
     </FrameLayout>
 
     <LinearLayout
@@ -30,28 +25,17 @@
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:clipChildren="false"
             android:orientation="horizontal">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_station_main"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:drawableEnd="@drawable/ic_white_arrow_in_green_circle"
-                android:drawablePadding="4dp"
-                android:text="Fo Tan"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:clipChildren="false"
                 android:orientation="horizontal">
 
@@ -70,36 +54,24 @@
                     android:clipChildren="false" />
             </LinearLayout>
 
-        </FrameLayout>
+        </LinearLayout>
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.4" />
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:clipChildren="false"
             android:orientation="horizontal">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_station_spur"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_margin="4dp"
-                android:drawableStart="@drawable/ic_white_arrow_in_green_circle"
-                android:drawablePadding="4dp"
-                android:text="Racecourse"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1.1"
                 android:clipChildren="false"
                 android:orientation="horizontal">
 
@@ -118,6 +90,6 @@
                     android:clipChildren="false" />
             </LinearLayout>
 
-        </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>
