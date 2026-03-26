@@ -60,6 +60,19 @@ public class TrainLocationActivity extends AppCompatActivity {
     private String dataSource;
     private LineConfig lineConfig;
 
+    private static final Map<String, String[]> LINE_DIRECTIONS = new HashMap<>() {{
+        put("ael", new String[]{"博覽館方面", "香港方面"});
+        put("drl", new String[]{"欣澳方面", "迪士尼方面"});
+        put("eal", new String[]{"羅湖・落馬洲方面", "金鐘方面"});
+        put("isl", new String[]{"柴灣方面", "堅尼地城方面"});
+        put("ktl", new String[]{"調景嶺方面", "黃埔方面"});
+        put("sil", new String[]{"海怡半島方面", "金鐘方面"});
+        put("tcl", new String[]{"東涌方面", "香港方面"});
+        put("tkl", new String[]{"寶琳・康城方面", "北角方面"});
+        put("tml", new String[]{"屯門方面", "烏溪沙方面"});
+        put("twl", new String[]{"荃灣方面", "中環方面"});
+    }};
+
     private boolean isBannerCurrentlyHidden = false;
 
     @Override
@@ -115,43 +128,15 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         MaterialTextView tvUpDir = findViewById(R.id.tv_up_dir);
         MaterialTextView tvDnDir = findViewById(R.id.tv_dn_dir);
-        if (lineCode.equalsIgnoreCase("ael")) {
-            tvUpDir.setText("博覽館方面");
-            tvDnDir.setText("香港方面");
-        } else if (lineCode.equalsIgnoreCase("drl")) {
-            tvUpDir.setText("欣澳方面");
-            tvDnDir.setText("迪士尼方面");
-        } else if (lineCode.equalsIgnoreCase("eal")) {
-            tvUpDir.setText("羅湖/落馬洲方面");
-            tvDnDir.setText("金鐘方面");
-        } else if (lineCode.equalsIgnoreCase("isl")) {
-            tvUpDir.setText("柴灣方面");
-            tvDnDir.setText("堅尼地城方面");
-        } else if (lineCode.equalsIgnoreCase("ktl")) {
-            tvUpDir.setText("調景嶺方面");
-            tvDnDir.setText("黃埔方面");
-        } else if (lineCode.equalsIgnoreCase("sil")) {
-            tvUpDir.setText("海怡半島方面");
-            tvDnDir.setText("金鐘方面");
-        } else if (lineCode.equalsIgnoreCase("tcl")) {
-            tvUpDir.setText("東涌方面");
-            tvDnDir.setText("香港方面");
-        } else if (lineCode.equalsIgnoreCase("tkl")) {
-            tvUpDir.setText("寶琳/康城方面");
-            tvDnDir.setText("北角方面");
-        } else if (lineCode.equalsIgnoreCase("tml")) {
-            tvUpDir.setText("屯門方面");
-            tvDnDir.setText("烏溪沙方面");
-        } else if (lineCode.equalsIgnoreCase("twl")) {
-            tvUpDir.setText("荃灣方面");
-            tvDnDir.setText("中環方面");
-        }
+
+        String[] dirs = LINE_DIRECTIONS.get(lineCode.toLowerCase());
+        tvUpDir.setText(dirs[0]);
+        tvDnDir.setText(dirs[1]);
 
         stationIdToIndexMap.clear();
         String[] stations = getStationArray();
         for (int i = 0; i < stations.length; i++) {
-            int id = Utils.codeToId(this, lineCode, stations[i]);
-            if (id != -1) stationIdToIndexMap.put(id, i);
+            stationIdToIndexMap.put(Utils.codeToId(this, lineCode, stations[i]), i);
         }
 
         ViewGroup lineBanner = findViewById(R.id.line_banner);
@@ -320,29 +305,12 @@ public class TrainLocationActivity extends AppCompatActivity {
     private List<Trip> parseNtJson(JSONObject stationJson, String station) throws Exception {
         int stationCode = Utils.codeToId(this, lineCode, station);
 
-        int targetIdx = -1;
-        for (int i = 0; i < lineConfig.stationIDs.length; i++) {
-            if (lineConfig.stationIDs[i] == stationCode) {
-                targetIdx = i;
-                break;
-            }
-        }
-
         List<Trip> list = new ArrayList<>();
         String[] dirs = {"UP", "DOWN"};
         for (String dir : dirs) {
             if (!stationJson.has(dir)) continue;
 
             JSONArray trains = stationJson.getJSONArray(dir);
-            boolean isUp = dir.equalsIgnoreCase("UP");
-
-            // 2. 預計算物理上的「前一站」：UP (北行) 為 index + 1，DOWN (南行) 為 index - 1
-            // 13 12 11 10 9 8 6 5 4 3 2 21 22 23
-            // LOW SHS FAN TWO TAP UNI FOT SHT TAW KOT MKK HUH EXC ADM
-            int prevIdx = isUp ? targetIdx + 1 : targetIdx - 1;
-            int prevStaCode = (targetIdx != -1 && prevIdx >= 0 && prevIdx < lineConfig.stationIDs.length)
-                    ? lineConfig.stationIDs[prevIdx] : stationCode;
-
             for (int i = 0; i < trains.length(); i++) {
                 JSONObject tObj = trains.getJSONObject(i);
 
@@ -352,13 +320,8 @@ public class TrainLocationActivity extends AppCompatActivity {
                 String route = tObj.optString("route", "");
                 String timeType = tObj.optString("timeType", "A");
 
+                // Current Station = Next Station, once the station leaves, its next occurrence is already next station
                 Trip trip = new Trip(stationCode, stationCode, destCode, dir, i + 1, time, ttnt, route, timeType);
-                // Trip trip = new Trip(prevStaCode, stationCode, destCode, dir, i + 1, time, ttnt, route, timeType);
-
-                // If ttnt <= 0, means the train has already arrived at the station
-                // if (ttnt <= 0) trip.currentStationCode = stationCode;
-
-                trip.stationPredictions.put(stationCode, ttnt);
                 list.add(trip);
             }
         }
@@ -368,8 +331,6 @@ public class TrainLocationActivity extends AppCompatActivity {
 
     private List<Trip> processPhysicsBasedDedup(List<Trip> rawList) {
         List<String> stationOrder = Arrays.asList(getStationIdArray());
-
-        rawList.stream().forEach(trip -> Log.d("tagg", trip.isUp + ""));
 
         List<Trip> upList = rawList.stream().filter(trip -> trip.isUp).collect(Collectors.toList());
         List<Trip> upSaved = new ArrayList<>();

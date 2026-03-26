@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.SparseArray;
 import android.widget.TextView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -34,6 +35,7 @@ public class StationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_station);
 
         prefs = getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE);
