@@ -602,7 +602,7 @@ public class SavedLineFragment extends Fragment {
             holder.tvLineBadge.setText(line.alias);
             holder.lineColorBadge.setBackgroundColor(Color.parseColor("#" + line.color));
 
-            int colorOnSurface = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnSurface);
+            int colorOnSurface = Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurface);
             boolean isSelected = selectedSet.contains(lineCode);
 
             holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);

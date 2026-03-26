@@ -270,7 +270,7 @@ public class SearchInputSubFragment extends Fragment {
     }
 
     private void updateCard(View card, boolean selected) {
-        int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
+        int colorOnSurface = Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurface);
 
         ImageView iv = card.findViewWithTag("iv_check_mark");
         iv.setImageResource(selected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
@@ -322,7 +322,7 @@ public class SearchInputSubFragment extends Fragment {
         SpannableString spannable = new SpannableString(fullText);
 
         Drawable icon = ContextCompat.getDrawable(requireContext(), iconRes).mutate();
-        icon.setBounds(0, 0, Utils.dpToPx(requireContext(), 18), Utils.dpToPx(requireContext(), 18));
+        icon.setBounds(0, 0, Utils.dpToPx(18), Utils.dpToPx(18));
         icon.setTint(color);
         spannable.setSpan(new ImageSpan(icon, ImageSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         spannable.setSpan(new RelativeSizeSpan(1.0f), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

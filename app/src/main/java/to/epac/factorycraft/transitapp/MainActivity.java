@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
+        Utils.init(this);
+
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         if (savedInstanceState == null) {

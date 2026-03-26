@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ import android.text.TextWatcher;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowMetrics;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -447,7 +445,7 @@ public class SearchActivity extends AppCompatActivity {
                 chip.setTextColor(Color.WHITE);
                 chip.setChipBackgroundColorResource(R.color.button_green);
                 chip.setChipStrokeWidth(0);
-                chip.setChipCornerRadius(Utils.dpToPx(this, 20));
+                chip.setChipCornerRadius(Utils.dpToPx(20));
 
                 chip.setOnClickListener(v -> returnResult(station.id, station.name, station.alias));
                 chipStations.addView(chip);

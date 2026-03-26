@@ -120,7 +120,7 @@ public class TrainLocationFragment extends Fragment {
         stationIdToIndexMap.clear();
         String[] stations = getStationArray();
         for (int i = 0; i < stations.length; i++) {
-            int id = Utils.codeToId(requireContext(), lineCode, stations[i]);
+            int id = Utils.codeToId(lineCode, stations[i]);
             if (id != -1) stationIdToIndexMap.put(id, i);
         }
 
@@ -216,9 +216,9 @@ public class TrainLocationFragment extends Fragment {
                     Log.d("JR_LOG", "Valid Trains: " + activeTrips.size());
                     for (Trip trip : activeTrips) {
                         Log.d("JR_LOG", (trip.isUp ? "UP" : "DN") + " from "
-                                + Utils.idToCode(requireContext(), lineCode, trip.currentStationCode) + " to "
-                                + Utils.idToCode(requireContext(), lineCode, trip.nextStationCode) + " towards "
-                                + Utils.idToCode(requireContext(), lineCode, trip.destinationStationCode) + " "
+                                + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                                + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                                + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                                 + trip.ttnt + " ");
                     }
 
@@ -236,7 +236,7 @@ public class TrainLocationFragment extends Fragment {
     }
 
     private List<Trip> parseNtJson(JSONObject stationJson, String station) throws Exception {
-        int stationCode = Utils.codeToId(requireContext(), lineCode, station);
+        int stationCode = Utils.codeToId(lineCode, station);
 
         int targetIdx = -1;
         for (int i = 0; i < lineConfig.stationIDs.length; i++) {
@@ -264,7 +264,7 @@ public class TrainLocationFragment extends Fragment {
             for (int i = 0; i < trains.length(); i++) {
                 JSONObject tObj = trains.getJSONObject(i);
 
-                int destCode = Utils.codeToId(requireContext(), lineCode, tObj.getString("dest"));
+                int destCode = Utils.codeToId(lineCode, tObj.getString("dest"));
                 long time = Utils.convertTimestampToMillis(tObj.getString("time"));
                 int ttnt = tObj.optInt("ttnt", 0);
                 String route = tObj.optString("route", "");
@@ -305,16 +305,16 @@ public class TrainLocationFragment extends Fragment {
 
         for (Trip trip : upList) {
             Log.d("upList", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(requireContext(), lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(requireContext(), lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(requireContext(), lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
         for (Trip trip : dnList) {
             Log.d("dnList", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(requireContext(), lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(requireContext(), lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(requireContext(), lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
 
@@ -383,16 +383,16 @@ public class TrainLocationFragment extends Fragment {
 
         for (Trip trip : upSaved) {
             Log.d("upSaved", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(requireContext(), lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(requireContext(), lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(requireContext(), lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
         for (Trip trip : dnSaved) {
             Log.d("dnSaved", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(requireContext(), lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(requireContext(), lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(requireContext(), lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
 

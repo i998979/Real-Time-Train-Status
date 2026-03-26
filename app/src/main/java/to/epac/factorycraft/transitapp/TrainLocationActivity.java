@@ -136,7 +136,7 @@ public class TrainLocationActivity extends AppCompatActivity {
         stationIdToIndexMap.clear();
         String[] stations = getStationArray();
         for (int i = 0; i < stations.length; i++) {
-            stationIdToIndexMap.put(Utils.codeToId(this, lineCode, stations[i]), i);
+            stationIdToIndexMap.put(Utils.codeToId(lineCode, stations[i]), i);
         }
 
         ViewGroup lineBanner = findViewById(R.id.line_banner);
@@ -145,8 +145,8 @@ public class TrainLocationActivity extends AppCompatActivity {
         TextView tvCode = lineBanner.findViewById(R.id.tv_line_code_badge);
 
         bannerName.setText(Utils.getLineName(lineCode, true));
-        int colorResId = context.getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
-        int color = context.getResources().getColor(colorResId, null);
+        int colorResId = getResources().getIdentifier(this.lineCode.toLowerCase(), "color", context.getPackageName());
+        int color = getResources().getColor(colorResId, null);
         codeBadge.setBackgroundColor(color);
         tvCode.setText(lineCode.toUpperCase());
 
@@ -283,9 +283,9 @@ public class TrainLocationActivity extends AppCompatActivity {
                     Log.d("JR_LOG", "Valid Trains: " + activeTrips.size());
                     for (Trip trip : activeTrips) {
                         Log.d("JR_LOG", (trip.isUp ? "UP" : "DN") + " from "
-                                + Utils.idToCode(this, lineCode, trip.currentStationCode) + " to "
-                                + Utils.idToCode(this, lineCode, trip.nextStationCode) + " towards "
-                                + Utils.idToCode(this, lineCode, trip.destinationStationCode) + " "
+                                + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                                + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                                + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                                 + trip.ttnt + " ");
                     }
 
@@ -303,7 +303,7 @@ public class TrainLocationActivity extends AppCompatActivity {
     }
 
     private List<Trip> parseNtJson(JSONObject stationJson, String station) throws Exception {
-        int stationCode = Utils.codeToId(this, lineCode, station);
+        int stationCode = Utils.codeToId(lineCode, station);
 
         List<Trip> list = new ArrayList<>();
         String[] dirs = {"UP", "DOWN"};
@@ -314,7 +314,7 @@ public class TrainLocationActivity extends AppCompatActivity {
             for (int i = 0; i < trains.length(); i++) {
                 JSONObject tObj = trains.getJSONObject(i);
 
-                int destCode = Utils.codeToId(this, lineCode, tObj.getString("dest"));
+                int destCode = Utils.codeToId(lineCode, tObj.getString("dest"));
                 long time = Utils.convertTimestampToMillis(tObj.getString("time"));
                 int ttnt = tObj.optInt("ttnt", 0);
                 String route = tObj.optString("route", "");
@@ -348,16 +348,16 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         for (Trip trip : upList) {
             Log.d("upList", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(this, lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(this, lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(this, lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
         for (Trip trip : dnList) {
             Log.d("dnList", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(this, lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(this, lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(this, lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
 
@@ -373,7 +373,7 @@ public class TrainLocationActivity extends AppCompatActivity {
                 int belowIdx = stationIdToIndexMap.get(below.currentStationCode);
 
 
-                // -- If all conditions met, we use Pending to trace the next shadow -- //
+                // -- If all conditions met, we use Pending to trace the next below -- //
                 if (pending.currentStationCode != below.currentStationCode) {
                     if (pending.destinationStationCode == below.destinationStationCode) {
                         if (pending.route.equals(below.route)) {
@@ -405,7 +405,7 @@ public class TrainLocationActivity extends AppCompatActivity {
                 Integer belowIdx = stationIdToIndexMap.get(below.currentStationCode);
                 if (belowIdx == null) continue;
 
-                // -- If all conditions met, we use Pending to trace the next shadow -- //
+                // -- If all conditions met, we use Pending to trace the next below -- //
                 if (pending.currentStationCode != below.currentStationCode) {
                     if (pending.destinationStationCode == below.destinationStationCode) {
                         if (pending.route.equals(below.route)) {
@@ -428,16 +428,16 @@ public class TrainLocationActivity extends AppCompatActivity {
 
         for (Trip trip : upSaved) {
             Log.d("upSaved", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(this, lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(this, lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(this, lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
         for (Trip trip : dnSaved) {
             Log.d("dnSaved", (trip.isUp ? "UP" : "DN") + " "
-                    + Utils.idToCode(this, lineCode, trip.currentStationCode) + " to "
-                    + Utils.idToCode(this, lineCode, trip.nextStationCode) + " towards "
-                    + Utils.idToCode(this, lineCode, trip.destinationStationCode) + " "
+                    + Utils.idToCode(lineCode, trip.currentStationCode) + " to "
+                    + Utils.idToCode(lineCode, trip.nextStationCode) + " towards "
+                    + Utils.idToCode(lineCode, trip.destinationStationCode) + " "
                     + trip.ttnt);
         }
 
@@ -476,8 +476,6 @@ public class TrainLocationActivity extends AppCompatActivity {
     }
 
     private String[] getStationIdArray() {
-        if (lineConfig == null || lineConfig.stationIDs == null) return new String[0];
-
         String[] ids = new String[lineConfig.stationIDs.length];
         for (int i = 0; i < lineConfig.stationIDs.length; i++) {
             ids[i] = String.valueOf(lineConfig.stationIDs[i]);

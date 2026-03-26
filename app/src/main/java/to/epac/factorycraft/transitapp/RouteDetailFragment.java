@@ -558,7 +558,7 @@ public class RouteDetailFragment extends Fragment {
     }
 
     private void openNearbySearchSheet(String url) {
-        int surfaceColor = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurface);
+        int surfaceColor = Utils.getThemeColor(com.google.android.material.R.attr.colorSurface);
         CustomTabColorSchemeParams colorParams = new CustomTabColorSchemeParams.Builder()
                 .setToolbarColor(surfaceColor)
                 .build();
@@ -620,8 +620,8 @@ public class RouteDetailFragment extends Fragment {
     private Bitmap combineViewsToBitmap(View headerView, View contentContainer, View footerView) {
         Context context = contentContainer.getContext();
 
-        int contentBgColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnPrimary);
-        int secondaryBgColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
+        int contentBgColor = Utils.getThemeColor(com.google.android.material.R.attr.colorOnPrimary);
+        int secondaryBgColor = Utils.getThemeColor(com.google.android.material.R.attr.colorSecondary);
 
         int widthSpec = View.MeasureSpec.makeMeasureSpec(contentContainer.getWidth(), View.MeasureSpec.EXACTLY);
         int heightUnspecified = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);

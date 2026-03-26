@@ -61,7 +61,7 @@ public class MoreFragment extends Fragment {
                 "https://www.instagram.com/footsteps_33.6km/p/DB0gdbDhSPF/"
         };
 
-        int targetWidthPx = Utils.dpToPx(requireContext(), 140);
+        int targetWidthPx = Utils.dpToPx(140);
 
         for (int i = 0; i < images.length; i++) {
             View card = inflater.inflate(R.layout.item_jr_media_card, mediaContainer, false);
@@ -94,7 +94,7 @@ public class MoreFragment extends Fragment {
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(targetWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-            params.rightMargin = i < images.length - 1 ? Utils.dpToPx(requireContext(), 12) : 0;
+            params.rightMargin = i < images.length - 1 ? Utils.dpToPx(12) : 0;
 
             card.setLayoutParams(params);
             mediaContainer.addView(card);

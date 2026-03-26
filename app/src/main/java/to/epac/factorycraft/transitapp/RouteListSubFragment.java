@@ -258,12 +258,12 @@ public class RouteListSubFragment extends Fragment {
             @Override
             public void draw(@NonNull Canvas canvas) {
                 Paint paint = new Paint();
-                paint.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant));
-                paint.setStrokeWidth(Utils.dpToPx(requireContext(), 1));
+                paint.setColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
+                paint.setStrokeWidth(Utils.dpToPx(1));
 
                 int w = getBounds().width();
-                int startY = Utils.dpToPx(requireContext(), 60);
-                int endY = rvHeight - Utils.dpToPx(requireContext(), 60);
+                int startY = Utils.dpToPx(60);
+                int endY = rvHeight - Utils.dpToPx(60);
                 float availableH = endY - startY;
                 float pxPerMin = availableH / maxDuration;
 
@@ -375,15 +375,15 @@ public class RouteListSubFragment extends Fragment {
     }
 
     private void drawVisualSegments(RouteListSubFragment.RouteAdapter.ViewHolder holder, List<VisualSegment> segments, int adjustedTime) {
-        int verticalPadding = Utils.dpToPx(requireContext(), 14);
-        int badgeSize = Utils.dpToPx(requireContext(), 32);
-        int stationSize = Utils.dpToPx(requireContext(), 32);
-        int walkIntSize = Utils.dpToPx(requireContext(), 36);
-        int interchangeSize = Utils.dpToPx(requireContext(), 50);
+        int verticalPadding = Utils.dpToPx(14);
+        int badgeSize = Utils.dpToPx(32);
+        int stationSize = Utils.dpToPx(32);
+        int walkIntSize = Utils.dpToPx(36);
+        int interchangeSize = Utils.dpToPx(50);
 
         try {
             //            RecyclerView - Header reserved - Footer reserved
-            int totalVisualSpan = rvHeight - Utils.dpToPx(requireContext(), 60) - Utils.dpToPx(requireContext(), 60);
+            int totalVisualSpan = rvHeight - Utils.dpToPx(60) - Utils.dpToPx(60);
             float pxPerMin = (float) totalVisualSpan / maxDuration;
             int containerHeight = Math.round(adjustedTime * pxPerMin);
 
@@ -403,8 +403,8 @@ public class RouteListSubFragment extends Fragment {
                 }
             }
 
-            int neededSpaceForCircle = interchangeSize + Utils.dpToPx(requireContext(), 10);
-            boolean shouldShowInterchange = availableContentPx >= Utils.dpToPx(requireContext(), 60);
+            int neededSpaceForCircle = interchangeSize + Utils.dpToPx(10);
+            boolean shouldShowInterchange = availableContentPx >= Utils.dpToPx(60);
 
             int finalAvailableContentPx = availableContentPx - (shouldShowInterchange ? interchangeSize : 0);
             int remainingPx = Math.max(0, finalAvailableContentPx - totalStaticPx);
@@ -468,8 +468,8 @@ public class RouteListSubFragment extends Fragment {
 
                     FrameLayout.LayoutParams circleParams = new FrameLayout.LayoutParams(interchangeSize, interchangeSize);
                     circleParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-                    circleParams.topMargin = Utils.dpToPx(requireContext(), 5);
-                    circleParams.bottomMargin = Utils.dpToPx(requireContext(), 5);
+                    circleParams.topMargin = Utils.dpToPx(5);
+                    circleParams.bottomMargin = Utils.dpToPx(5);
                     container.addView(interchangeView, circleParams);
                 }
             }
@@ -481,7 +481,7 @@ public class RouteListSubFragment extends Fragment {
             holder.layoutVisualSegments.setOutlineProvider(new ViewOutlineProvider() {
                 @Override
                 public void getOutline(View view, Outline outline) {
-                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), Utils.dpToPx(requireContext(), 60));
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), Utils.dpToPx(60));
                 }
             });
             holder.layoutVisualSegments.setClipToOutline(true);
@@ -498,7 +498,7 @@ public class RouteListSubFragment extends Fragment {
 
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.OVAL);
-        shape.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurface));
+        shape.setColor(Utils.getThemeColor(com.google.android.material.R.attr.colorSurface));
         container.setBackground(shape);
 
         TextView tvLabel = new TextView(getContext());
@@ -506,14 +506,14 @@ public class RouteListSubFragment extends Fragment {
         tvLabel.setTextSize(12);
         tvLabel.setGravity(Gravity.CENTER);
         tvLabel.setTypeface(null, Typeface.BOLD);
-        tvLabel.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutline));
+        tvLabel.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOutline));
 
         TextView tvCount = new TextView(getContext());
         tvCount.setText(count + "次");
         tvCount.setTextSize(12);
         tvCount.setGravity(Gravity.CENTER);
         tvCount.setTypeface(null, Typeface.BOLD);
-        tvCount.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurfaceInverse));
+        tvCount.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorSurfaceInverse));
 
         container.addView(tvLabel);
         container.addView(tvCount);
@@ -522,9 +522,9 @@ public class RouteListSubFragment extends Fragment {
     }
 
     private View createSegmentView(VisualSegment seg, boolean isLastSegment) {
-        int badgeSize = Utils.dpToPx(requireContext(), 32);
-        int stationSize = Utils.dpToPx(requireContext(), 32);
-        int walkIntSize = Utils.dpToPx(requireContext(), 36);
+        int badgeSize = Utils.dpToPx(32);
+        int stationSize = Utils.dpToPx(32);
+        int walkIntSize = Utils.dpToPx(36);
 
         FrameLayout segmentView = new FrameLayout(getContext());
         segmentView.setClipChildren(false);
@@ -541,21 +541,21 @@ public class RouteListSubFragment extends Fragment {
             TextView tvIcon = new TextView(getContext());
             tvIcon.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
             tvIcon.setTextSize(10);
-            tvIcon.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant));
+            tvIcon.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
             walkContainer.addView(tvIcon);
 
             TextView tvWalk = new TextView(getContext());
             tvWalk.setText(seg.duration + "");
             tvWalk.setTextSize(10);
             tvWalk.setTypeface(null, Typeface.BOLD);
-            tvWalk.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface));
+            tvWalk.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurface));
 
             GradientDrawable bgTvWalk = new GradientDrawable();
             bgTvWalk.setShape(GradientDrawable.RECTANGLE);
-            bgTvWalk.setCornerRadius(Utils.dpToPx(requireContext(), 4));
-            bgTvWalk.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceInverse));
+            bgTvWalk.setCornerRadius(Utils.dpToPx(4));
+            bgTvWalk.setColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurfaceInverse));
             tvWalk.setBackground(bgTvWalk);
-            tvWalk.setPadding(Utils.dpToPx(requireContext(), 4), Utils.dpToPx(requireContext(), 2), Utils.dpToPx(requireContext(), 4), Utils.dpToPx(requireContext(), 2));
+            tvWalk.setPadding(Utils.dpToPx(4), Utils.dpToPx(2), Utils.dpToPx(4), Utils.dpToPx(2));
             walkContainer.addView(tvWalk);
 
             FrameLayout.LayoutParams walkParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, walkIntSize);
@@ -565,13 +565,13 @@ public class RouteListSubFragment extends Fragment {
             int lineColor = Color.parseColor("#" + seg.lineColor);
 
             View lineBar = new View(getContext());
-            FrameLayout.LayoutParams barParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 8), ViewGroup.LayoutParams.MATCH_PARENT);
+            FrameLayout.LayoutParams barParams = new FrameLayout.LayoutParams(Utils.dpToPx(8), ViewGroup.LayoutParams.MATCH_PARENT);
             barParams.gravity = Gravity.CENTER_HORIZONTAL;
             barParams.bottomMargin = showStation ? stationSize : 0;
 
             GradientDrawable shape = new GradientDrawable();
             shape.setShape(GradientDrawable.RECTANGLE);
-            shape.setCornerRadius(Utils.dpToPx(requireContext(), 8));
+            shape.setCornerRadius(Utils.dpToPx(8));
             shape.setColor(lineColor);
             lineBar.setBackground(shape);
             segmentView.addView(lineBar, barParams);
@@ -584,12 +584,12 @@ public class RouteListSubFragment extends Fragment {
 
             GradientDrawable badgeBg = new GradientDrawable();
             badgeBg.setShape(GradientDrawable.RECTANGLE);
-            badgeBg.setCornerRadius(Utils.dpToPx(requireContext(), 4));
+            badgeBg.setCornerRadius(Utils.dpToPx(4));
             badgeBg.setColor(lineColor);
             badgeContainer.setBackground(badgeBg);
 
             TextView tvLineCode = new TextView(getContext());
-            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(Utils.dpToPx(requireContext(), 26), Utils.dpToPx(requireContext(), 26));
+            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(Utils.dpToPx(26), Utils.dpToPx(26));
             textParams.gravity = Gravity.CENTER;
             tvLineCode.setBackgroundColor(Color.WHITE);
             tvLineCode.setLayoutParams(textParams);
@@ -605,11 +605,11 @@ public class RouteListSubFragment extends Fragment {
 
             if (hrConf.isTerminus(seg.lineCode, seg.startNode.optInt("ID"))) {
                 TextView tvTerminus = new TextView(getContext());
-                int size = Utils.dpToPx(requireContext(), 16);
+                int size = Utils.dpToPx(16);
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(size, size);
                 params.gravity = Gravity.TOP | Gravity.START;
-                params.leftMargin = -Utils.dpToPx(requireContext(), 5);
-                params.topMargin = -Utils.dpToPx(requireContext(), 5);
+                params.leftMargin = -Utils.dpToPx(5);
+                params.topMargin = -Utils.dpToPx(5);
 
                 tvTerminus.setLayoutParams(params);
                 tvTerminus.setText("始");
@@ -620,9 +620,9 @@ public class RouteListSubFragment extends Fragment {
 
                 GradientDrawable termBg = new GradientDrawable();
                 termBg.setShape(GradientDrawable.RECTANGLE);
-                termBg.setCornerRadius(Utils.dpToPx(requireContext(), 6));
+                termBg.setCornerRadius(Utils.dpToPx(6));
                 termBg.setColor(Color.parseColor("#80D8FF"));
-                termBg.setStroke(Utils.dpToPx(requireContext(), 1), Color.BLACK);
+                termBg.setStroke(Utils.dpToPx(1), Color.BLACK);
                 tvTerminus.setBackground(termBg);
 
                 badgeContainer.addView(tvTerminus);
@@ -630,12 +630,12 @@ public class RouteListSubFragment extends Fragment {
 
             if (alertLineCodes.contains(seg.lineCode)) {
                 ImageView ivAlert = new ImageView(getContext());
-                int size = Utils.dpToPx(requireContext(), 18);
+                int size = Utils.dpToPx(18);
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(size, size);
 
                 params.gravity = Gravity.TOP | Gravity.END;
-                params.rightMargin = -Utils.dpToPx(requireContext(), 5);
-                params.topMargin = -Utils.dpToPx(requireContext(), 5);
+                params.rightMargin = -Utils.dpToPx(5);
+                params.topMargin = -Utils.dpToPx(5);
                 ivAlert.setLayoutParams(params);
                 ivAlert.setImageResource(R.drawable.ic_line_warning);
 
@@ -646,7 +646,7 @@ public class RouteListSubFragment extends Fragment {
         if (showStation) {
             TextView tvStation = new TextView(getContext());
             tvStation.setText(seg.stationName);
-            tvStation.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant));
+            tvStation.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
             tvStation.setTextSize(14);
             tvStation.setTypeface(null, Typeface.BOLD);
             tvStation.setGravity(Gravity.CENTER);

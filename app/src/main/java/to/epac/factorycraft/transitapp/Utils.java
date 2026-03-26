@@ -1,17 +1,32 @@
 package to.epac.factorycraft.transitapp;
 
 import android.content.Context;
-import android.util.Log;
 import android.util.TypedValue;
 
-import androidx.core.content.ContextCompat;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class Utils {
 
-    public static String idToCode(Context context, String line, int id) {
+    private static Context context;
+
+    public static void init(Context context) {
+        Utils.context = context.getApplicationContext();
+    }
+
+
+    /**
+     * Convert internal ID into station codes, e.g. 14 to LMC, 7 to RAC, 131 to LHP
+     *
+     * @param line Line of the station
+     * @param id   ID to convert
+     * @return Code of the station
+     */
+    public static String idToCode(String line, int id) {
         LineConfig config = LineConfig.get(context, line);
 
         if (line.equalsIgnoreCase("eal")) {
@@ -22,17 +37,22 @@ public class Utils {
             if (id == 131) return "LHP";
         }
 
-        if (config.stationIDs == null) return String.valueOf(id);
-
         for (int i = 0; i < config.stationIDs.length; i++) {
-            if (config.stationIDs[i] == id) {
+            if (config.stationIDs[i] == id)
                 return config.stationCodes[i];
-            }
         }
+
         return String.valueOf(id);
     }
 
-    public static int codeToId(Context context, String line, String code) {
+    /**
+     * Convert station codes to internal ID, e.g. LMC to 14, RAC to 7, LHP to 131
+     *
+     * @param line Line of the station
+     * @param code Code to convert
+     * @return ID of the station
+     */
+    public static int codeToId(String line, String code) {
         LineConfig config = LineConfig.get(context, line);
 
         if (line.equalsIgnoreCase("eal")) {
@@ -43,23 +63,19 @@ public class Utils {
             if (code.equalsIgnoreCase("LHP")) return 131;
         }
 
-        if (config.stationCodes == null || code == null) return -1;
-
         for (int i = 0; i < config.stationCodes.length; i++) {
-            if (config.stationCodes[i].equalsIgnoreCase(code)) {
+            if (config.stationCodes[i].equalsIgnoreCase(code))
                 return config.stationIDs[i];
-            }
         }
+
         return -1;
     }
 
-    public static String getStationName(Context context, String code) {
-        return getStationName(context, code, false);
+    public static String getStationName(String code) {
+        return getStationName(code, false);
     }
 
-    public static String getStationName(Context context, String code, boolean zhhk) {
-        if (code == null || code.isEmpty()) return "";
-
+    public static String getStationName(String code, boolean zhhk) {
         int[] shortRes = {R.string.eal_stations, R.string.tml_stations, R.string.ktl_stations, R.string.ael_stations, R.string.drl_stations, R.string.isl_stations, R.string.tcl_stations, R.string.tkl_stations, R.string.twl_stations, R.string.sil_stations};
         int[] longRes = zhhk ? new int[]{R.string.eal_stations_long_zh, R.string.tml_stations_long_zh, R.string.ktl_stations_long_zh, R.string.ael_stations_long_zh, R.string.drl_stations_long_zh, R.string.isl_stations_long_zh, R.string.tcl_stations_long_zh, R.string.tkl_stations_long_zh, R.string.twl_stations_long_zh, R.string.sil_stations_long_zh}
                 : new int[]{R.string.eal_stations_long, R.string.tml_stations_long, R.string.ktl_stations_long, R.string.ael_stations_long, R.string.drl_stations_long, R.string.isl_stations_long, R.string.tcl_stations_long, R.string.tkl_stations_long, R.string.twl_stations_long, R.string.sil_stations_long};
@@ -75,10 +91,6 @@ public class Utils {
         }
 
         return nameMap.getOrDefault(code.toUpperCase(), code);
-    }
-
-    public static String getLineName(String code) {
-        return getLineName(code, false);
     }
 
     public static String getLineName(String code, boolean zhhk) {
@@ -111,39 +123,29 @@ public class Utils {
         }
     }
 
-    public static String getColor(Context context, String line) {
-        if (line.equalsIgnoreCase("nsl") || line.equalsIgnoreCase("erl")) line = "eal";
-        if (line.equalsIgnoreCase("ewl")) line = "tml";
-
-        int code = context.getResources().getIdentifier(line.toLowerCase(), "color", context.getPackageName());
-        return "#" + Integer.toHexString(ContextCompat.getColor(context, code));
-    }
-
     public static long convertTimestampToMillis(String timeStr) {
-        if (timeStr == null || timeStr.isEmpty()) return 0;
         try {
-            // Open Data 格式: "2026-02-04 23:51:02"
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT+8"));
 
-            // 關鍵：強制指定為 GMT+8 (香港時間)
-            sdf.setTimeZone(java.util.TimeZone.getTimeZone("GMT+8"));
-
-            java.util.Date date = sdf.parse(timeStr);
+            Date date = sdf.parse(timeStr);
             return date != null ? date.getTime() : 0;
         } catch (Exception e) {
-            Log.e("Utils", "Time parse error: " + timeStr);
-            return 0;
+            e.printStackTrace();
         }
+
+        return 0;
     }
 
 
-    public static int getThemeColor(Context context, int attr) {
+    public static int getThemeColor(int attr) {
         TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(attr, typedValue, true);
+
         return typedValue.data;
     }
 
-    public static int dpToPx(Context context, int dp) {
+    public static int dpToPx(int dp) {
         return Math.round((float) dp * context.getResources().getDisplayMetrics().density);
     }
 }

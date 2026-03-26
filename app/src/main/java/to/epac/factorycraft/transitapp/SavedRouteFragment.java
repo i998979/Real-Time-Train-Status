@@ -296,7 +296,7 @@ public class SavedRouteFragment extends Fragment {
 
         private void addStationViewToCard(FlexboxLayout container, String stationName, boolean walk) {
             Context context = container.getContext();
-            int textColor = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnSurface);
+            int textColor = Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurface);
 
             if (walk) {
                 TextView tvWalk = new TextView(context);
@@ -304,7 +304,7 @@ public class SavedRouteFragment extends Fragment {
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
-                walkParams.setMargins(0, Utils.dpToPx(context, 2), 0, Utils.dpToPx(context, 2));
+                walkParams.setMargins(0, Utils.dpToPx(2), 0, Utils.dpToPx(2));
                 tvWalk.setLayoutParams(walkParams);
 
                 tvWalk.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
@@ -316,9 +316,9 @@ public class SavedRouteFragment extends Fragment {
             }
 
             TextView tv = new TextView(context);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Utils.dpToPx(context, 32));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Utils.dpToPx(32));
             params.gravity = Gravity.CENTER_VERTICAL;
-            tv.setPadding(Utils.dpToPx(context, 6), 0, Utils.dpToPx(context, 6), 0);
+            tv.setPadding(Utils.dpToPx(6), 0, Utils.dpToPx(6), 0);
             tv.setLayoutParams(params);
             tv.setText(stationName);
             tv.setTextSize(12);
@@ -337,13 +337,13 @@ public class SavedRouteFragment extends Fragment {
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
 
-            segmentParams.setMargins(Utils.dpToPx(context, 2), 0, Utils.dpToPx(context, 2), 0);
+            segmentParams.setMargins(Utils.dpToPx(2), 0, Utils.dpToPx(2), 0);
             segmentContainer.setLayoutParams(segmentParams);
 
             View line = new View(context);
             FrameLayout.LayoutParams lineParams = new FrameLayout.LayoutParams(
-                    Utils.dpToPx(context, 40),
-                    Utils.dpToPx(context, 6)
+                    Utils.dpToPx(40),
+                    Utils.dpToPx(6)
             );
             lineParams.gravity = Gravity.CENTER;
             line.setLayoutParams(lineParams);
@@ -351,7 +351,7 @@ public class SavedRouteFragment extends Fragment {
 
             GradientDrawable lineBg = new GradientDrawable();
             lineBg.setShape(GradientDrawable.RECTANGLE);
-            lineBg.setCornerRadius(Utils.dpToPx(context, 3));
+            lineBg.setCornerRadius(Utils.dpToPx(3));
             lineBg.setColor(Color.parseColor("#" + lineColor));
             line.setBackground(lineBg);
 
@@ -359,22 +359,22 @@ public class SavedRouteFragment extends Fragment {
 
             FrameLayout badgeContainer = new FrameLayout(context);
             FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(
-                    Utils.dpToPx(context, 32),
-                    Utils.dpToPx(context, 32)
+                    Utils.dpToPx(32),
+                    Utils.dpToPx(32)
             );
             badgeParams.gravity = Gravity.CENTER;
             badgeContainer.setLayoutParams(badgeParams);
 
             GradientDrawable badgeBg = new GradientDrawable();
             badgeBg.setShape(GradientDrawable.RECTANGLE);
-            badgeBg.setCornerRadius(Utils.dpToPx(context, 4));
+            badgeBg.setCornerRadius(Utils.dpToPx(4));
             badgeBg.setColor(Color.parseColor("#" + lineColor));
             badgeContainer.setBackground(badgeBg);
 
             TextView tvLineCode = new TextView(context);
             FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
-                    Utils.dpToPx(context, 26),
-                    Utils.dpToPx(context, 26)
+                    Utils.dpToPx(26),
+                    Utils.dpToPx(26)
             );
             textParams.gravity = Gravity.CENTER;
             tvLineCode.setBackgroundColor(Color.WHITE);
