@@ -235,7 +235,7 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
             holder.tvDest.setText(route.getDestName());
 
             boolean isSelected = selectedPositions.contains(position);
-            int colorOnSurface = Utils.getThemeColor(com.google.android.material.R.attr.colorOutline);
+            int colorOnSurface = Utils.getThemeColor(holder.itemView.getContext(), com.google.android.material.R.attr.colorOutline);
 
             holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_24 : R.drawable.baseline_check_circle_outline_24);
             holder.cbSelect.setImageTintList(ColorStateList.valueOf(isSelected ?

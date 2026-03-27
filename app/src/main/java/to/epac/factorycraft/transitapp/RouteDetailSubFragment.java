@@ -319,8 +319,8 @@ public class RouteDetailSubFragment extends Fragment {
                                     if (affectedArea != null) {
                                         JSONObject area = affectedArea.optJSONObject("affected_area");
                                         if (area != null) {
-                                            lineSectionText = hrConf.getStationName(area.optInt("station_code_fr")) + "~"
-                                                    + hrConf.getStationName(area.optInt("station_code_to"));
+                                            lineSectionText = hrConf.getStationName(area.optString("station_code_fr")) + "~"
+                                                    + hrConf.getStationName(area.optString("station_code_to"));
                                         }
                                     }
                                 }

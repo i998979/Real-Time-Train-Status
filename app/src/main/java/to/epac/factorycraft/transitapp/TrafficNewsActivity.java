@@ -100,20 +100,20 @@ public class TrafficNewsActivity extends AppCompatActivity {
 
         try {
             Object area = affectedAreas.opt("affected_area");
-            JSONObject targetArea = null;
+            JSONObject affectedAreaObj = null;
 
             if (area instanceof JSONArray && ((JSONArray) area).length() > 0) {
-                targetArea = ((JSONArray) area).getJSONObject(0);
+                affectedAreaObj = ((JSONArray) area).getJSONObject(0);
             } else if (area instanceof JSONObject) {
-                targetArea = (JSONObject) area;
+                affectedAreaObj = (JSONObject) area;
             }
 
-            if (targetArea != null) {
-                String fr = targetArea.optString("station_code_fr");
-                String to = targetArea.optString("station_code_to");
-                if (!fr.isEmpty() && !to.isEmpty()) {
-                    String section = hrConf.getStationName(Integer.parseInt(fr)) + "~"
-                            + hrConf.getStationName(Integer.parseInt(to));
+            if (affectedAreaObj != null) {
+                String stationFr = affectedAreaObj.optString("station_code_fr");
+                String stationTo = affectedAreaObj.optString("station_code_to");
+                if (!stationFr.isEmpty() && !stationTo.isEmpty()) {
+                    String section = hrConf.getStationName(stationFr) + "~"
+                            + hrConf.getStationName(stationTo);
                     tvLineSection.setText(section);
                     return;
                 }

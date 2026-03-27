@@ -258,7 +258,7 @@ public class RouteListSubFragment extends Fragment {
             @Override
             public void draw(@NonNull Canvas canvas) {
                 Paint paint = new Paint();
-                paint.setColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
+                paint.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant));
                 paint.setStrokeWidth(Utils.dpToPx(1));
 
                 int w = getBounds().width();
@@ -498,7 +498,7 @@ public class RouteListSubFragment extends Fragment {
 
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.OVAL);
-        shape.setColor(Utils.getThemeColor(com.google.android.material.R.attr.colorSurface));
+        shape.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurface));
         container.setBackground(shape);
 
         TextView tvLabel = new TextView(getContext());
@@ -506,14 +506,14 @@ public class RouteListSubFragment extends Fragment {
         tvLabel.setTextSize(12);
         tvLabel.setGravity(Gravity.CENTER);
         tvLabel.setTypeface(null, Typeface.BOLD);
-        tvLabel.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOutline));
+        tvLabel.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutline));
 
         TextView tvCount = new TextView(getContext());
         tvCount.setText(count + "次");
         tvCount.setTextSize(12);
         tvCount.setGravity(Gravity.CENTER);
         tvCount.setTypeface(null, Typeface.BOLD);
-        tvCount.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorSurfaceInverse));
+        tvCount.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurfaceInverse));
 
         container.addView(tvLabel);
         container.addView(tvCount);
@@ -541,19 +541,19 @@ public class RouteListSubFragment extends Fragment {
             TextView tvIcon = new TextView(getContext());
             tvIcon.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_directions_walk_24, 0, 0, 0);
             tvIcon.setTextSize(10);
-            tvIcon.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOutlineVariant));
+            tvIcon.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant));
             walkContainer.addView(tvIcon);
 
             TextView tvWalk = new TextView(getContext());
             tvWalk.setText(seg.duration + "");
             tvWalk.setTextSize(10);
             tvWalk.setTypeface(null, Typeface.BOLD);
-            tvWalk.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurface));
+            tvWalk.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface));
 
             GradientDrawable bgTvWalk = new GradientDrawable();
             bgTvWalk.setShape(GradientDrawable.RECTANGLE);
             bgTvWalk.setCornerRadius(Utils.dpToPx(4));
-            bgTvWalk.setColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurfaceInverse));
+            bgTvWalk.setColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceInverse));
             tvWalk.setBackground(bgTvWalk);
             tvWalk.setPadding(Utils.dpToPx(4), Utils.dpToPx(2), Utils.dpToPx(4), Utils.dpToPx(2));
             walkContainer.addView(tvWalk);
@@ -646,7 +646,7 @@ public class RouteListSubFragment extends Fragment {
         if (showStation) {
             TextView tvStation = new TextView(getContext());
             tvStation.setText(seg.stationName);
-            tvStation.setTextColor(Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
+            tvStation.setTextColor(Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant));
             tvStation.setTextSize(14);
             tvStation.setTypeface(null, Typeface.BOLD);
             tvStation.setGravity(Gravity.CENTER);

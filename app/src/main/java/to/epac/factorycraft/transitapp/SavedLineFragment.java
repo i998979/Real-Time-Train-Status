@@ -263,8 +263,6 @@ public class SavedLineFragment extends Fragment {
 
 
         RecyclerView rvResults = sheetView.findViewById(R.id.rv_search_results);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvResults.getContext(), LinearLayoutManager.VERTICAL);
-        rvResults.addItemDecoration(dividerItemDecoration);
         rvResults.setLayoutManager(new LinearLayoutManager(getContext()));
         searchAdapter = new SearchAdapter(filteredLines, line -> {
             if (!currentSaved.contains(line.alias)) {
@@ -479,8 +477,8 @@ public class SavedLineFragment extends Fragment {
                                 String stationTo = affectedAreaObj.optString("station_code_to");
 
                                 if (!stationFr.isEmpty() && !stationTo.isEmpty()) {
-                                    lineSection = hrConf.getStationName(Integer.parseInt(stationFr)) + "~"
-                                            + hrConf.getStationName(Integer.parseInt(stationTo));
+                                    lineSection = hrConf.getStationName(stationFr) + "~"
+                                            + hrConf.getStationName(stationTo);
                                 }
                             }
                         }
@@ -492,7 +490,7 @@ public class SavedLineFragment extends Fragment {
                     }
                 }
 
-                View itemView = LayoutInflater.from(getContext()).inflate(R.layout.item_line_status, statusContainer, false);
+                View itemView = LayoutInflater.from(getContext()).inflate(R.layout.item_line_status_card, statusContainer, false);
 
                 View vColorBar = itemView.findViewById(R.id.v_line_color_bar);
                 View vBadgeLayout = itemView.findViewById(R.id.line_color_badge);
@@ -602,7 +600,7 @@ public class SavedLineFragment extends Fragment {
             holder.tvLineBadge.setText(line.alias);
             holder.lineColorBadge.setBackgroundColor(Color.parseColor("#" + line.color));
 
-            int colorOnSurface = Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurface);
+            int colorOnSurface = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnSurface);
             boolean isSelected = selectedSet.contains(lineCode);
 
             holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);

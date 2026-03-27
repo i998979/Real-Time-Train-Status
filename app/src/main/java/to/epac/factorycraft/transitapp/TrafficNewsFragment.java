@@ -274,8 +274,8 @@ public class TrafficNewsFragment extends Fragment {
                                 String stationTo = affectedAreaObj.optString("station_code_to");
 
                                 if (!stationFr.isEmpty() && !stationTo.isEmpty()) {
-                                    lineSection = hrConf.getStationName(Integer.parseInt(stationFr)) + "~"
-                                            + hrConf.getStationName(Integer.parseInt(stationTo));
+                                    lineSection = hrConf.getStationName(stationFr) + "~"
+                                            + hrConf.getStationName(stationTo);
                                 }
                             }
                         }
@@ -289,7 +289,7 @@ public class TrafficNewsFragment extends Fragment {
 
                 if (status.equals("green") || status.equals("grey")) continue;
 
-                View itemView = LayoutInflater.from(getContext()).inflate(R.layout.item_line_status, statusContainer, false);
+                View itemView = LayoutInflater.from(getContext()).inflate(R.layout.item_line_status_card, statusContainer, false);
 
                 View vColorBar = itemView.findViewById(R.id.v_line_color_bar);
                 View vBadgeLayout = itemView.findViewById(R.id.line_color_badge);

@@ -138,9 +138,9 @@ public class Utils {
     }
 
 
-    public static int getThemeColor(int attr) {
+    public static int getThemeColor(Context ctx, int attr) {
         TypedValue typedValue = new TypedValue();
-        context.getTheme().resolveAttribute(attr, typedValue, true);
+        ctx.getTheme().resolveAttribute(attr, typedValue, true);
 
         return typedValue.data;
     }

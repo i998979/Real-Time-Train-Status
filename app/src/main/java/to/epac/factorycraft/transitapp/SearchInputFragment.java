@@ -262,7 +262,7 @@ public class SearchInputFragment extends Fragment {
     }
 
     private void updateCard(View card, boolean selected) {
-        int colorOnSurface = Utils.getThemeColor(com.google.android.material.R.attr.colorOnSurface);
+        int colorOnSurface = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
 
         ImageView iv = card.findViewWithTag("iv_check_mark");
         iv.setImageResource(selected ? R.drawable.baseline_check_circle_24 : R.drawable.outline_circle_24);
