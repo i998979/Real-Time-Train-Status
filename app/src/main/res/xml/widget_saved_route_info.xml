@@ -5,8 +5,6 @@
     android:initialLayout="@layout/widget_saved_route"
     android:minWidth="80dp"
     android:minHeight="80dp"
-    android:previewImage="@drawable/example_appwidget_preview"
-
     android:previewLayout="@layout/widget_saved_route"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
