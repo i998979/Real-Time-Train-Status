@@ -284,10 +284,10 @@ public class SavedRouteFragment extends Fragment {
         TextView tv = new TextView(context);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Utils.dpToPx(32));
         params.gravity = Gravity.CENTER_VERTICAL;
-        tv.setPadding(Utils.dpToPx(6), 0, Utils.dpToPx(4), 0);
+        tv.setPadding(Utils.dpToPx(2), 0, Utils.dpToPx(2), 0);
         tv.setLayoutParams(params);
         tv.setText(stationName);
-        tv.setTextSize(12);
+        tv.setTextSize(14);
         tv.setTypeface(null, Typeface.BOLD);
         tv.setGravity(Gravity.CENTER);
         tv.setTextColor(textColor);
@@ -348,7 +348,7 @@ public class SavedRouteFragment extends Fragment {
         tvLineCode.setLayoutParams(textParams);
         tvLineCode.setText(lineAlias != null ? lineAlias : "");
         tvLineCode.setTextColor(Color.BLACK);
-        tvLineCode.setTextSize(10);
+        tvLineCode.setTextSize(12);
         tvLineCode.setTypeface(null, Typeface.BOLD);
         tvLineCode.setGravity(Gravity.CENTER);
 
