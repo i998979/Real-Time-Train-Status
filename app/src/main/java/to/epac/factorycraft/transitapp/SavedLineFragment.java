@@ -603,7 +603,7 @@ public class SavedLineFragment extends Fragment {
             int colorOnSurface = Utils.getThemeColor(context, com.google.android.material.R.attr.colorOnSurface);
             boolean isSelected = selectedSet.contains(lineCode);
 
-            holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_outline_24 : R.drawable.outline_circle_24);
+            holder.cbSelect.setImageResource(isSelected ? R.drawable.baseline_check_circle_24 : R.drawable.baseline_check_circle_outline_24);
             holder.cbSelect.setImageTintList(ColorStateList.valueOf(isSelected ? ContextCompat.getColor(context, R.color.button_green) : colorOnSurface));
 
 

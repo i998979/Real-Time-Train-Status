@@ -13,8 +13,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/outline_circle_24"
+        android:src="@drawable/baseline_check_circle_outline_24"
         android:tag="iv_check_mark"
         app:tint="?attr/colorOnSurfaceVariant" />
 
@@ -22,6 +21,7 @@
         android:id="@+id/line_color_badge"
         android:layout_width="32dp"
         android:layout_height="32dp"
+        android:layout_marginStart="16dp"
         android:background="#5DE2FF">
 
         <TextView

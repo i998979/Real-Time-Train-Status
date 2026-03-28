@@ -2,6 +2,7 @@ package to.epac.factorycraft.transitapp;
 
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.TextViewCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.radiobutton.MaterialRadioButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +36,7 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
 
     private MaterialButton btnClose;
     private MaterialButton btnSearchAdd;
-    private TextView rbSelectAll;
+    private MaterialRadioButton rbSelectAll;
 
     private RecyclerView rvSavedRoutes;
     private SavedRouteAdapter adapter;
@@ -107,7 +110,15 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
         });
 
         rvSavedRoutes = view.findViewById(R.id.rv_saved_routes);
-        rvSavedRoutes.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvSavedRoutes.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        DividerItemDecoration divider = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setSize(1, 1);
+        int dividerColor = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant);
+        drawable.setColor(dividerColor);
+        divider.setDrawable(drawable);
+        rvSavedRoutes.addItemDecoration(divider);
         adapter = new SavedRouteAdapter(savedRoutes, selectedPositions, () -> {
             updateUI();
         });
@@ -166,9 +177,7 @@ public class ModifySavedRoutesBottomSheet extends BottomSheetDialogFragment {
         isAllSelected = !savedRoutes.isEmpty() && selectedPositions.size() == savedRoutes.size();
 
         rbSelectAll.setText(isAllSelected ? "取消全選" : "全選");
-
-        int tintColor = ContextCompat.getColor(requireContext(), isAllSelected ? R.color.button_green : R.color.white);
-        TextViewCompat.setCompoundDrawableTintList(rbSelectAll, ColorStateList.valueOf(tintColor));
+        rbSelectAll.setChecked(isAllSelected);
 
         boolean hasSelection = !selectedPositions.isEmpty();
         btnDelete.setEnabled(hasSelection);

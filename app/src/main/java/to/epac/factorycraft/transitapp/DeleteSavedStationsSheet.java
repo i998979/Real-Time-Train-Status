@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.TextViewCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -78,6 +80,13 @@ public class DeleteSavedStationsSheet extends BottomSheetDialogFragment {
         rbSelectAll = view.findViewById(R.id.rb_select_all);
         btnDelete = view.findViewById(R.id.btn_delete);
         rv = view.findViewById(R.id.rv_saved_routes);
+        DividerItemDecoration divider = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setSize(1, 1);
+        int dividerColor = Utils.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOutlineVariant);
+        drawable.setColor(dividerColor);
+        divider.setDrawable(drawable);
+        rv.addItemDecoration(divider);
 
         view.findViewById(R.id.btn_close).setOnClickListener(v -> dismiss());
 
