@@ -125,7 +125,10 @@ public class HRConfig {
 
 
     public boolean isTerminus(String lineAlias, int stationId) {
-        String alias = getStationAlias(stationId);
+        return isTerminus(lineAlias, getStationAlias(stationId));
+    }
+
+    public boolean isTerminus(String lineAlias, String alias) {
         switch (lineAlias) {
             case "EAL": // 東鐵綫：金鐘、羅湖、落馬洲
                 return alias.equals("ADM") || alias.equals("LOW") || alias.equals("LMC");

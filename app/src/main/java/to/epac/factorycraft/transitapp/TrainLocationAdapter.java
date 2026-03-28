@@ -45,6 +45,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
     private static final int TYPE_PARALLEL_BETWEEN = 5;
 
     private final Context context;
+    private HRConfig hrConf;
 
     private final int[] stationCodes;
     private final String lineCode;
@@ -60,6 +61,7 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
                                 HashMap<Integer, Long> runTimeUpMap, HashMap<Integer, Long> runTimeDnMap,
                                 HashMap<Integer, Long> dwellTimeUpMap, HashMap<Integer, Long> dwellTimeDnMap) {
         this.context = context;
+        this.hrConf = HRConfig.getInstance(context);
 
         this.lineCode = lineCode;
         this.stationCodes = stationCodes;
@@ -537,13 +539,17 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
 
 
         long nowMillis = !trip.isOpenData ? System.currentTimeMillis() : trip.time;
-        long totalSec;
+        long totalSec = 0;
 
-        if (trip.trainSpeed <= 3.0) {
-            totalSec = isUp(trip) ? runTimeUpMap.get(trip.nextStationCode)
-                    : runTimeDnMap.get(trip.currentStationCode);
-        } else {
-            totalSec = (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
+        try {
+            if (trip.trainSpeed <= 3.0) {
+                totalSec = isUp(trip) ? runTimeUpMap.get(trip.nextStationCode)
+                        : runTimeDnMap.get(trip.currentStationCode);
+            } else {
+                totalSec = (long) (trip.targetDistance / (trip.trainSpeed / 3.6));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         for (int k = 0; k < route.size(); k++) {
@@ -553,11 +559,11 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (k < route.size() - 1) {
                 int nextCode = route.get(k + 1);
 
-                // RunTimeUp-       Key: Next Station       Value: Time taken to Key
-                // DwellTimeUp-     Key: Next Station       Value: Time to dwell in Key
+                // RunTimeUp       Key: Next Station       Value: Time taken to Key
+                // DwellTimeUp     Key: Next Station       Value: Time to dwell in Key
 
-                // RunTimeDn-       Key: Current Station    Value: Time taken from Key to Next
-                // DwellTimeDn-     Key: Current Station    Value: Time to dwell in Next
+                // RunTimeDn       Key: Current Station    Value: Time taken from Key to Next
+                // DwellTimeDn     Key: Current Station    Value: Time to dwell in Next
                 try {
                     if (isUp(trip))
                         totalSec += dwellTimeUpMap.get(nextCode);
@@ -633,7 +639,8 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
         for (Trip trip : trips) {
             // Next Train
             if (trip.isOpenData) {
-                if (trip.ttnt > 0) continue;
+                if (hrConf.isTerminus(lineCode, Utils.idToCode(lineCode, code)) && trip.ttnt > 1) continue;
+                else if (!hrConf.isTerminus(lineCode, Utils.idToCode(lineCode, code)) && trip.ttnt > 0) continue;
 
                 if (trip.nextStationCode == code) {
                     if (isUp(trip))
@@ -683,7 +690,8 @@ public class TrainLocationAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             // Next Train
             if (trip.isOpenData) {
-                if (trip.ttnt > 0) continue;
+                if (hrConf.isTerminus(lineCode, Utils.idToCode(lineCode, code)) && trip.ttnt > 1) continue;
+                else if (!hrConf.isTerminus(lineCode, Utils.idToCode(lineCode, code)) && trip.ttnt > 0) continue;
 
                 if (trip.nextStationCode == mainCode) {
                     isAtMain = true;
