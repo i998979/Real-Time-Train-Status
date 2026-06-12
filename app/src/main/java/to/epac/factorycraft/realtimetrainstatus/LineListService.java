@@ -87,7 +87,7 @@ public class LineListService extends RemoteViewsService {
                 Intent intent = new Intent();
                 intent.putExtra("ITEM_NAME", item[0]);
                 intent.putExtra("ITEM_ID", item[1]);
-                row.setOnClickFillInIntent(R.id.tv_data, intent);
+                row.setOnClickFillInIntent(R.id.item_root, intent);
 
                 return row;
             }
